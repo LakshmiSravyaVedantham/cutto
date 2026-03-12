@@ -14,6 +14,7 @@ from backend.agent import ConversationSession, extract_scene_plan
 from backend.pipeline import run_pipeline
 from backend.models import PipelineProgress
 from backend.config import DEMO_SECRET
+from backend.services import storage
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -206,9 +207,12 @@ async def run_video_pipeline(ws: WebSocket, plan):
         video_path = await run_pipeline(
             plan, progress_callback=progress_callback
         )
-        # Store path so the serve endpoint can find it
-        video_paths[plan.video_id] = video_path
-        video_url = f"/videos/{plan.video_id}/final.mp4"
+        # Upload to GCS if available, otherwise serve locally
+        if storage.is_available():
+            video_url = storage.upload_video(video_path, plan.video_id)
+        else:
+            video_paths[plan.video_id] = video_path
+            video_url = f"/videos/{plan.video_id}/final.mp4"
         await ws.send_json(
             {
                 "type": "complete",
