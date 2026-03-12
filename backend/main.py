@@ -40,7 +40,12 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="CutTo", version="0.1.0", lifespan=lifespan)
+app = FastAPI(
+    title="CutTo",
+    version="0.1.0",
+    description="AI Video Director — describe any video idea, get a finished video",
+    lifespan=lifespan,
+)
 
 _cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
