@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 # Install ffmpeg for video processing
 RUN apt-get update && \
@@ -7,16 +7,15 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies (cached layer)
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY backend/ backend/
 COPY music/ music/
-COPY .env.example .env.example
 
-# Copy pre-built frontend (build locally, commit dist/)
+# Copy pre-built frontend (build locally before docker build)
 COPY static/ static/
 
 EXPOSE 8080

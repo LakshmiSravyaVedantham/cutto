@@ -4,7 +4,20 @@ version = "0.1.0"
 description = "AI video director — describe your idea, get a short film"
 license = {text = "MIT"}
 requires-python = ">=3.11"
+authors = [{name = "Sravya Vedantham"}]
+keywords = ["ai", "video", "gemini", "veo", "director", "storytelling"]
+
+[project.urls]
+Repository = "https://github.com/LakshmiSravyaVedantham/cutto"
+Issues = "https://github.com/LakshmiSravyaVedantham/cutto/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"

@@ -21,9 +21,10 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="CutTo")
 
+_cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -73,7 +74,11 @@ def check_rate_limit(ip: str) -> bool:
 
 @app.get("/health")
 async def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "service": "cutto",
+        "version": "0.1.0",
+    }
 
 
 @app.websocket("/ws")
