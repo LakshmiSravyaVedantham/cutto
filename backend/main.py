@@ -19,7 +19,26 @@ from backend.services import storage
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="CutTo")
+app = FastAPI(title="CutTo", version="0.1.0")
+
+
+@app.on_event("startup")
+async def log_startup():
+    from backend.config import (
+        GEMINI_MODEL, GEMINI_IMAGE_MODEL, IMAGEN_MODEL, VEO_MODEL, GOOGLE_API_KEY,
+    )
+    from backend.services import storage
+    logger.info("=" * 50)
+    logger.info("CutTo v0.1.0 — AI Video Director")
+    logger.info("=" * 50)
+    logger.info(f"  Gemini text model:  {GEMINI_MODEL}")
+    logger.info(f"  Gemini image model: {GEMINI_IMAGE_MODEL}")
+    logger.info(f"  Imagen model:       {IMAGEN_MODEL}")
+    logger.info(f"  Veo model:          {VEO_MODEL}")
+    logger.info(f"  API key configured: {'yes' if GOOGLE_API_KEY else 'NO'}")
+    logger.info(f"  Cloud Storage:      {'enabled' if storage.is_available() else 'disabled'}")
+    logger.info(f"  Demo gate:          {'enabled' if DEMO_SECRET else 'disabled'}")
+    logger.info("=" * 50)
 
 _cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
