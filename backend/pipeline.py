@@ -32,6 +32,10 @@ async def run_pipeline(
     """Run the full video generation pipeline with parallel scene processing."""
     work_dir = Path(tempfile.mkdtemp(prefix="cutto_"))
 
+    # Generate a consistent seed from video_id so all scenes share visual style
+    seed = hash(plan.video_id) % (2**31)
+    logger.info(f"[Pipeline] Using seed={seed} for visual consistency across scenes")
+
     # Process scenes in parallel batches for speed
     scene_clips: list[str | None] = [None] * len(plan.scenes)
 
@@ -55,6 +59,7 @@ async def run_pipeline(
                     scene, work_dir,
                     style_anchor=plan.visual_style_anchor,
                     audio_driven=plan.audio_driven,
+                    seed=seed,
                 ),
                 timeout=SCENE_TIMEOUT,
             )
@@ -126,7 +131,7 @@ async def run_pipeline(
     return final_path
 
 
-async def generate_video_with_fallback(prompt: str, output_path: str, duration: int = 8) -> tuple[str, bool]:
+async def generate_video_with_fallback(prompt: str, output_path: str, duration: int = 8, seed: int | None = None) -> tuple[str, bool]:
     """Try Veo video generation first, fall back to Imagen static image.
 
     Returns (output_path, is_video) — is_video=True means animated clip, False means static image.
@@ -134,7 +139,7 @@ async def generate_video_with_fallback(prompt: str, output_path: str, duration: 
     # Try Veo for animated video
     try:
         logger.info("Attempting Veo video generation...")
-        result = await asyncio.to_thread(veo.generate_video, prompt, output_path, duration)
+        result = await asyncio.to_thread(veo.generate_video, prompt, output_path, duration, seed=seed)
         logger.info("Veo succeeded — animated video generated")
         return result, True
     except Exception as e:
@@ -178,6 +183,7 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
 
 async def process_scene(
     scene: Scene, work_dir: Path, style_anchor: str = "", audio_driven: bool = False,
+    seed: int | None = None,
 ) -> str:
     """Process a single scene: generate video/image, voiceover, combine.
 
@@ -192,6 +198,9 @@ async def process_scene(
     if style_anchor and not visual_prompt.startswith(style_anchor[:50]):
         visual_prompt = f"{style_anchor}. {visual_prompt}"
 
+    # Strip quotation marks — Veo best practices say avoid quotes in prompts
+    visual_prompt = visual_prompt.replace('"', '').replace("'", '')
+
     # Step 2: Generate voiceover with speaker-specific voice (parallel with visual)
     raw_audio = str(scene_dir / "narration_raw.mp3")
     tts_task = asyncio.create_task(generate_tts(scene.narration, raw_audio, scene.speaker))
@@ -199,7 +208,7 @@ async def process_scene(
     # Step 3: Generate visual (video via Veo, or fallback to Imagen)
     visual_output = str(scene_dir / "visual.mp4")
     visual_path, is_video = await generate_video_with_fallback(
-        visual_prompt, visual_output, duration=scene.target_duration
+        visual_prompt, visual_output, duration=scene.target_duration, seed=seed
     )
 
     # Step 4: Wait for TTS, then decide who drives duration

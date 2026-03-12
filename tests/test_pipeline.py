@@ -87,7 +87,7 @@ def mock_services():
         patch("backend.pipeline.lipsync.apply_lipsync") as mock_lipsync,
     ):
         # Veo returns the output path by default
-        mock_veo.side_effect = lambda prompt, output_path, duration: output_path
+        mock_veo.side_effect = lambda prompt, output_path, duration, seed=None: output_path
 
         # Imagen returns the output path
         mock_imagen.side_effect = lambda prompt, output_path: output_path
@@ -547,7 +547,7 @@ class TestRunPipeline:
 
         call_count = 0
 
-        def veo_fail_on_second(prompt, output_path, duration):
+        def veo_fail_on_second(prompt, output_path, duration, seed=None):
             nonlocal call_count
             call_count += 1
             if call_count == 2:
@@ -638,7 +638,7 @@ class TestErrorPaths:
 
         fail_count = 0
 
-        def veo_selective_fail(prompt, output_path, duration):
+        def veo_selective_fail(prompt, output_path, duration, seed=None):
             nonlocal fail_count
             fail_count += 1
             if fail_count <= 2:

@@ -1,8 +1,8 @@
 # CutTo
 
-**AI Video Director** -- describe a video idea in conversation, get a finished short film with animated visuals, multi-character voiceover, lipsync, and background music.
+**AI Video Director** -- describe any video idea in conversation, get a finished video with AI-generated visuals, multi-character voiceover, lipsync, and background music. Create animated stories, medical explainers, product demos, tutorials, documentaries, and more.
 
-Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-api/docs/live-agent-challenge) -- Creative Storyteller category.
+Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-api/docs/live-agent-challenge).
 
 ---
 
@@ -103,10 +103,10 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 |---|---|---|
 | Frontend | React 18, Vite 5 | Single-page app with WebSocket communication |
 | Backend | Python 3.11, FastAPI | WebSocket server, API routing, pipeline orchestration |
-| AI Conversation | Gemini (google-genai SDK) | Creative direction, scene planning, interleaved text + image output |
+| AI Conversation | Gemini (google-genai SDK + ADK) | Creative direction, scene planning, interleaved text + image output |
 | Video Generation | Veo 2.0 | Animated video clips from text prompts |
 | Image Generation | Imagen 4.0 | Static scene images (fallback when Veo is unavailable) |
-| Voice Synthesis | edge-tts | Multi-character voiceover (3 distinct voices) |
+| Voice Synthesis | Google Cloud TTS + edge-tts | Multi-character voiceover with WaveNet voices (edge-tts fallback) |
 | Lipsync | Wav2Lip | Mouth sync for character dialogue close-ups |
 | Video Processing | FFmpeg | Ken Burns effect, clip assembly, music mixing |
 | Voice Input | Web Speech API | Browser-native speech recognition |
@@ -121,6 +121,8 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **3 distinct voice tracks**: narrator (en-US-GuyNeural), character 1 (en-US-JennyNeural), character 2 (en-US-ChristopherNeural)
 - **Scene plan editor**: edit narration, visual prompts, and speaker assignments per scene; add or remove scenes; ask the AI for revisions in natural language
 - **Visual generation fallback chain**: Veo 2.0 -> Imagen 4.0 -> Gemini native image
+- **Visual consistency via seed parameter**: All scenes in a video share the same Veo seed for consistent character design and style
+- **Veo prompt optimization**: Follows Google's official best practices — motion-focused, specific camera terms, no quotation marks
 - **Wav2Lip lipsync** automatically applied to character dialogue scenes with visible faces
 - **Ken Burns effect** on static images to create camera movement
 - **Parallel scene processing** in batches of 3 for faster generation
@@ -138,10 +140,11 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 | Requirement | Implementation |
 |---|---|
 | **Gemini model** | Gemini drives the entire conversation, generates the scene plan, and produces inline preview images during planning |
-| **Google GenAI SDK** | All Gemini, Imagen, and Veo calls use `google-genai` (the official Python SDK) |
-| **Google Cloud service** | Veo 2.0 for video generation, Imagen 4.0 for image generation |
+| **Google GenAI SDK + ADK** | All Gemini/Imagen/Veo calls use `google-genai`; ADK Agent wrapper in `adk_agent.py` with registered function tools |
+| **Google Cloud service** | Veo 2.0 (video gen), Imagen 4.0 (image gen), Cloud TTS (WaveNet voices), Cloud Storage (video persistence), Cloud Run (hosting) |
 | **Interleaved output** (Creative Storyteller mandatory) | Gemini generates text + images inline during scene planning using `response_modalities=["TEXT", "IMAGE"]` |
-| **Live agent interaction** | Real-time WebSocket conversation with Gemini, voice input support |
+| **Live agent interaction** | Real-time WebSocket conversation with Gemini, voice input via Web Speech API |
+| **Automated cloud deployment** (bonus) | `deploy.sh` — one-command deploy to Cloud Run |
 
 ---
 
@@ -209,6 +212,7 @@ Open `http://localhost:8000` in your browser.
 | Variable | Default | Description |
 |---|---|---|
 | `GOOGLE_API_KEY` | (required) | Google AI Studio API key |
+| `GCS_BUCKET` | (empty) | Optional GCS bucket for video persistence |
 | `GEMINI_MODEL` | `gemini-2.0-flash` | Model for text-only fallback conversations |
 | `GEMINI_IMAGE_MODEL` | `gemini-2.5-flash-image` | Model for interleaved text + image generation |
 | `IMAGEN_MODEL` | `imagen-4.0-generate-001` | Imagen model for static image fallback |
@@ -225,15 +229,17 @@ cutto/
   backend/
     main.py              # FastAPI app, WebSocket endpoint, rate limiting
     agent.py             # Gemini conversation session, scene plan extraction
+    adk_agent.py         # Google ADK Agent wrapper with function tools
     pipeline.py          # Video generation pipeline orchestrator
     models.py            # Pydantic models (Scene, ScenePlan, PipelineProgress)
     config.py            # Environment variable loading
     services/
       veo.py             # Veo 2.0 video generation with polling
       imagen.py          # Imagen 4.0 image generation
-      tts.py             # edge-tts multi-voice synthesis
-      ffmpeg.py          # FFmpeg operations (Ken Burns, concat, music mixing)
+      tts.py             # Google Cloud TTS + edge-tts multi-voice synthesis
+      ffmpeg.py          # FFmpeg operations (Ken Burns, concat, music mixing, audio adjust)
       lipsync.py         # Wav2Lip integration
+      storage.py         # Optional Google Cloud Storage for video persistence
   frontend/
     src/
       App.jsx            # Landing page and view routing
@@ -254,6 +260,7 @@ cutto/
     test_ffmpeg.py
     test_imagen.py
     test_models.py
+    test_pipeline.py
     test_tts.py
     test_veo.py
   wav2lip_repo/          # Wav2Lip model (git-ignored, optional)

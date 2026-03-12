@@ -12,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
-STYLE_SUFFIX = " Smooth cinematic animation, consistent character design throughout, fluid natural motion, professional lighting."
+STYLE_SUFFIX = " Cinematic quality, consistent character design, smooth natural motion. Camera moves fluidly. Professional volumetric lighting with soft shadows."
 
 
-def generate_video(prompt: str, output_path: str, duration_seconds: int = 5) -> str:
+def generate_video(prompt: str, output_path: str, duration_seconds: int = 5, seed: int | None = None) -> str:
     """Generate an animated video clip from a text prompt using Veo.
 
     Polls the long-running operation until completion (up to 5 minutes).
@@ -27,14 +27,19 @@ def generate_video(prompt: str, output_path: str, duration_seconds: int = 5) -> 
     logger.info(f"[Veo] Prompt: {full_prompt[:200]}...")
     logger.info(f"[Veo] Output path: {output_path}")
 
+    config = {
+        "number_of_videos": 1,
+        "duration_seconds": capped_duration,
+    }
+    if seed is not None:
+        config["seed"] = seed
+        logger.info(f"[Veo] Using seed={seed} for visual consistency")
+
     t0 = time.time()
     operation = client.models.generate_videos(
         model=VEO_MODEL,
         prompt=full_prompt,
-        config={
-            "number_of_videos": 1,
-            "duration_seconds": capped_duration,
-        },
+        config=config,
     )
     logger.info(f"[Veo] Operation submitted in {time.time() - t0:.1f}s, polling for completion...")
 
