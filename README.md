@@ -119,7 +119,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Conversational scene planning** with Gemini producing interleaved text and images
 - **Voice input** via Web Speech API -- speak your video idea instead of typing
 - **3 distinct voice tracks**: narrator (en-US-GuyNeural), character 1 (en-US-JennyNeural), character 2 (en-US-ChristopherNeural)
-- **Scene plan editor**: edit narration, visual prompts, and speaker assignments per scene; add or remove scenes; ask the AI for revisions in natural language
+- **Scene plan editor**: edit narration, visual prompts, and speaker assignments per scene; add, remove, or reorder scenes; ask the AI for revisions in natural language
 - **Visual generation fallback chain**: Veo 2.0 -> Imagen 4.0 -> Gemini native image
 - **Visual consistency via seed parameter**: All scenes in a video share the same Veo seed for consistent character design and style
 - **Veo prompt optimization**: Follows Google's official best practices — motion-focused, specific camera terms, no quotation marks
@@ -130,6 +130,12 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Real-time progress tracking** via WebSocket -- see each scene's status as it generates
 - **Rate limiting**: 3 videos per IP per hour
 - **Demo password gate** (optional DEMO_SECRET env var)
+- **6 video categories**: Story, Explainer, Documentary, Tutorial, Marketing, Motivational
+- **Strong creative director persona**: the AI has opinions about filmmaking, suggests bold creative choices
+- **Multi-agent ADK architecture**: Director, Storyboard, and Orchestrator agents with specialized roles
+- **Graceful error handling**: failed scenes show visual indicator, pipeline continues with remaining scenes
+- **Exponential backoff reconnection**: WebSocket auto-reconnects with 1s->30s delay
+- **Mobile responsive**: touch-friendly buttons, stacking cards, compact layout
 
 ---
 
@@ -140,7 +146,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 | Requirement | Implementation |
 |---|---|
 | **Gemini model** | Gemini drives the entire conversation, generates the scene plan, and produces inline preview images during planning |
-| **Google GenAI SDK + ADK** | All Gemini/Imagen/Veo calls use `google-genai`; ADK Agent wrapper in `adk_agent.py` with registered function tools |
+| **Google GenAI SDK + ADK** | All Gemini/Imagen/Veo calls use `google-genai`; ADK multi-agent architecture in `adk_agent.py` (director + storyboard + orchestrator) with 4 function tools |
 | **Google Cloud service** | Veo 2.0 (video gen), Imagen 4.0 (image gen), Cloud TTS (WaveNet voices), Cloud Storage (video persistence), Cloud Run (hosting) |
 | **Interleaved output** (Creative Storyteller mandatory) | Gemini generates text + images inline during scene planning using `response_modalities=["TEXT", "IMAGE"]` |
 | **Live agent interaction** | Real-time WebSocket conversation with Gemini, voice input via Web Speech API |
@@ -229,7 +235,7 @@ cutto/
   backend/
     main.py              # FastAPI app, WebSocket endpoint, rate limiting
     agent.py             # Gemini conversation session, scene plan extraction
-    adk_agent.py         # Google ADK Agent wrapper with function tools
+    adk_agent.py         # Google ADK multi-agent (director + storyboard + orchestrator)
     pipeline.py          # Video generation pipeline orchestrator
     models.py            # Pydantic models (Scene, ScenePlan, PipelineProgress)
     config.py            # Environment variable loading
@@ -257,6 +263,7 @@ cutto/
     inspiring.mp3
     playful.mp3
   tests/
+    test_adk.py
     test_ffmpeg.py
     test_imagen.py
     test_models.py
@@ -264,7 +271,11 @@ cutto/
     test_tts.py
     test_veo.py
   wav2lip_repo/          # Wav2Lip model (git-ignored, optional)
-  Dockerfile             # Production container (Python 3.11-slim + FFmpeg)
+  .github/workflows/
+    ci.yml               # GitHub Actions CI (test + lint + frontend build)
+    deploy.yml           # Auto-deploy to Cloud Run on push to main
+  Dockerfile             # Multi-stage build (Node 18 + Python 3.11-slim + FFmpeg)
+  .dockerignore          # Keeps Docker context lean
   deploy.sh              # One-command deploy to Google Cloud Run
   .env.example
 ```
