@@ -11,6 +11,7 @@ export default function GeneratingView({ progress, scenePlan }) {
     visual: 'animating scene with AI',
     voiceover: 'recording voiceover',
     clip: 'compositing clip',
+    error: 'retrying...',
   }
 
   const completedScenes = Array.from({ length: totalScenes }, (_, i) => {
@@ -80,16 +81,24 @@ export default function GeneratingView({ progress, scenePlan }) {
             (num === currentScene && progress?.status === 'done' && currentStep === 'clip')
           const isActive =
             num === currentScene && progress?.status === 'in_progress'
+          const isError =
+            num === currentScene && progress?.status === 'error'
 
           return (
             <div key={num} style={{
               ...styles.scene(isDone, isActive),
+              ...(isError ? { border: '1px solid rgba(231,76,60,0.2)', background: 'rgba(231,76,60,0.05)' } : {}),
               ...(isMobile ? { padding: '12px 14px', gap: 10 } : {}),
             }}>
               <div style={styles.sceneIcon(isDone, isActive)}>
                 {isDone ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : isError ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
                   </svg>
                 ) : isActive ? (
                   <span style={styles.spinner} />
@@ -101,8 +110,13 @@ export default function GeneratingView({ progress, scenePlan }) {
                 <span style={styles.sceneName(isDone, isActive)}>
                   Scene {num}
                 </span>
-                <span style={styles.sceneStatus(isDone, isActive)}>
-                  {isActive && currentStep
+                <span style={{
+                  ...(styles.sceneStatus(isDone, isActive)),
+                  ...(isError ? { color: '#e74c3c' } : {}),
+                }}>
+                  {isError
+                    ? 'failed — skipping'
+                    : isActive && currentStep
                     ? stepLabels[currentStep] || currentStep
                     : isDone
                     ? 'complete'

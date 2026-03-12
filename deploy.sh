@@ -13,8 +13,8 @@ if [ -z "$PROJECT_ID" ]; then
   exit 1
 fi
 
-echo "==> Building container image (frontend + backend)..."
-gcloud builds submit --tag "$IMAGE" --project "$PROJECT_ID"
+echo "==> Building container image (multi-stage: frontend + backend)..."
+gcloud builds submit --tag "$IMAGE" --project "$PROJECT_ID" --timeout=600
 
 echo "==> Deploying to Cloud Run..."
 gcloud run deploy "$SERVICE" \
