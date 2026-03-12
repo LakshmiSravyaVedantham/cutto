@@ -36,9 +36,11 @@ gcloud run deploy "$SERVICE" \
   --concurrency 1 \
   --min-instances 0 \
   --max-instances 3 \
+  --session-affinity \
   --set-env-vars "GOOGLE_API_KEY=${GOOGLE_API_KEY:-}" \
   --set-env-vars "DEMO_SECRET=${DEMO_SECRET:-}" \
-  --set-env-vars "MUSIC_DIR=./music"
+  --set-env-vars "MUSIC_DIR=./music" \
+  --set-env-vars "GCS_BUCKET=${GCS_BUCKET:-}"
 
 echo "==> Deployed successfully!"
 gcloud run services describe "$SERVICE" --region "$REGION" --project "$PROJECT_ID" --format 'value(status.url)'

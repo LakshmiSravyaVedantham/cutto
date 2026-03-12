@@ -164,6 +164,8 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
         contents=f"Generate an image: {prompt}",
         config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
     )
+    if not response.candidates or not response.candidates[0].content.parts:
+        raise RuntimeError("Gemini fallback returned empty response")
     for part in response.candidates[0].content.parts:
         if hasattr(part, "inline_data") and part.inline_data:
             Path(output_path).write_bytes(part.inline_data.data)
@@ -238,14 +240,19 @@ async def process_scene(
 
     # Step 6: Lipsync only for character dialogue scenes (not narrator)
     is_character = scene.speaker.startswith("character_")
-    if is_video and is_character and lipsync.is_available():
-        logger.info(f"Applying lipsync for {scene.speaker} (scene {scene.scene_number})")
-        synced_path = str(scene_dir / "visual_synced.mp4")
-        visual_path = await asyncio.to_thread(
-            lipsync.apply_lipsync, visual_path, audio_path, synced_path
-        )
-    elif not is_character:
-        logger.info(f"Skipping lipsync for narrator (scene {scene.scene_number})")
+    if is_character:
+        if is_video and lipsync.is_available():
+            logger.info(f"[Lipsync] Applying for {scene.speaker} (scene {scene.scene_number})")
+            synced_path = str(scene_dir / "visual_synced.mp4")
+            visual_path = await asyncio.to_thread(
+                lipsync.apply_lipsync, visual_path, audio_path, synced_path
+            )
+        elif not is_video:
+            logger.info(f"[Lipsync] Skipped — static image, no face (scene {scene.scene_number})")
+        elif not lipsync.is_available():
+            logger.warning(f"[Lipsync] Skipped — Wav2Lip not available (scene {scene.scene_number})")
+    else:
+        logger.info(f"[Lipsync] Skipped — narrator scene (scene {scene.scene_number})")
 
     # Step 7: Combine visual + audio into scene clip
     clip_path = str(scene_dir / "clip.mp4")

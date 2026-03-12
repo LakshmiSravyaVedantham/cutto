@@ -91,7 +91,7 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
     # Send initial greeting
     try:
         text, image_bytes, plan, started = await session.send_message(
-            "Hello! I want to make a video."
+            "Hi! I'm ready to create a video. What kind of video can you help me make?"
         )
         await ws.send_json(
             {"type": "transcript", "role": "agent", "text": text}
@@ -102,7 +102,7 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
             {
                 "type": "transcript",
                 "role": "agent",
-                "text": "Hi! I'm CutTo, your AI video director. What video would you like to create today?",
+                "text": "Hi! I'm CutTo, your AI video director. I can create any kind of video — animated stories, medical explainers, tutorials, product demos, documentaries, and more. What would you like to make?",
             }
         )
 
