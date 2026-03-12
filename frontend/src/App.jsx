@@ -85,8 +85,15 @@ export default function App() {
           </svg>
         </button>
 
+        <div style={styles.techStack}>
+          <span style={styles.techBadge}>Gemini 2.0</span>
+          <span style={styles.techBadge}>Veo 2.0</span>
+          <span style={styles.techBadge}>Imagen 4.0</span>
+          <span style={styles.techBadge}>Cloud TTS</span>
+          <span style={styles.techBadge}>Cloud Run</span>
+        </div>
         <p style={styles.poweredBy}>
-          Powered by Gemini + Imagen + Google Cloud
+          Built with Google AI &amp; Google Cloud
         </p>
       </div>
     )
@@ -220,12 +227,30 @@ const styles = {
     alignItems: 'center',
     animation: 'fadeIn 0.8s ease-out 0.5s both',
   },
-  poweredBy: {
+  techStack: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     marginTop: 32,
+    animation: 'fadeIn 0.8s ease-out 0.7s both',
+  },
+  techBadge: {
+    padding: '4px 12px',
+    borderRadius: 8,
+    background: 'rgba(102,126,234,0.08)',
+    border: '1px solid rgba(102,126,234,0.12)',
+    color: '#667eea',
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: 0.3,
+  },
+  poweredBy: {
+    marginTop: 12,
     color: '#333',
     fontSize: 11,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    animation: 'fadeIn 0.8s ease-out 0.7s both',
+    animation: 'fadeIn 0.8s ease-out 0.8s both',
   },
 }

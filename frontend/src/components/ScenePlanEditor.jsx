@@ -66,6 +66,17 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
     setEditVisual(newScene.visual_prompt)
   }
 
+  const moveScene = (sceneNum, direction) => {
+    const idx = plan.scenes.findIndex(s => s.scene_number === sceneNum)
+    if (idx < 0) return
+    const newIdx = idx + direction
+    if (newIdx < 0 || newIdx >= plan.scenes.length) return
+    const reordered = [...plan.scenes]
+    ;[reordered[idx], reordered[newIdx]] = [reordered[newIdx], reordered[idx]]
+    const renumbered = reordered.map((s, i) => ({ ...s, scene_number: i + 1 }))
+    onUpdate({ ...plan, scenes: renumbered })
+  }
+
   const removeScene = (sceneNum) => {
     if (plan.scenes.length <= 1) return
     const filtered = plan.scenes
@@ -127,6 +138,30 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                   scene.speaker === 'character_1' ? '#e879f9' : '#34d399',
               }}>{scene.speaker === 'narrator' ? 'Narrator' : scene.speaker === 'character_1' ? 'Char 1' : 'Char 2'}</span>
               <span style={styles.duration}>{scene.target_duration}s</span>
+              {plan.scenes.length > 1 && (
+                <div style={{ display: 'flex', gap: 2 }}>
+                  <button
+                    style={styles.moveBtn}
+                    onClick={() => moveScene(scene.scene_number, -1)}
+                    disabled={scene.scene_number === 1}
+                    title="Move up"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="18 15 12 9 6 15" />
+                    </svg>
+                  </button>
+                  <button
+                    style={styles.moveBtn}
+                    onClick={() => moveScene(scene.scene_number, 1)}
+                    disabled={scene.scene_number === plan.scenes.length}
+                    title="Move down"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+                </div>
+              )}
               {editingScene !== scene.scene_number && (
                 <button style={{
                   ...styles.editBtn,
@@ -333,6 +368,20 @@ const styles = {
     fontSize: 11,
     color: '#555',
     fontWeight: 600,
+  },
+  moveBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    background: 'transparent',
+    color: '#555',
+    border: '1px solid rgba(255,255,255,0.06)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    flexShrink: 0,
   },
   editBtn: {
     padding: '4px 14px',
