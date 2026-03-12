@@ -3,6 +3,7 @@ import logging
 import base64
 import time
 from collections import defaultdict
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
@@ -19,15 +20,12 @@ from backend.services import storage
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="CutTo", version="0.1.0")
 
-
-@app.on_event("startup")
-async def log_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     from backend.config import (
         GEMINI_MODEL, GEMINI_IMAGE_MODEL, IMAGEN_MODEL, VEO_MODEL, GOOGLE_API_KEY,
     )
-    from backend.services import storage
     logger.info("=" * 50)
     logger.info("CutTo v0.1.0 — AI Video Director")
     logger.info("=" * 50)
@@ -39,6 +37,10 @@ async def log_startup():
     logger.info(f"  Cloud Storage:      {'enabled' if storage.is_available() else 'disabled'}")
     logger.info(f"  Demo gate:          {'enabled' if DEMO_SECRET else 'disabled'}")
     logger.info("=" * 50)
+    yield
+
+
+app = FastAPI(title="CutTo", version="0.1.0", lifespan=lifespan)
 
 _cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
 app.add_middleware(
@@ -97,6 +99,39 @@ async def health():
         "status": "ok",
         "service": "cutto",
         "version": "0.1.0",
+    }
+
+
+@app.get("/api/categories")
+async def list_categories():
+    """Return supported video categories with examples."""
+    from backend.adk_agent import list_video_categories
+    return list_video_categories()
+
+
+@app.get("/api/config")
+async def get_config():
+    """Return public configuration (no secrets)."""
+    from backend.config import GEMINI_MODEL, GEMINI_IMAGE_MODEL, VEO_MODEL, IMAGEN_MODEL
+    return {
+        "models": {
+            "conversation": GEMINI_MODEL,
+            "image_generation": GEMINI_IMAGE_MODEL,
+            "video_generation": VEO_MODEL,
+            "image_fallback": IMAGEN_MODEL,
+        },
+        "features": {
+            "voice_input": True,
+            "lipsync": True,
+            "multi_character_voices": True,
+            "scene_reordering": True,
+            "background_music": True,
+        },
+        "limits": {
+            "max_scenes": 20,
+            "max_duration_per_scene": 120,
+            "videos_per_hour": 3,
+        },
     }
 
 
