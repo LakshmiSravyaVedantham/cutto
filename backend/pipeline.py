@@ -260,10 +260,10 @@ async def generate_tts(text: str, audio_path: str, speaker: str = "narrator"):
     """Generate TTS with speaker-specific voice and one retry."""
     voice = tts.get_voice_for_speaker(speaker)
     try:
-        await tts.synthesize_to_file(text, audio_path, voice=voice)
+        await tts.synthesize_to_file(text, audio_path, voice=voice, speaker=speaker)
     except Exception:
         logger.warning("TTS failed, retrying...")
-        await tts.synthesize_to_file(text, audio_path, voice=voice)
+        await tts.synthesize_to_file(text, audio_path, voice=voice, speaker=speaker)
 
 
 async def assemble_final(
