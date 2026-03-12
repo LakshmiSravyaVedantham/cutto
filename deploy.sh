@@ -13,14 +13,7 @@ if [ -z "$PROJECT_ID" ]; then
   exit 1
 fi
 
-echo "==> Building frontend..."
-cd frontend && npm run build && cd ..
-
-echo "==> Copying frontend build to static/..."
-rm -rf static
-cp -r frontend/dist static
-
-echo "==> Building container image..."
+echo "==> Building container image (frontend + backend)..."
 gcloud builds submit --tag "$IMAGE" --project "$PROJECT_ID"
 
 echo "==> Deploying to Cloud Run..."
