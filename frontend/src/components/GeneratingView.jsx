@@ -1,10 +1,9 @@
 import React from 'react'
 import useIsMobile from '../hooks/useIsMobile'
 
-export default function GeneratingView({ progress, scenePlan }) {
+export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
   const isMobile = useIsMobile()
   const totalScenes = scenePlan?.total_scenes || 0
-  const currentScene = progress?.scene || 0
   const currentStep = progress?.step || ''
 
   const stepLabels = {
@@ -14,13 +13,17 @@ export default function GeneratingView({ progress, scenePlan }) {
     error: 'retrying...',
   }
 
+  // Count completed scenes from per-scene tracking
   const completedScenes = Array.from({ length: totalScenes }, (_, i) => {
-    const num = i + 1
-    return num < currentScene ||
-      (num === currentScene && progress?.status === 'done' && currentStep === 'clip')
+    const s = sceneStatuses?.[i + 1]
+    return s && s.step === 'clip' && s.status === 'done'
   }).filter(Boolean).length
 
-  const pct = totalScenes > 0 ? Math.round((completedScenes / totalScenes) * 100) : 0
+  const pct = currentStep === 'assembly' || currentStep === 'complete'
+    ? 95
+    : totalScenes > 0
+    ? Math.round((completedScenes / totalScenes) * 90)
+    : 0
 
   return (
     <div style={{
@@ -76,13 +79,10 @@ export default function GeneratingView({ progress, scenePlan }) {
       <div style={styles.sceneList}>
         {Array.from({ length: totalScenes }, (_, i) => {
           const num = i + 1
-          const isDone =
-            num < currentScene ||
-            (num === currentScene && progress?.status === 'done' && currentStep === 'clip')
-          const isActive =
-            num === currentScene && progress?.status === 'in_progress'
-          const isError =
-            num === currentScene && progress?.status === 'error'
+          const s = sceneStatuses?.[num]
+          const isDone = s && s.step === 'clip' && s.status === 'done'
+          const isActive = s && s.status === 'in_progress'
+          const isError = s && s.status === 'error'
 
           return (
             <div key={num} style={{
@@ -116,8 +116,8 @@ export default function GeneratingView({ progress, scenePlan }) {
                 }}>
                   {isError
                     ? 'failed — skipping'
-                    : isActive && currentStep
-                    ? stepLabels[currentStep] || currentStep
+                    : isActive && s?.step
+                    ? stepLabels[s.step] || s.step
                     : isDone
                     ? 'complete'
                     : 'waiting'}

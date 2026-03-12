@@ -5,6 +5,7 @@ export default function useWebSocket() {
   const [scenePlan, setScenePlan] = useState(null)
   const [previews, setPreviews] = useState([])
   const [progress, setProgress] = useState(null)
+  const [sceneStatuses, setSceneStatuses] = useState({})
   const [videoUrl, setVideoUrl] = useState(null)
   const [error, setError] = useState(null)
   const [connected, setConnected] = useState(false)
@@ -67,10 +68,18 @@ export default function useWebSocket() {
           break
         case 'pipeline_progress':
           setProgress(data)
+          // Track per-scene status so parallel batches don't overwrite each other
+          if (data.scene > 0) {
+            setSceneStatuses(prev => ({
+              ...prev,
+              [data.scene]: { step: data.step, status: data.status }
+            }))
+          }
           break
         case 'complete':
           setVideoUrl(data.video_url)
           setProgress(null)
+          setSceneStatuses({})
           break
         case 'error':
           setError(data.message)
@@ -113,9 +122,19 @@ export default function useWebSocket() {
     }
   }, [])
 
+  const reset = useCallback(() => {
+    setMessages([])
+    setScenePlan(null)
+    setPreviews([])
+    setProgress(null)
+    setSceneStatuses({})
+    setVideoUrl(null)
+    setError(null)
+  }, [])
+
   return useMemo(() => ({
-    messages, scenePlan, previews, progress, videoUrl, error,
-    connected, isThinking, connect, sendText, approve, updatePlan
-  }), [messages, scenePlan, previews, progress, videoUrl, error,
-       connected, isThinking, connect, sendText, approve, updatePlan])
+    messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
+    connected, isThinking, connect, sendText, approve, updatePlan, reset
+  }), [messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
+       connected, isThinking, connect, sendText, approve, updatePlan, reset])
 }

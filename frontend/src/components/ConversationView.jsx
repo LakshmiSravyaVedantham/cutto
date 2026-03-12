@@ -6,6 +6,7 @@ export default function ConversationView({ ws }) {
   const isMobile = useIsMobile()
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
+  const [hasMic, setHasMic] = useState(false)
   const bottomRef = useRef(null)
   const recognitionRef = useRef(null)
 
@@ -64,6 +65,7 @@ export default function ConversationView({ ws }) {
     }
 
     recognitionRef.current = recognition
+    setHasMic(true)
   }, [])
 
   const toggleMic = () => {
@@ -208,7 +210,7 @@ export default function ConversationView({ ws }) {
           ...styles.inputRow,
           ...(isMobile ? { padding: '4px 4px 4px 6px' } : {}),
         }}>
-          {recognitionRef.current && (
+          {hasMic && (
             <button
               style={{
                 ...styles.micBtn(isListening),

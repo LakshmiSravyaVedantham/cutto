@@ -152,23 +152,14 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
     session = ConversationSession()
     current_plan = None
 
-    # Send initial greeting
-    try:
-        text, image_bytes, plan, started = await session.send_message(
-            "Hi! I'm ready to create a video. What kind of video can you help me make?"
-        )
-        await ws.send_json(
-            {"type": "transcript", "role": "agent", "text": text}
-        )
-    except Exception as e:
-        logger.error(f"Initial greeting failed: {e}")
-        await ws.send_json(
-            {
-                "type": "transcript",
-                "role": "agent",
-                "text": "Hi! I'm CutTo, your AI video director. I can create any kind of video — animated stories, medical explainers, tutorials, product demos, documentaries, and more. What would you like to make?",
-            }
-        )
+    # Send static welcome — no Gemini call, no auto-chat
+    await ws.send_json(
+        {
+            "type": "transcript",
+            "role": "agent",
+            "text": "Hi! I'm CutTo, your AI video director. Tell me what video you'd like to create — an animated story, medical explainer, tutorial, product demo, documentary, or anything else.",
+        }
+    )
 
     try:
         while True:

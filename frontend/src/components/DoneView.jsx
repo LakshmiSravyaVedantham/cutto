@@ -1,7 +1,7 @@
 import React from 'react'
 import useIsMobile from '../hooks/useIsMobile'
 
-export default function DoneView({ videoUrl, onReset }) {
+export default function DoneView({ videoUrl, onReset, onEditScenes }) {
   const isMobile = useIsMobile()
   return (
     <div style={{
@@ -64,6 +64,27 @@ export default function DoneView({ videoUrl, onReset }) {
           </svg>
           Download Video
         </a>
+        {onEditScenes && (
+          <button style={{
+            ...styles.editBtn,
+            ...(isMobile ? { width: '100%', justifyContent: 'center', padding: '16px 20px', minHeight: 52 } : {}),
+          }} onClick={onEditScenes}
+            onMouseOver={e => {
+              e.currentTarget.style.borderColor = 'rgba(102,126,234,0.3)'
+              e.currentTarget.style.background = 'rgba(102,126,234,0.1)'
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.borderColor = 'rgba(102,126,234,0.15)'
+              e.currentTarget.style.background = 'rgba(17,17,17,0.8)'
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit Scenes
+          </button>
+        )}
         <button style={{
           ...styles.resetBtn,
           ...(isMobile ? { width: '100%', justifyContent: 'center', padding: '16px 20px', minHeight: 52 } : {}),
@@ -202,6 +223,21 @@ const styles = {
     gap: 10,
     boxShadow: '0 4px 20px rgba(102,126,234,0.25)',
     transition: 'transform 0.2s, box-shadow 0.2s',
+  },
+  editBtn: {
+    padding: '16px 32px',
+    borderRadius: 16,
+    background: 'rgba(17,17,17,0.8)',
+    backdropFilter: 'blur(10px)',
+    color: '#667eea',
+    border: '1px solid rgba(102,126,234,0.15)',
+    cursor: 'pointer',
+    fontSize: 15,
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    transition: 'all 0.2s',
   },
   resetBtn: {
     padding: '16px 32px',

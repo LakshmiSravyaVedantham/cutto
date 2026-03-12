@@ -99,8 +99,20 @@ export default function App() {
     )
   }
 
-  if (isDone) return <DoneView videoUrl={ws.videoUrl} onReset={() => window.location.reload()} />
-  if (isGenerating) return <GeneratingView progress={ws.progress} scenePlan={ws.scenePlan} />
+  if (isDone) return (
+    <DoneView
+      videoUrl={ws.videoUrl}
+      onReset={() => window.location.reload()}
+      onEditScenes={() => ws.reset()}
+    />
+  )
+  if (isGenerating) return (
+    <GeneratingView
+      progress={ws.progress}
+      sceneStatuses={ws.sceneStatuses}
+      scenePlan={ws.scenePlan}
+    />
+  )
   return <ConversationView ws={ws} />
 }
 
