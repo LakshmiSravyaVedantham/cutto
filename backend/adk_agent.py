@@ -1,9 +1,10 @@
 """
-CutTo ADK Agent — Alternative entry point using Google Agent Development Kit.
+CutTo ADK Agent — Multi-agent architecture using Google Agent Development Kit.
 
-This wraps CutTo's video planning logic as proper ADK function tools,
-providing an agent that hackathon judges can interact with via the ADK
-runner or A2A protocol.
+Three specialized agents work together:
+  1. director_agent  — Creative conversation, interprets user intent
+  2. storyboard_agent — Generates structured scene plans with visual prompts
+  3. root_agent (orchestrator) — Routes between director and storyboard
 
 Usage:
     from backend.adk_agent import root_agent
@@ -11,10 +12,7 @@ Usage:
 The existing agent.py and main.py are NOT modified — this is additive.
 """
 
-import json
 import logging
-import uuid
-from typing import Optional
 
 from backend.agent import SYSTEM_PROMPT, extract_scene_plan
 from backend.models import ScenePlan
@@ -128,7 +126,6 @@ def plan_video(description: str) -> dict:
                 "message": f"Created {scene_plan.total_scenes}-scene plan: '{scene_plan.title}'",
             }
 
-        # Gemini responded but no JSON block was extracted
         return {
             "status": "partial",
             "raw_response": text[:2000],
@@ -190,48 +187,200 @@ def list_video_categories() -> dict:
     }
 
 
+def revise_scene(video_id: str, scene_number: int, revision_note: str) -> dict:
+    """Revise a specific scene in an existing plan based on user feedback.
+
+    Args:
+        video_id: The UUID of the video plan to revise.
+        scene_number: The scene number to revise (1-indexed).
+        revision_note: Natural language description of what to change.
+                      Example: "Make this scene more dramatic with stormy weather"
+
+    Returns:
+        A dict with the updated scene details and status.
+    """
+    plan = _active_plans.get(video_id)
+    if not plan:
+        return {
+            "status": "not_found",
+            "message": f"No plan found for video_id '{video_id}'.",
+        }
+
+    scenes = plan.get("scenes", [])
+    target = None
+    for s in scenes:
+        if s.get("scene_number") == scene_number:
+            target = s
+            break
+
+    if not target:
+        return {
+            "status": "error",
+            "message": f"Scene {scene_number} not found in plan (has {len(scenes)} scenes).",
+        }
+
+    try:
+        from google import genai
+        from google.genai import types
+        from backend.config import GOOGLE_API_KEY, GEMINI_MODEL
+
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+
+        revision_prompt = (
+            f"Revise scene {scene_number} of this video plan.\n\n"
+            f"Current scene:\n"
+            f"- Speaker: {target.get('speaker')}\n"
+            f"- Narration: {target.get('narration')}\n"
+            f"- Visual: {target.get('visual_prompt')}\n\n"
+            f"User's revision request: {revision_note}\n\n"
+            f"Visual style anchor (MUST be preserved): {plan.get('visual_style_anchor', '')}\n\n"
+            "Output ONLY the revised scene as a JSON object with keys: "
+            "scene_number, speaker, narration, visual_prompt, visual_type, target_duration."
+        )
+
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=[{"role": "user", "parts": [{"text": revision_prompt}]}],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT,
+            ),
+        )
+
+        if response.candidates and response.candidates[0].content.parts:
+            import json
+            text = response.candidates[0].content.parts[0].text
+            # Try to extract JSON from response
+            try:
+                start = text.index("{")
+                end = text.rindex("}") + 1
+                revised = json.loads(text[start:end])
+                target.update(revised)
+                return {
+                    "status": "ok",
+                    "scene_number": scene_number,
+                    "revised_scene": target,
+                    "message": f"Scene {scene_number} revised successfully.",
+                }
+            except (ValueError, json.JSONDecodeError):
+                pass
+
+        return {
+            "status": "error",
+            "message": "Could not parse the revised scene from Gemini's response.",
+        }
+
+    except Exception as e:
+        logger.error(f"revise_scene failed: {e}", exc_info=True)
+        return {"status": "error", "message": str(e)}
+
+
 # ---------------------------------------------------------------------------
-# ADK Agent definition
+# ADK Agent definition — multi-agent architecture
 # ---------------------------------------------------------------------------
+
+# Specialized instruction for the director (conversation) agent
+DIRECTOR_INSTRUCTION = """You are the Creative Director of CutTo. Your job is to:
+1. Understand what video the user wants to create
+2. Ask 2-3 insightful questions about story, audience, and visual style
+3. Show creative enthusiasm and suggest bold ideas
+4. Once you understand the vision, hand off to the storyboard agent
+
+Speak like a confident film director. Use filmmaking language.
+React to ideas with genuine creative excitement.
+"""
+
+# Specialized instruction for the storyboard agent
+STORYBOARD_INSTRUCTION = """You are the Storyboard Artist of CutTo. Your job is to:
+1. Take a video concept and create a detailed 8-scene plan
+2. Use the plan_video tool to generate the structured scene plan
+3. Present the plan clearly with scene descriptions
+4. Use revise_scene to modify individual scenes based on feedback
+
+Follow the scene plan format exactly. Ensure visual consistency across all scenes.
+"""
+
+_ALL_TOOLS = [plan_video, get_pipeline_status, list_video_categories, revise_scene]
 
 try:
     from google.adk.agents import Agent
 
+    # Sub-agent: handles creative conversation and vision-setting
+    director_agent = Agent(
+        name="creative_director",
+        model="gemini-2.0-flash",
+        description=(
+            "Creative director who understands the user's video vision. "
+            "Asks insightful questions and shapes the creative direction."
+        ),
+        instruction=DIRECTOR_INSTRUCTION,
+        tools=[list_video_categories],
+    )
+
+    # Sub-agent: generates and refines structured scene plans
+    storyboard_agent = Agent(
+        name="storyboard_artist",
+        model="gemini-2.0-flash",
+        description=(
+            "Storyboard artist who generates detailed scene plans. "
+            "Creates 8-scene structured plans and handles revisions."
+        ),
+        instruction=STORYBOARD_INSTRUCTION,
+        tools=[plan_video, revise_scene, get_pipeline_status],
+    )
+
+    # Root orchestrator: routes between director and storyboard
     root_agent = Agent(
         name="cutto_director",
         model="gemini-2.0-flash",
         description=(
             "AI video director that creates professional short videos "
-            "from text descriptions. Supports stories, explainers, "
-            "documentaries, tutorials, marketing videos, and motivational pieces."
+            "from text descriptions. Orchestrates creative direction "
+            "and storyboard planning through specialized sub-agents."
         ),
         instruction=SYSTEM_PROMPT,
-        tools=[plan_video, get_pipeline_status, list_video_categories],
+        tools=_ALL_TOOLS,
+        sub_agents=[director_agent, storyboard_agent],
     )
 
 except ImportError:
-    # google-adk is not installed — create a lightweight stub so imports
-    # don't crash and tests can still verify the module structure.
-
     class _StubAgent:
         """Minimal stand-in when google.adk is not installed."""
 
         def __init__(self, *, name: str, model: str, description: str,
-                     instruction: str, tools: list):
+                     instruction: str, tools: list, sub_agents: list | None = None):
             self.name = name
             self.model = model
             self.description = description
             self.instruction = instruction
             self.tools = tools
+            self.sub_agents = sub_agents or []
 
         def __repr__(self) -> str:
             return (
-                f"StubAgent(name={self.name!r}, tools={[t.__name__ for t in self.tools]})"
+                f"StubAgent(name={self.name!r}, "
+                f"tools={[t.__name__ for t in self.tools]}, "
+                f"sub_agents={[a.name for a in self.sub_agents]})"
             )
 
     logger.warning(
-        "google-adk is not installed. Using a stub Agent. "
+        "google-adk is not installed. Using stub Agents. "
         "Install with: pip install google-adk"
+    )
+
+    director_agent = _StubAgent(
+        name="creative_director",
+        model="gemini-2.0-flash",
+        description="Creative director sub-agent",
+        instruction=DIRECTOR_INSTRUCTION,
+        tools=[list_video_categories],
+    )
+
+    storyboard_agent = _StubAgent(
+        name="storyboard_artist",
+        model="gemini-2.0-flash",
+        description="Storyboard artist sub-agent",
+        instruction=STORYBOARD_INSTRUCTION,
+        tools=[plan_video, revise_scene, get_pipeline_status],
     )
 
     root_agent = _StubAgent(
@@ -239,9 +388,10 @@ except ImportError:
         model="gemini-2.0-flash",
         description=(
             "AI video director that creates professional short videos "
-            "from text descriptions. Supports stories, explainers, "
-            "documentaries, tutorials, marketing videos, and motivational pieces."
+            "from text descriptions. Orchestrates creative direction "
+            "and storyboard planning through specialized sub-agents."
         ),
         instruction=SYSTEM_PROMPT,
-        tools=[plan_video, get_pipeline_status, list_video_categories],
+        tools=_ALL_TOOLS,
+        sub_agents=[director_agent, storyboard_agent],
     )

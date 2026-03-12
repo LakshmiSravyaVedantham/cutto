@@ -9,6 +9,11 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
   const [editSpeaker, setEditSpeaker] = useState('narrator')
   const [revisionNote, setRevisionNote] = useState('')
 
+  const totalDuration = plan.scenes.reduce((sum, s) => sum + (s.target_duration || 0), 0)
+  const durationLabel = totalDuration >= 60
+    ? `~${Math.floor(totalDuration / 60)}m ${totalDuration % 60}s`
+    : `~${totalDuration}s`
+
   const startEdit = (scene) => {
     setEditingScene(scene.scene_number)
     setEditNarration(scene.narration)
@@ -84,6 +89,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
           ...(isMobile ? { flexWrap: 'wrap' } : {}),
         }}>
           <span style={styles.badge}>{plan.scenes.length} scenes</span>
+          <span style={styles.badge}>{durationLabel}</span>
           <span style={styles.badge}>{plan.mood}</span>
           <button
             style={{
