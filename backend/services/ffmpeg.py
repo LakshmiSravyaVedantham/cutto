@@ -46,6 +46,24 @@ def get_audio_duration(audio_path: str) -> float:
     return float(data["format"]["duration"])
 
 
+def get_video_duration(video_path: str) -> float:
+    """Use ffprobe to get video duration in seconds."""
+    cmd = [
+        "ffprobe",
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        video_path,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"ffprobe failed (exit {result.returncode}):\n{result.stderr}"
+        )
+    data = json.loads(result.stdout)
+    return float(data["format"]["duration"])
+
+
 # ---------------------------------------------------------------------------
 # build_*_cmd functions — return the argument list (without "ffmpeg -y")
 # ---------------------------------------------------------------------------
@@ -110,6 +128,51 @@ def build_concat_cmd(
         "-safe", "0",
         "-i", concat_list_path,
         "-c", "copy",
+        output_path,
+    ]
+
+
+def build_crossfade_concat_cmd(
+    clip_paths: list[str],
+    output_path: str,
+    fade_duration: float = 0.5,
+) -> list[str]:
+    """Concatenate clips with crossfade transitions between them.
+
+    Uses xfade for smooth visual transitions and concat for audio.
+    Falls back to simple copy for a single clip.
+    """
+    if len(clip_paths) < 2:
+        return ["-i", clip_paths[0], "-c", "copy", output_path]
+
+    inputs: list[str] = []
+    for clip in clip_paths:
+        inputs.extend(["-i", clip])
+
+    # Build xfade filter chain
+    filters = []
+    prev_v = "[0:v]"
+    for i in range(1, len(clip_paths)):
+        out_v = f"[v{i}]"
+        filters.append(
+            f"{prev_v}[{i}:v]xfade=transition=fade:duration={fade_duration}"
+            f":offset={i * 5 - fade_duration}{out_v}"
+        )
+        prev_v = out_v
+
+    # Concat all audio streams
+    audio_inputs = "".join(f"[{i}:a]" for i in range(len(clip_paths)))
+    filters.append(
+        f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]"
+    )
+
+    return inputs + [
+        "-filter_complex", ";".join(filters),
+        "-map", prev_v,
+        "-map", "[aout]",
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
         output_path,
     ]
 
@@ -239,6 +302,58 @@ def adjust_video_duration(
 ) -> None:
     """Adjust a Veo-generated video to match target duration."""
     cmd = build_adjust_duration_cmd(video_path, output_path, target_duration)
+    run_ffmpeg(cmd)
+
+
+def adjust_audio_duration(
+    audio_path: str,
+    output_path: str,
+    target_duration: float,
+) -> None:
+    """Adjust audio to match target duration.
+
+    If audio is longer than target, speeds it up with atempo.
+    If audio is shorter, pads with silence.
+    If close enough (within 0.5s), just trims/pads without tempo change.
+    """
+    actual = get_audio_duration(audio_path)
+    ratio = actual / target_duration if target_duration > 0 else 1.0
+
+    if 0.95 <= ratio <= 1.05:
+        # Close enough — just trim or pad
+        cmd = [
+            "-i", audio_path,
+            "-af", f"apad=whole_dur={target_duration}",
+            "-t", str(target_duration),
+            "-c:a", "aac",
+            output_path,
+        ]
+    elif ratio > 1.0:
+        # Audio too long — speed it up (atempo only supports 0.5-2.0)
+        atempo = min(ratio, 2.0)
+        filter_str = f"atempo={atempo:.4f}"
+        # Chain atempo filters if ratio > 2.0
+        while atempo * 2.0 < ratio:
+            atempo *= 2.0
+            filter_str += f",atempo=2.0"
+        cmd = [
+            "-i", audio_path,
+            "-af", filter_str,
+            "-t", str(target_duration),
+            "-c:a", "aac",
+            output_path,
+        ]
+    else:
+        # Audio too short — pad with silence
+        cmd = [
+            "-i", audio_path,
+            "-af", f"apad=whole_dur={target_duration}",
+            "-t", str(target_duration),
+            "-c:a", "aac",
+            output_path,
+        ]
+
+    logger.info(f"Adjusting audio: {actual:.1f}s -> {target_duration:.1f}s (ratio={ratio:.2f})")
     run_ffmpeg(cmd)
 
 

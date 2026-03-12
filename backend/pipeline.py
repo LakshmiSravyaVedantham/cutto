@@ -21,6 +21,8 @@ MUSIC_MAP = {
 
 
 PARALLEL_BATCH_SIZE = 3  # Process 3 scenes at once (avoids Veo rate limits)
+PIPELINE_TIMEOUT = 300   # 5 minutes max for entire pipeline
+SCENE_TIMEOUT = 180      # 3 minutes max per scene
 
 
 async def run_pipeline(
@@ -33,7 +35,10 @@ async def run_pipeline(
     # Process scenes in parallel batches for speed
     scene_clips: list[str | None] = [None] * len(plan.scenes)
 
+    failed_scenes = 0
+
     async def process_with_progress(scene: Scene, index: int) -> None:
+        nonlocal failed_scenes
         if progress_callback:
             await progress_callback(
                 PipelineProgress(
@@ -44,8 +49,32 @@ async def run_pipeline(
                 )
             )
 
-        clip_path = await process_scene(scene, work_dir, style_anchor=plan.visual_style_anchor)
-        scene_clips[index] = clip_path
+        try:
+            clip_path = await asyncio.wait_for(
+                process_scene(
+                    scene, work_dir,
+                    style_anchor=plan.visual_style_anchor,
+                    audio_driven=plan.audio_driven,
+                ),
+                timeout=SCENE_TIMEOUT,
+            )
+            scene_clips[index] = clip_path
+        except (asyncio.TimeoutError, Exception) as e:
+            failed_scenes += 1
+            logger.error(f"Scene {scene.scene_number} failed: {e}")
+            if progress_callback:
+                await progress_callback(
+                    PipelineProgress(
+                        video_id=plan.video_id,
+                        scene=scene.scene_number,
+                        step="clip",
+                        status="error",
+                        message=str(e)[:200],
+                    )
+                )
+            if failed_scenes >= 3:
+                raise RuntimeError("Too many scene failures (3+), aborting pipeline")
+            return
 
         if progress_callback:
             await progress_callback(
@@ -142,8 +171,14 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
     raise RuntimeError("Gemini fallback produced no image")
 
 
-async def process_scene(scene: Scene, work_dir: Path, style_anchor: str = "") -> str:
-    """Process a single scene: generate video/image, voiceover, combine."""
+async def process_scene(
+    scene: Scene, work_dir: Path, style_anchor: str = "", audio_driven: bool = False,
+) -> str:
+    """Process a single scene: generate video/image, voiceover, combine.
+
+    Default (audio_driven=False): video is king — audio adjusts to fit video duration.
+    audio_driven=True: audio is king — video adjusts to fit audio duration.
+    """
     scene_dir = work_dir / f"scene_{scene.scene_number}"
     scene_dir.mkdir(exist_ok=True)
 
@@ -153,8 +188,8 @@ async def process_scene(scene: Scene, work_dir: Path, style_anchor: str = "") ->
         visual_prompt = f"{style_anchor}. {visual_prompt}"
 
     # Step 2: Generate voiceover with speaker-specific voice (parallel with visual)
-    audio_path = str(scene_dir / "narration.mp3")
-    tts_task = asyncio.create_task(generate_tts(scene.narration, audio_path, scene.speaker))
+    raw_audio = str(scene_dir / "narration_raw.mp3")
+    tts_task = asyncio.create_task(generate_tts(scene.narration, raw_audio, scene.speaker))
 
     # Step 3: Generate visual (video via Veo, or fallback to Imagen)
     visual_output = str(scene_dir / "visual.mp4")
@@ -162,27 +197,46 @@ async def process_scene(scene: Scene, work_dir: Path, style_anchor: str = "") ->
         visual_prompt, visual_output, duration=scene.target_duration
     )
 
-    # Step 4: Wait for TTS to finish, get audio duration
+    # Step 4: Wait for TTS, then decide who drives duration
     await tts_task
-    duration = await asyncio.to_thread(ffmpeg.get_audio_duration, audio_path)
-    duration = max(int(duration) + 1, scene.target_duration)
+    audio_dur = await asyncio.to_thread(ffmpeg.get_audio_duration, raw_audio)
+    audio_path = str(scene_dir / "narration.mp3")
 
-    # Step 5: If we got a static image, apply Ken Burns to make it a video
+    if audio_driven:
+        # AUDIO-DRIVEN: audio stays as-is, video stretches/trims to match
+        duration = max(int(audio_dur) + 1, scene.target_duration)
+        Path(audio_path).write_bytes(Path(raw_audio).read_bytes())
+        logger.info(f"Scene {scene.scene_number}: audio-driven, dur={duration}s")
+    else:
+        # VIDEO-DRIVEN (default): video stays natural, audio speeds up/pads to fit
+        if is_video:
+            vid_dur = await asyncio.to_thread(ffmpeg.get_video_duration, visual_path)
+            duration = max(int(vid_dur), scene.target_duration)
+        else:
+            duration = scene.target_duration
+        await asyncio.to_thread(
+            ffmpeg.adjust_audio_duration, raw_audio, audio_path, float(duration)
+        )
+        logger.info(
+            f"Scene {scene.scene_number}: video-driven, audio {audio_dur:.1f}s -> {duration}s"
+        )
+
+    # Step 5: Adjust visual to final duration
     if not is_video:
         ken_burns_path = str(scene_dir / "visual_kb.mp4")
         await asyncio.to_thread(
             ffmpeg.create_ken_burns, visual_path, ken_burns_path, duration
         )
         visual_path = ken_burns_path
-    else:
-        # Veo video might need duration adjustment — trim or loop to match audio
+    elif audio_driven:
+        # Only stretch/trim video in audio-driven mode
         adjusted_path = str(scene_dir / "visual_adjusted.mp4")
         await asyncio.to_thread(
             ffmpeg.adjust_video_duration, visual_path, adjusted_path, duration
         )
         visual_path = adjusted_path
 
-    # Step 6: Apply lipsync only for character dialogue scenes (not narrator)
+    # Step 6: Lipsync only for character dialogue scenes (not narrator)
     is_character = scene.speaker.startswith("character_")
     if is_video and is_character and lipsync.is_available():
         logger.info(f"Applying lipsync for {scene.speaker} (scene {scene.scene_number})")
