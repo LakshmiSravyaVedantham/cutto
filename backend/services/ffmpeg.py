@@ -114,29 +114,78 @@ def build_concat_cmd(
     ]
 
 
+def _video_has_audio(video_path: str) -> bool:
+    """Check if a video file contains an audio stream."""
+    cmd = [
+        "ffprobe", "-v", "quiet",
+        "-select_streams", "a",
+        "-show_entries", "stream=index",
+        "-of", "csv=p=0",
+        video_path,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return bool(result.stdout.strip())
+
+
 def build_add_music_cmd(
     video_path: str,
     music_path: str,
     output_path: str,
     music_volume: float = 0.15,
+    has_audio: bool = True,
 ) -> list[str]:
-    """Add background music ducked under existing audio.
+    """Add background music to a video.
 
-    Uses amix to blend the original audio (full volume) with the music
-    track scaled to *music_volume*.
+    If the video has existing audio (voiceover), mixes it with music.
+    If no audio, adds music as the sole audio track.
+    """
+    if has_audio:
+        return [
+            "-i", video_path,
+            "-i", music_path,
+            "-filter_complex",
+            (
+                f"[1:a]volume={music_volume}[bg];"
+                "[0:a][bg]amix=inputs=2:duration=first:dropout_transition=2[out]"
+            ),
+            "-map", "0:v",
+            "-map", "[out]",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            output_path,
+        ]
+    else:
+        # No existing audio — just add music at volume
+        return [
+            "-i", video_path,
+            "-i", music_path,
+            "-filter_complex",
+            f"[1:a]volume={music_volume}[out]",
+            "-map", "0:v",
+            "-map", "[out]",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-shortest",
+            output_path,
+        ]
+
+
+def build_adjust_duration_cmd(
+    video_path: str,
+    output_path: str,
+    target_duration: int,
+) -> list[str]:
+    """Trim or pad a video to match target duration.
+
+    If video is longer, trims it. If shorter, freezes the last frame.
     """
     return [
         "-i", video_path,
-        "-i", music_path,
-        "-filter_complex",
-        (
-            f"[1:a]volume={music_volume}[bg];"
-            "[0:a][bg]amix=inputs=2:duration=first:dropout_transition=2[out]"
-        ),
-        "-map", "0:v",
-        "-map", "[out]",
-        "-c:v", "copy",
-        "-c:a", "aac",
+        "-t", str(target_duration),
+        "-vf", f"tpad=stop_mode=clone:stop_duration={target_duration}",
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        "-an",
         output_path,
     ]
 
@@ -183,12 +232,24 @@ def concat_clips(
         Path(concat_list_path).unlink(missing_ok=True)
 
 
+def adjust_video_duration(
+    video_path: str,
+    output_path: str,
+    target_duration: int,
+) -> None:
+    """Adjust a Veo-generated video to match target duration."""
+    cmd = build_adjust_duration_cmd(video_path, output_path, target_duration)
+    run_ffmpeg(cmd)
+
+
 def add_music(
     video_path: str,
     music_path: str,
     output_path: str,
     music_volume: float = 0.15,
 ) -> None:
-    """Add background music to a video."""
-    cmd = build_add_music_cmd(video_path, music_path, output_path, music_volume)
+    """Add background music to a video. Auto-detects if video has audio."""
+    has_audio = _video_has_audio(video_path)
+    logger.info(f"Adding music (has_existing_audio={has_audio})")
+    cmd = build_add_music_cmd(video_path, music_path, output_path, music_volume, has_audio)
     run_ffmpeg(cmd)

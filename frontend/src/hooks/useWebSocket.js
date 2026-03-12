@@ -8,6 +8,7 @@ export default function useWebSocket() {
   const [videoUrl, setVideoUrl] = useState(null)
   const [error, setError] = useState(null)
   const [connected, setConnected] = useState(false)
+  const [isThinking, setIsThinking] = useState(false)
   const wsRef = useRef(null)
 
   const connect = useCallback(() => {
@@ -21,7 +22,6 @@ export default function useWebSocket() {
     ws.onopen = () => setConnected(true)
     ws.onclose = () => {
       setConnected(false)
-      // Auto-reconnect with backoff
       setTimeout(() => {
         if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
           connect()
@@ -34,13 +34,20 @@ export default function useWebSocket() {
 
       switch (data.type) {
         case 'transcript':
-          setMessages(prev => [...prev, { role: data.role, text: data.text }])
+          if (data.role === 'agent') {
+            setIsThinking(false)
+          }
+          // Only add agent messages — user messages are added optimistically in sendText
+          if (data.role === 'agent') {
+            setMessages(prev => [...prev, { role: data.role, text: data.text }])
+          }
           break
         case 'scene_preview':
           setPreviews(prev => [...prev, data.image_data])
           break
         case 'scene_plan':
           setScenePlan(data.plan)
+          setIsThinking(false)
           break
         case 'pipeline_progress':
           setProgress(data)
@@ -51,6 +58,7 @@ export default function useWebSocket() {
           break
         case 'error':
           setError(data.message)
+          setIsThinking(false)
           break
       }
     }
@@ -62,13 +70,27 @@ export default function useWebSocket() {
     }
   }, [])
 
-  const sendText = useCallback((text) => send({ type: 'text', text }), [send])
-  const approve = useCallback(() => send({ type: 'approve' }), [send])
+  const sendText = useCallback((text) => {
+    // Optimistic: show user message immediately
+    setMessages(prev => [...prev, { role: 'user', text }])
+    setIsThinking(true)
+    setError(null)
+    send({ type: 'text', text })
+  }, [send])
+
+  const approve = useCallback(() => {
+    setIsThinking(true)
+    send({ type: 'approve' })
+  }, [send])
+
+  const updatePlan = useCallback((plan) => {
+    send({ type: 'update_plan', plan })
+  }, [send])
 
   useEffect(() => {
     return () => {
       if (wsRef.current) {
-        wsRef.current.onclose = null // prevent reconnect on unmount
+        wsRef.current.onclose = null
         wsRef.current.close()
       }
     }
@@ -76,6 +98,6 @@ export default function useWebSocket() {
 
   return {
     messages, scenePlan, previews, progress, videoUrl, error,
-    connected, connect, sendText, approve
+    connected, isThinking, connect, sendText, approve, updatePlan
   }
 }

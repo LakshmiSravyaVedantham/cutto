@@ -169,6 +169,23 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
                 else:
                     await run_video_pipeline(ws, current_plan)
 
+            elif data["type"] == "update_plan" and data.get("plan"):
+                try:
+                    from backend.models import ScenePlan
+                    updated = ScenePlan(**data["plan"])
+                    current_plan = updated
+                    session.scene_plan = updated
+                    await ws.send_json({
+                        "type": "scene_plan",
+                        "plan": current_plan.model_dump()
+                    })
+                except Exception as e:
+                    logger.error(f"Plan update error: {e}")
+                    await ws.send_json({
+                        "type": "error",
+                        "message": f"Failed to update plan: {e}"
+                    })
+
     except WebSocketDisconnect:
         logger.info("Client disconnected")
     except Exception as e:

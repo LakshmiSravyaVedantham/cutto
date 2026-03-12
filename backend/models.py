@@ -7,6 +7,7 @@ class Scene(BaseModel):
     scene_id: str = ""
     scene_number: int
     narration: str
+    speaker: str = "narrator"  # "narrator", "character_1", "character_2", etc.
     visual_prompt: str
     visual_type: Literal["image", "video"] = "image"
     target_duration: int = 5

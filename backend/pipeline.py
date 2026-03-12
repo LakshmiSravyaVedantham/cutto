@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from backend.models import ScenePlan, Scene, PipelineProgress
-from backend.services import imagen, tts, ffmpeg
+from backend.services import imagen, tts, ffmpeg, veo, lipsync
 from backend.config import MUSIC_DIR, GOOGLE_API_KEY, GEMINI_IMAGE_MODEL
 
 logger = logging.getLogger(__name__)
@@ -20,15 +20,20 @@ MUSIC_MAP = {
 }
 
 
+PARALLEL_BATCH_SIZE = 3  # Process 3 scenes at once (avoids Veo rate limits)
+
+
 async def run_pipeline(
     plan: ScenePlan,
     progress_callback: Optional[Callable] = None,
 ) -> str:
-    """Run the full video generation pipeline."""
+    """Run the full video generation pipeline with parallel scene processing."""
     work_dir = Path(tempfile.mkdtemp(prefix="cutto_"))
-    scene_clips = []
 
-    for scene in plan.scenes:
+    # Process scenes in parallel batches for speed
+    scene_clips: list[str | None] = [None] * len(plan.scenes)
+
+    async def process_with_progress(scene: Scene, index: int) -> None:
         if progress_callback:
             await progress_callback(
                 PipelineProgress(
@@ -40,7 +45,7 @@ async def run_pipeline(
             )
 
         clip_path = await process_scene(scene, work_dir, style_anchor=plan.visual_style_anchor)
-        scene_clips.append(clip_path)
+        scene_clips[index] = clip_path
 
         if progress_callback:
             await progress_callback(
@@ -52,6 +57,18 @@ async def run_pipeline(
                 )
             )
 
+    # Run in batches of PARALLEL_BATCH_SIZE
+    for batch_start in range(0, len(plan.scenes), PARALLEL_BATCH_SIZE):
+        batch = plan.scenes[batch_start : batch_start + PARALLEL_BATCH_SIZE]
+        tasks = [
+            process_with_progress(scene, batch_start + i)
+            for i, scene in enumerate(batch)
+        ]
+        logger.info(
+            f"Processing scenes {batch_start + 1}-{batch_start + len(batch)} in parallel"
+        )
+        await asyncio.gather(*tasks)
+
     if progress_callback:
         await progress_callback(
             PipelineProgress(
@@ -62,7 +79,7 @@ async def run_pipeline(
             )
         )
 
-    final_path = await assemble_final(plan, scene_clips, work_dir)
+    final_path = await assemble_final(plan, [c for c in scene_clips if c], work_dir)
 
     if progress_callback:
         await progress_callback(
@@ -77,21 +94,34 @@ async def run_pipeline(
     return final_path
 
 
-async def generate_image_with_fallback(prompt: str, output_path: str) -> str:
-    """Try Imagen first, fall back to Gemini native image generation."""
+async def generate_video_with_fallback(prompt: str, output_path: str, duration: int = 8) -> tuple[str, bool]:
+    """Try Veo video generation first, fall back to Imagen static image.
+
+    Returns (output_path, is_video) — is_video=True means animated clip, False means static image.
+    """
+    # Try Veo for animated video
     try:
-        return await asyncio.to_thread(imagen.generate_image, prompt, output_path)
+        logger.info("Attempting Veo video generation...")
+        result = await asyncio.to_thread(veo.generate_video, prompt, output_path, duration)
+        logger.info("Veo succeeded — animated video generated")
+        return result, True
     except Exception as e:
-        logger.warning(f"Imagen failed ({e}), retrying once...")
+        logger.warning(f"Veo failed ({e}), falling back to Imagen static image")
+
+    # Fall back to Imagen static image
+    image_path = output_path.replace(".mp4", ".png")
+    try:
+        await asyncio.to_thread(imagen.generate_image, prompt, image_path)
+        return image_path, False
+    except Exception as e2:
+        logger.warning(f"Imagen failed ({e2}), retrying Imagen once...")
         try:
-            return await asyncio.to_thread(imagen.generate_image, prompt, output_path)
-        except Exception as e2:
-            logger.warning(
-                f"Imagen retry failed ({e2}), falling back to Gemini native image"
-            )
-            return await asyncio.to_thread(
-                gemini_fallback_image, prompt, output_path
-            )
+            await asyncio.to_thread(imagen.generate_image, prompt, image_path)
+            return image_path, False
+        except Exception as e3:
+            logger.warning(f"Imagen retry failed ({e3}), trying Gemini native fallback")
+            await asyncio.to_thread(gemini_fallback_image, prompt, image_path)
+            return image_path, False
 
 
 def gemini_fallback_image(prompt: str, output_path: str) -> str:
@@ -113,44 +143,73 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
 
 
 async def process_scene(scene: Scene, work_dir: Path, style_anchor: str = "") -> str:
-    """Process a single scene: generate image, voiceover, combine."""
+    """Process a single scene: generate video/image, voiceover, combine."""
     scene_dir = work_dir / f"scene_{scene.scene_number}"
     scene_dir.mkdir(exist_ok=True)
 
-    # Step 1: Build the full visual prompt with style anchor for consistency
+    # Step 1: Build the full visual prompt with style anchor
     visual_prompt = scene.visual_prompt
     if style_anchor and not visual_prompt.startswith(style_anchor[:50]):
-        # Prepend anchor if not already present
         visual_prompt = f"{style_anchor}. {visual_prompt}"
 
-    image_path = str(scene_dir / "visual.png")
-    await generate_image_with_fallback(visual_prompt, image_path)
-
-    # Step 2: Generate voiceover FIRST (to get actual duration)
+    # Step 2: Generate voiceover with speaker-specific voice (parallel with visual)
     audio_path = str(scene_dir / "narration.mp3")
-    try:
-        await tts.synthesize_to_file(scene.narration, audio_path)
-    except Exception:
-        logger.warning("TTS failed, retrying...")
-        await tts.synthesize_to_file(scene.narration, audio_path)
+    tts_task = asyncio.create_task(generate_tts(scene.narration, audio_path, scene.speaker))
 
-    # Step 3: Get audio duration, use it for Ken Burns
+    # Step 3: Generate visual (video via Veo, or fallback to Imagen)
+    visual_output = str(scene_dir / "visual.mp4")
+    visual_path, is_video = await generate_video_with_fallback(
+        visual_prompt, visual_output, duration=scene.target_duration
+    )
+
+    # Step 4: Wait for TTS to finish, get audio duration
+    await tts_task
     duration = await asyncio.to_thread(ffmpeg.get_audio_duration, audio_path)
     duration = max(int(duration) + 1, scene.target_duration)
 
-    # Step 4: Apply Ken Burns with actual audio duration
-    visual_path = str(scene_dir / "visual.mp4")
-    await asyncio.to_thread(
-        ffmpeg.create_ken_burns, image_path, visual_path, duration
-    )
+    # Step 5: If we got a static image, apply Ken Burns to make it a video
+    if not is_video:
+        ken_burns_path = str(scene_dir / "visual_kb.mp4")
+        await asyncio.to_thread(
+            ffmpeg.create_ken_burns, visual_path, ken_burns_path, duration
+        )
+        visual_path = ken_burns_path
+    else:
+        # Veo video might need duration adjustment — trim or loop to match audio
+        adjusted_path = str(scene_dir / "visual_adjusted.mp4")
+        await asyncio.to_thread(
+            ffmpeg.adjust_video_duration, visual_path, adjusted_path, duration
+        )
+        visual_path = adjusted_path
 
-    # Step 5: Combine visual + audio into scene clip
+    # Step 6: Apply lipsync only for character dialogue scenes (not narrator)
+    is_character = scene.speaker.startswith("character_")
+    if is_video and is_character and lipsync.is_available():
+        logger.info(f"Applying lipsync for {scene.speaker} (scene {scene.scene_number})")
+        synced_path = str(scene_dir / "visual_synced.mp4")
+        visual_path = await asyncio.to_thread(
+            lipsync.apply_lipsync, visual_path, audio_path, synced_path
+        )
+    elif not is_character:
+        logger.info(f"Skipping lipsync for narrator (scene {scene.scene_number})")
+
+    # Step 7: Combine visual + audio into scene clip
     clip_path = str(scene_dir / "clip.mp4")
     await asyncio.to_thread(
         ffmpeg.create_scene_clip, visual_path, audio_path, clip_path
     )
 
     return clip_path
+
+
+async def generate_tts(text: str, audio_path: str, speaker: str = "narrator"):
+    """Generate TTS with speaker-specific voice and one retry."""
+    voice = tts.get_voice_for_speaker(speaker)
+    try:
+        await tts.synthesize_to_file(text, audio_path, voice=voice)
+    except Exception:
+        logger.warning("TTS failed, retrying...")
+        await tts.synthesize_to_file(text, audio_path, voice=voice)
 
 
 async def assemble_final(
@@ -168,12 +227,20 @@ async def assemble_final(
     music_path = str(Path(MUSIC_DIR) / music_file)
     final_path = str(work_dir / "final.mp4")
 
+    logger.info(f"[Music] mood={plan.mood}, file={music_file}, path={music_path}")
+    logger.info(f"[Music] exists={Path(music_path).exists()}, MUSIC_DIR={MUSIC_DIR}")
+
     if Path(music_path).exists():
-        await asyncio.to_thread(
-            ffmpeg.add_music, concat_path, music_path, final_path
-        )
+        try:
+            await asyncio.to_thread(
+                ffmpeg.add_music, concat_path, music_path, final_path, 0.25
+            )
+            logger.info(f"[Music] Added successfully to {final_path}")
+        except Exception as e:
+            logger.error(f"[Music] Failed to add music: {e}")
+            final_path = concat_path
     else:
-        logger.warning(f"Music file not found: {music_path}, skipping music")
+        logger.warning(f"[Music] File not found: {music_path}, skipping music")
         final_path = concat_path
 
     return final_path

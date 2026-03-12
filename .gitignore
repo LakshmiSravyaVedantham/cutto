@@ -7,3 +7,5 @@ dist/
 .DS_Store
 *.mp4
 tmp/
+wav2lip_repo/
+*.pth
