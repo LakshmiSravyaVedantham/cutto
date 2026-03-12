@@ -40,7 +40,13 @@ export default function useWebSocket() {
     }
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
+      let data
+      try {
+        data = JSON.parse(event.data)
+      } catch {
+        console.warn('Malformed WebSocket message:', event.data)
+        return
+      }
 
       switch (data.type) {
         case 'transcript':
@@ -53,7 +59,7 @@ export default function useWebSocket() {
           }
           break
         case 'scene_preview':
-          setPreviews(prev => [...prev, data.image_data])
+          setPreviews(prev => [...prev.slice(-9), data.image_data])
           break
         case 'scene_plan':
           setScenePlan(data.plan)

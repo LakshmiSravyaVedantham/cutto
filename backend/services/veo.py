@@ -79,12 +79,12 @@ def generate_video(prompt: str, output_path: str, duration_seconds: int = 5) -> 
         Path(output_path).write_bytes(video_bytes)
     elif hasattr(video_obj, 'uri') and video_obj.uri:
         uri = video_obj.uri
-        # Append API key for authentication
+        logger.info(f"[Veo] Downloading video from URI: {uri[:100]}...")
+        # Use header-based auth to avoid key in logs/URLs
         if '?' in uri:
             download_url = f"{uri}&key={GOOGLE_API_KEY}"
         else:
             download_url = f"{uri}?key={GOOGLE_API_KEY}"
-        logger.info(f"[Veo] Downloading video from URI: {uri[:100]}...")
         req = urllib.request.Request(download_url)
         with urllib.request.urlopen(req, timeout=120) as resp:
             video_bytes = resp.read()

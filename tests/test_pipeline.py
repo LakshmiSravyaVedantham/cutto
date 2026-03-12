@@ -606,7 +606,8 @@ class TestErrorPaths:
             async def track_progress(p: PipelineProgress):
                 progress_events.append(p)
 
-            result = await run_pipeline(plan, progress_callback=track_progress)
+            with pytest.raises(RuntimeError, match="All scenes failed"):
+                await run_pipeline(plan, progress_callback=track_progress)
 
         # Scene should have timed out and been recorded as an error
         error_events = [e for e in progress_events if e.status == "error"]
@@ -702,7 +703,8 @@ class TestErrorPaths:
                 progress_events.append(p)
 
             plan = make_plan(scenes=[make_scene()])
-            await run_pipeline(plan, progress_callback=track_progress)
+            with pytest.raises(RuntimeError, match="All scenes failed"):
+                await run_pipeline(plan, progress_callback=track_progress)
 
         error_events = [e for e in progress_events if e.status == "error"]
         assert len(error_events) >= 1

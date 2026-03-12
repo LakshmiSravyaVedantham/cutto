@@ -221,5 +221,12 @@ async def run_video_pipeline(ws: WebSocket, plan):
             }
         )
     except Exception as e:
-        logger.error(f"Pipeline error: {e}")
-        await ws.send_json({"type": "error", "message": str(e)})
+        logger.error(f"Pipeline error: {e}", exc_info=True)
+        friendly = "Video generation failed. Please try again."
+        if "timed out" in str(e).lower():
+            friendly = "Video generation timed out. Try a simpler scene or fewer scenes."
+        elif "rate limit" in str(e).lower() or "quota" in str(e).lower():
+            friendly = "API rate limit reached. Please wait a moment and try again."
+        elif "too many scene failures" in str(e).lower():
+            friendly = "Multiple scenes failed to generate. Try simpler visual descriptions."
+        await ws.send_json({"type": "error", "message": friendly})

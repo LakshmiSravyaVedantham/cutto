@@ -108,7 +108,10 @@ async def run_pipeline(
             )
         )
 
-    final_path = await assemble_final(plan, [c for c in scene_clips if c], work_dir)
+    valid_clips = [c for c in scene_clips if c]
+    if not valid_clips:
+        raise RuntimeError("All scenes failed — no clips to assemble")
+    final_path = await assemble_final(plan, valid_clips, work_dir)
 
     if progress_callback:
         await progress_callback(
