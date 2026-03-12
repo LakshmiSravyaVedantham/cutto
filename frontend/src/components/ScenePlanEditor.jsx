@@ -228,7 +228,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
           }}
           value={revisionNote}
           onChange={e => setRevisionNote(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleRevision()}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleRevision() } }}
           placeholder={isMobile ? "Ask AI to change something..." : "Ask AI to change something... (e.g. 'make it funnier' or 'add more action')"}
         />
         <button style={{

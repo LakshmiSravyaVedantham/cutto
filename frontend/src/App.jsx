@@ -38,11 +38,11 @@ export default function App() {
           <p style={{
             ...styles.subtitle,
             ...(isMobile ? { fontSize: 16 } : {}),
-          }}>Describe a video. We'll direct it.</p>
+          }}>Describe any video. We'll direct it.</p>
           <p style={styles.description}>
-            Tell the AI what you want to see — it writes the script,
-            generates visuals, adds voiceover and music, and delivers
-            a finished video in minutes.
+            Medical explainer, animated story, product demo, tutorial, documentary —
+            just describe what you need. CutTo writes the script, generates visuals,
+            adds voiceover with lipsync, and delivers a finished video.
           </p>
         </div>
 
@@ -51,9 +51,9 @@ export default function App() {
           ...(isMobile ? { flexDirection: 'column', gap: 10, marginTop: 32 } : {}),
         }}>
           {[
-            { icon: '🎬', label: 'AI Script Writing', desc: 'Professional narration from a simple description' },
-            { icon: '🎨', label: 'Visual Generation', desc: 'Consistent scenes with Imagen 4.0' },
-            { icon: '🎙️', label: 'Voice & Music', desc: 'Natural voiceover with mood-matched soundtrack' },
+            { icon: '🎬', label: 'Any Video Type', desc: 'Stories, explainers, tutorials, marketing, documentaries' },
+            { icon: '🎨', label: 'AI-Generated Visuals', desc: 'Animated scenes, diagrams, cinematic footage via Veo' },
+            { icon: '🎙️', label: 'Voice, Lipsync & Music', desc: 'Multi-character voices, lipsync, mood-matched soundtrack' },
           ].map((f, i) => (
             <div key={i} style={styles.featureCard}>
               <span style={styles.featureIcon}>{f.icon}</span>

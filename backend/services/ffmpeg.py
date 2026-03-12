@@ -329,13 +329,15 @@ def adjust_audio_duration(
             output_path,
         ]
     elif ratio > 1.0:
-        # Audio too long — speed it up (atempo only supports 0.5-2.0)
-        atempo = min(ratio, 2.0)
-        filter_str = f"atempo={atempo:.4f}"
-        # Chain atempo filters if ratio > 2.0
-        while atempo * 2.0 < ratio:
-            atempo *= 2.0
-            filter_str += f",atempo=2.0"
+        # Audio too long — speed it up (atempo only supports 0.5-2.0 per filter)
+        # Chain multiple atempo filters for ratios > 2.0
+        remaining = ratio
+        filters = []
+        while remaining > 1.0:
+            step = min(remaining, 2.0)
+            filters.append(f"atempo={step:.4f}")
+            remaining /= step
+        filter_str = ",".join(filters) if filters else "atempo=1.0"
         cmd = [
             "-i", audio_path,
             "-af", filter_str,

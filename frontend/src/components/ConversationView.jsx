@@ -233,7 +233,7 @@ export default function ConversationView({ ws }) {
             }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
             placeholder={isListening ? 'Listening...' : 'Describe your video idea...'}
             disabled={isListening}
           />

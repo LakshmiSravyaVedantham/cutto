@@ -1,0 +1,10 @@
+[project]
+name = "cutto"
+version = "0.1.0"
+description = "AI video director — describe your idea, get a short film"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
