@@ -261,8 +261,8 @@ def revise_scene(video_id: str, scene_number: int, revision_note: str) -> dict:
                     "revised_scene": target,
                     "message": f"Scene {scene_number} revised successfully.",
                 }
-            except (ValueError, json.JSONDecodeError):
-                pass
+            except (ValueError, json.JSONDecodeError) as parse_err:
+                logger.warning(f"Failed to parse revised scene JSON: {parse_err}")
 
         return {
             "status": "error",
