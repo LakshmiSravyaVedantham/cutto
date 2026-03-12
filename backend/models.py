@@ -21,6 +21,7 @@ class ScenePlan(BaseModel):
     title: str
     total_scenes: int
     mood: str
+    visual_style_anchor: str = ""
     scenes: list[Scene]
 
     def model_post_init(self, __context):

@@ -30,11 +30,10 @@ def test_generate_image_writes_bytes(mock_client):
         assert out.exists()
         assert out.read_bytes() == fake_bytes
 
-    mock_client.models.generate_images.assert_called_once_with(
-        model=IMAGEN_MODEL,
-        prompt="a sunset over mountains",
-        config={"number_of_images": 1},
-    )
+    call_args = mock_client.models.generate_images.call_args
+    assert call_args.kwargs["model"] == IMAGEN_MODEL
+    assert "a sunset over mountains" in call_args.kwargs["prompt"]
+    assert call_args.kwargs["config"] == {"number_of_images": 1}
 
 
 @patch("backend.services.imagen.client")

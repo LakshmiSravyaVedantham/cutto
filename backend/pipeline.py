@@ -39,7 +39,7 @@ async def run_pipeline(
                 )
             )
 
-        clip_path = await process_scene(scene, work_dir)
+        clip_path = await process_scene(scene, work_dir, style_anchor=plan.visual_style_anchor)
         scene_clips.append(clip_path)
 
         if progress_callback:
@@ -112,14 +112,19 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
     raise RuntimeError("Gemini fallback produced no image")
 
 
-async def process_scene(scene: Scene, work_dir: Path) -> str:
+async def process_scene(scene: Scene, work_dir: Path, style_anchor: str = "") -> str:
     """Process a single scene: generate image, voiceover, combine."""
     scene_dir = work_dir / f"scene_{scene.scene_number}"
     scene_dir.mkdir(exist_ok=True)
 
-    # Step 1: Generate image (with retry + fallback)
+    # Step 1: Build the full visual prompt with style anchor for consistency
+    visual_prompt = scene.visual_prompt
+    if style_anchor and not visual_prompt.startswith(style_anchor[:50]):
+        # Prepend anchor if not already present
+        visual_prompt = f"{style_anchor}. {visual_prompt}"
+
     image_path = str(scene_dir / "visual.png")
-    await generate_image_with_fallback(scene.visual_prompt, image_path)
+    await generate_image_with_fallback(visual_prompt, image_path)
 
     # Step 2: Generate voiceover FIRST (to get actual duration)
     audio_path = str(scene_dir / "narration.mp3")

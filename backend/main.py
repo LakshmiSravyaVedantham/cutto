@@ -43,30 +43,16 @@ if os.path.exists(static_dir) and os.path.exists(
         return FileResponse(os.path.join(static_dir, "index.html"))
 
 
-# Serve generated videos
-videos_dir = "/tmp"
+# Store video paths by video_id
+video_paths: dict[str, str] = {}
 
 
-@app.get("/videos/{video_id}/{filename}")
-async def serve_video(video_id: str, filename: str):
-    """Serve generated video files from temp directory."""
-    # Look for the video in temp directories
-    import glob
-
-    pattern = f"/tmp/cutto_*/{filename}"
-    matches = glob.glob(pattern)
-    if not matches:
-        pattern = f"/tmp/cutto_*/scene_*/{filename}"
-        matches = glob.glob(pattern)
-
-    # Also check for final.mp4 specifically
-    pattern2 = f"/tmp/cutto_*/final.mp4"
-    matches2 = glob.glob(pattern2)
-
-    all_matches = matches + matches2
-    if all_matches:
-        return FileResponse(all_matches[0], media_type="video/mp4")
-
+@app.get("/videos/{video_id}/final.mp4")
+async def serve_video(video_id: str):
+    """Serve generated video file."""
+    path = video_paths.get(video_id)
+    if path and os.path.exists(path):
+        return FileResponse(path, media_type="video/mp4", filename=f"cutto-{video_id[:8]}.mp4")
     return {"error": "Video not found"}
 
 
@@ -205,14 +191,14 @@ async def run_video_pipeline(ws: WebSocket, plan):
         video_path = await run_pipeline(
             plan, progress_callback=progress_callback
         )
-        # Return a URL the frontend can use
+        # Store path so the serve endpoint can find it
+        video_paths[plan.video_id] = video_path
         video_url = f"/videos/{plan.video_id}/final.mp4"
         await ws.send_json(
             {
                 "type": "complete",
                 "video_id": plan.video_id,
                 "video_url": video_url,
-                "video_path": video_path,
             }
         )
     except Exception as e:
