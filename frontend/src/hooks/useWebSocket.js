@@ -11,10 +11,12 @@ export default function useWebSocket() {
   const [isThinking, setIsThinking] = useState(false)
   const wsRef = useRef(null)
 
-  const connect = useCallback(() => {
+  const connect = useCallback((demoKey = '') => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host
-    const wsUrl = `${protocol}//${host}/ws`
+    // Pass demo key from URL param or explicit argument
+    const key = demoKey || new URLSearchParams(window.location.search).get('key') || ''
+    const wsUrl = `${protocol}//${host}/ws${key ? `?key=${encodeURIComponent(key)}` : ''}`
 
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
