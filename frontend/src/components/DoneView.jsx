@@ -1,30 +1,53 @@
 import React from 'react'
+import useIsMobile from '../hooks/useIsMobile'
 
 export default function DoneView({ videoUrl, onReset }) {
+  const isMobile = useIsMobile()
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      ...(isMobile ? { padding: '0 12px' } : {}),
+    }}>
       <div style={styles.glowOrb1} />
       <div style={styles.glowOrb2} />
       <div style={styles.glowOrb3} />
 
-      <div style={styles.header}>
+      <div style={{
+        ...styles.header,
+        ...(isMobile ? { paddingTop: 32, paddingBottom: 20 } : {}),
+      }}>
         <div style={styles.successIcon}>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h2 style={styles.title}>Your video is ready</h2>
+        <h2 style={{
+          ...styles.title,
+          ...(isMobile ? { fontSize: 24 } : {}),
+        }}>Your video is ready</h2>
         <p style={styles.subtitle}>Watch, download, or create another</p>
       </div>
 
-      <div style={styles.videoWrap}>
-        <video style={styles.video} src={videoUrl} controls autoPlay />
+      <div style={{
+        ...styles.videoWrap,
+        ...(isMobile ? { maxWidth: '100%' } : {}),
+      }}>
+        <video style={{
+          ...styles.video,
+          ...(isMobile ? { borderRadius: 14 } : {}),
+        }} src={videoUrl} controls autoPlay />
         <div style={styles.videoGlow} />
       </div>
 
-      <div style={styles.btnRow}>
-        <a style={styles.downloadBtn} href={videoUrl} download
+      <div style={{
+        ...styles.btnRow,
+        ...(isMobile ? { flexDirection: 'column', width: '100%', gap: 10 } : {}),
+      }}>
+        <a style={{
+          ...styles.downloadBtn,
+          ...(isMobile ? { width: '100%', justifyContent: 'center', padding: '16px 20px', minHeight: 52 } : {}),
+        }} href={videoUrl} download
           onMouseOver={e => {
             e.currentTarget.style.transform = 'translateY(-2px)'
             e.currentTarget.style.boxShadow = '0 8px 32px rgba(102,126,234,0.4)'
@@ -41,7 +64,10 @@ export default function DoneView({ videoUrl, onReset }) {
           </svg>
           Download Video
         </a>
-        <button style={styles.resetBtn} onClick={onReset}
+        <button style={{
+          ...styles.resetBtn,
+          ...(isMobile ? { width: '100%', justifyContent: 'center', padding: '16px 20px', minHeight: 52 } : {}),
+        }} onClick={onReset}
           onMouseOver={e => {
             e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'
             e.currentTarget.style.background = 'rgba(255,255,255,0.06)'

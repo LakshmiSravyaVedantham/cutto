@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
+import useIsMobile from '../hooks/useIsMobile'
 
 export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevision }) {
+  const isMobile = useIsMobile()
   const [editingScene, setEditingScene] = useState(null)
   const [editNarration, setEditNarration] = useState('')
   const [editVisual, setEditVisual] = useState('')
@@ -77,16 +79,39 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
     <div style={styles.container}>
       <div style={styles.header}>
         <h3 style={styles.title}>{plan.title}</h3>
-        <div style={styles.meta}>
+        <div style={{
+          ...styles.meta,
+          ...(isMobile ? { flexWrap: 'wrap' } : {}),
+        }}>
           <span style={styles.badge}>{plan.scenes.length} scenes</span>
           <span style={styles.badge}>{plan.mood}</span>
+          <button
+            style={{
+              ...styles.badge,
+              cursor: 'pointer',
+              border: '1px solid',
+              borderColor: plan.audio_driven ? '#e879f9' : 'rgba(102,126,234,0.3)',
+              background: plan.audio_driven ? 'rgba(232,121,249,0.15)' : 'rgba(102,126,234,0.1)',
+              color: plan.audio_driven ? '#e879f9' : '#667eea',
+            }}
+            onClick={() => onUpdate({ ...plan, audio_driven: !plan.audio_driven })}
+            title={plan.audio_driven ? 'Audio drives video timing' : 'Video drives audio timing'}
+          >
+            {plan.audio_driven ? 'Audio-driven' : 'Video-driven'}
+          </button>
         </div>
       </div>
 
       <div style={styles.sceneList}>
         {plan.scenes.map((scene) => (
-          <div key={scene.scene_number} style={styles.sceneCard}>
-            <div style={styles.sceneHeader}>
+          <div key={scene.scene_number} style={{
+            ...styles.sceneCard,
+            ...(isMobile ? { padding: '12px' } : {}),
+          }}>
+            <div style={{
+              ...styles.sceneHeader,
+              ...(isMobile ? { flexWrap: 'wrap', gap: 8 } : {}),
+            }}>
               <span style={styles.sceneNum}>Scene {scene.scene_number}</span>
               <span style={{
                 ...styles.speakerBadge,
@@ -97,12 +122,18 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
               }}>{scene.speaker === 'narrator' ? 'Narrator' : scene.speaker === 'character_1' ? 'Char 1' : 'Char 2'}</span>
               <span style={styles.duration}>{scene.target_duration}s</span>
               {editingScene !== scene.scene_number && (
-                <button style={styles.editBtn} onClick={() => startEdit(scene)}>
+                <button style={{
+                  ...styles.editBtn,
+                  ...(isMobile ? { minHeight: 44, minWidth: 44, padding: '8px 16px' } : {}),
+                }} onClick={() => startEdit(scene)}>
                   Edit
                 </button>
               )}
               {plan.scenes.length > 1 && (
-                <button style={styles.deleteBtn} onClick={() => removeScene(scene.scene_number)} title="Remove scene">
+                <button style={{
+                  ...styles.deleteBtn,
+                  ...(isMobile ? { width: 44, height: 44, borderRadius: 10 } : {}),
+                }} onClick={() => removeScene(scene.scene_number)} title="Remove scene">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
@@ -137,8 +168,14 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                   rows={3}
                 />
                 <div style={styles.editBtnRow}>
-                  <button style={styles.saveBtn} onClick={saveEdit}>Save</button>
-                  <button style={styles.cancelBtn} onClick={cancelEdit}>Cancel</button>
+                  <button style={{
+                    ...styles.saveBtn,
+                    ...(isMobile ? { minHeight: 44, padding: '10px 24px', fontSize: 14 } : {}),
+                  }} onClick={saveEdit}>Save</button>
+                  <button style={{
+                    ...styles.cancelBtn,
+                    ...(isMobile ? { minHeight: 44, padding: '10px 24px', fontSize: 14 } : {}),
+                  }} onClick={cancelEdit}>Cancel</button>
                 </div>
               </div>
             ) : (
@@ -169,7 +206,10 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
       </div>
 
       {/* Add Scene button */}
-      <button style={styles.addSceneBtn} onClick={addScene}>
+      <button style={{
+        ...styles.addSceneBtn,
+        ...(isMobile ? { minHeight: 48, fontSize: 14 } : {}),
+      }} onClick={addScene}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
@@ -177,21 +217,33 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
       </button>
 
       {/* Revision input */}
-      <div style={styles.revisionArea}>
+      <div style={{
+        ...styles.revisionArea,
+        ...(isMobile ? { flexDirection: 'column', gap: 8 } : {}),
+      }}>
         <input
-          style={styles.revisionInput}
+          style={{
+            ...styles.revisionInput,
+            ...(isMobile ? { width: '100%', padding: '14px 14px', fontSize: 14 } : {}),
+          }}
           value={revisionNote}
           onChange={e => setRevisionNote(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleRevision()}
-          placeholder="Ask AI to change something... (e.g. 'make it funnier' or 'add more action')"
+          placeholder={isMobile ? "Ask AI to change something..." : "Ask AI to change something... (e.g. 'make it funnier' or 'add more action')"}
         />
-        <button style={styles.revisionBtn} onClick={handleRevision}>
+        <button style={{
+          ...styles.revisionBtn,
+          ...(isMobile ? { width: '100%', minHeight: 44, fontSize: 14 } : {}),
+        }} onClick={handleRevision}>
           Revise
         </button>
       </div>
 
       {/* Approve */}
-      <button style={styles.approveBtn} onClick={onApprove}
+      <button style={{
+        ...styles.approveBtn,
+        ...(isMobile ? { padding: '16px 20px', fontSize: 15, minHeight: 52 } : {}),
+      }} onClick={onApprove}
         onMouseOver={e => {
           e.currentTarget.style.transform = 'translateY(-2px)'
           e.currentTarget.style.boxShadow = '0 8px 32px rgba(39,174,96,0.4)'

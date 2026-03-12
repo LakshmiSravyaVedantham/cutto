@@ -23,6 +23,7 @@ class ScenePlan(BaseModel):
     total_scenes: int
     mood: str
     visual_style_anchor: str = ""
+    audio_driven: bool = False  # True = audio drives duration, False = video drives duration
     scenes: list[Scene]
 
     def model_post_init(self, __context):

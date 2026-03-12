@@ -111,15 +111,15 @@ Output the scene plan as a JSON code block:
       "narration": "Cinematic narrator voice setting the scene.",
       "visual_prompt": "[EXACT visual_style_anchor text]. Wide shot with dynamic action, camera movement, environmental motion.",
       "visual_type": "video",
-      "target_duration": 8
+      "target_duration": 12
     },
     {
       "scene_number": 2,
       "speaker": "character_1",
-      "narration": "Character's own words — first person, emotional, short.",
+      "narration": "Character's own words — first person, emotional, 2-3 sentences.",
       "visual_prompt": "[EXACT visual_style_anchor text]. Close-up of character speaking, mouth moving, facial expressions.",
       "visual_type": "video",
-      "target_duration": 8
+      "target_duration": 12
     }
   ]
 }
@@ -134,10 +134,10 @@ If they approve, respond with exactly: "APPROVED: Starting video generation now!
 ═══════════════════════════════════════
 HARD RULES
 ═══════════════════════════════════════
-- 6-8 scenes for a complete story arc — more scenes, shorter narration per scene
-- Maximum 8 scenes, target 1-2 minutes total, each scene 6-8 seconds
-- Each narration: 1-2 SHORT sentences max. Punchy, not wordy. Let the visuals tell the story.
-- Keep each scene's narration under 20 words. The visuals carry the emotion, narration is the accent.
+- EXACTLY 8 scenes — this is a COMPLETE short film, not a trailer
+- Total video MUST be 1.5-2 minutes long (90-120 seconds)
+- Each scene: target_duration = 12 seconds (8 scenes x 12s = 96s ~ 1.5 min)
+- Each narration: 2-3 sentences, 20-30 words. Enough to fill 10-12 seconds of speech.
 - EVERY scene MUST have a "speaker" field: "narrator", "character_1", or "character_2"
 - visual_type MUST be "video" for all scenes (we use Veo for animation)
 - EVERY visual_prompt starts with visual_style_anchor VERBATIM

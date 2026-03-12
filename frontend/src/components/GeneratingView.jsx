@@ -1,6 +1,8 @@
 import React from 'react'
+import useIsMobile from '../hooks/useIsMobile'
 
 export default function GeneratingView({ progress, scenePlan }) {
+  const isMobile = useIsMobile()
   const totalScenes = scenePlan?.total_scenes || 0
   const currentScene = progress?.scene || 0
   const currentStep = progress?.step || ''
@@ -20,11 +22,17 @@ export default function GeneratingView({ progress, scenePlan }) {
   const pct = totalScenes > 0 ? Math.round((completedScenes / totalScenes) * 100) : 0
 
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      ...(isMobile ? { padding: '0 16px' } : {}),
+    }}>
       <div style={styles.glowOrb1} />
       <div style={styles.glowOrb2} />
 
-      <div style={styles.header}>
+      <div style={{
+        ...styles.header,
+        ...(isMobile ? { paddingTop: 36, paddingBottom: 24 } : {}),
+      }}>
         <div style={styles.filmStrip}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" strokeWidth="1.5">
             <defs>
@@ -43,7 +51,10 @@ export default function GeneratingView({ progress, scenePlan }) {
             <line x1="17" y1="17" x2="22" y2="17" />
           </svg>
         </div>
-        <h2 style={styles.title}>Creating your video</h2>
+        <h2 style={{
+          ...styles.title,
+          ...(isMobile ? { fontSize: 22 } : {}),
+        }}>Creating your video</h2>
         <p style={styles.subtitle}>{scenePlan?.title || 'Processing...'}</p>
       </div>
 
@@ -71,7 +82,10 @@ export default function GeneratingView({ progress, scenePlan }) {
             num === currentScene && progress?.status === 'in_progress'
 
           return (
-            <div key={num} style={styles.scene(isDone, isActive)}>
+            <div key={num} style={{
+              ...styles.scene(isDone, isActive),
+              ...(isMobile ? { padding: '12px 14px', gap: 10 } : {}),
+            }}>
               <div style={styles.sceneIcon(isDone, isActive)}>
                 {isDone ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="3">

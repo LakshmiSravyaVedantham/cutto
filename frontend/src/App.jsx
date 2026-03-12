@@ -1,11 +1,13 @@
 import React from 'react'
 import useWebSocket from './hooks/useWebSocket'
+import useIsMobile from './hooks/useIsMobile'
 import ConversationView from './components/ConversationView'
 import GeneratingView from './components/GeneratingView'
 import DoneView from './components/DoneView'
 
 export default function App() {
   const ws = useWebSocket()
+  const isMobile = useIsMobile()
 
   const isGenerating = ws.progress && !ws.videoUrl
   const isDone = !!ws.videoUrl
@@ -29,8 +31,14 @@ export default function App() {
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
           </div>
-          <h1 style={styles.title}>CutTo</h1>
-          <p style={styles.subtitle}>Describe a video. We'll direct it.</p>
+          <h1 style={{
+            ...styles.title,
+            ...(isMobile ? { fontSize: 48, letterSpacing: -2 } : {}),
+          }}>CutTo</h1>
+          <p style={{
+            ...styles.subtitle,
+            ...(isMobile ? { fontSize: 16 } : {}),
+          }}>Describe a video. We'll direct it.</p>
           <p style={styles.description}>
             Tell the AI what you want to see — it writes the script,
             generates visuals, adds voiceover and music, and delivers
@@ -38,7 +46,10 @@ export default function App() {
           </p>
         </div>
 
-        <div style={styles.features}>
+        <div style={{
+          ...styles.features,
+          ...(isMobile ? { flexDirection: 'column', gap: 10, marginTop: 32 } : {}),
+        }}>
           {[
             { icon: '🎬', label: 'AI Script Writing', desc: 'Professional narration from a simple description' },
             { icon: '🎨', label: 'Visual Generation', desc: 'Consistent scenes with Imagen 4.0' },
@@ -53,7 +64,10 @@ export default function App() {
         </div>
 
         <button
-          style={styles.startBtn}
+          style={{
+            ...styles.startBtn,
+            ...(isMobile ? { padding: '18px 40px', fontSize: 16 } : {}),
+          }}
           onClick={ws.connect}
           onMouseOver={e => {
             e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'

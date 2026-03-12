@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ScenePlanEditor from './ScenePlanEditor'
+import useIsMobile from '../hooks/useIsMobile'
 
 export default function ConversationView({ ws }) {
+  const isMobile = useIsMobile()
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const bottomRef = useRef(null)
@@ -11,41 +13,79 @@ export default function ConversationView({ ws }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [ws.messages, ws.previews, ws.isThinking, ws.scenePlan])
 
-  // Setup Web Speech API
+  // Stable ref to ws.sendText so speech handler doesn't re-create
+  const sendTextRef = useRef(ws.sendText)
+  sendTextRef.current = ws.sendText
+
+  // Setup Web Speech API — runs ONCE (no deps)
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition()
-      recognition.continuous = false
-      recognition.interimResults = true
-      recognition.lang = 'en-US'
+    if (!SpeechRecognition) return
 
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(r => r[0].transcript)
-          .join('')
-        setInput(transcript)
-        if (event.results[0].isFinal) {
-          setIsListening(false)
-          if (transcript.trim()) {
-            ws.sendText(transcript.trim())
-            setInput('')
-          }
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event) => {
+      // Collect all results into a single transcript
+      let final = ''
+      let interim = ''
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i]
+        if (result.isFinal) {
+          final += result[0].transcript
+        } else {
+          interim += result[0].transcript
         }
       }
-      recognition.onerror = () => setIsListening(false)
-      recognition.onend = () => setIsListening(false)
-      recognitionRef.current = recognition
+      // Show interim + final text in input while recording
+      setInput(final + interim)
     }
-  }, [ws])
+
+    recognition.onerror = (e) => {
+      // "no-speech" and "aborted" are not real errors — just silence
+      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        console.warn('Speech recognition error:', e.error)
+      }
+      setIsListening(false)
+    }
+
+    // Don't auto-stop — user controls when to stop
+    recognition.onend = () => {
+      // Only reset if we didn't manually stop (e.g., browser killed it)
+      setIsListening(prev => {
+        // If still marked as listening, restart (browser can kill after ~60s)
+        if (prev && recognitionRef.current) {
+          try { recognitionRef.current.start() } catch {}
+        }
+        return prev
+      })
+    }
+
+    recognitionRef.current = recognition
+  }, [])
 
   const toggleMic = () => {
     if (isListening) {
+      // Stop recording and send whatever was captured
       recognitionRef.current?.stop()
       setIsListening(false)
+      // Send accumulated input
+      setInput(prev => {
+        if (prev.trim()) {
+          sendTextRef.current(prev.trim())
+        }
+        return ''
+      })
     } else {
-      recognitionRef.current?.start()
-      setIsListening(true)
+      setInput('')
+      try {
+        recognitionRef.current?.start()
+        setIsListening(true)
+      } catch (e) {
+        console.warn('Could not start speech recognition:', e)
+      }
     }
   }
 
@@ -64,7 +104,10 @@ export default function ConversationView({ ws }) {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={{
+      ...styles.container,
+      ...(isMobile ? { padding: '0 12px' } : {}),
+    }}>
       <div style={styles.glowOrb1} />
       <div style={styles.glowOrb2} />
 
@@ -82,7 +125,10 @@ export default function ConversationView({ ws }) {
             <div style={styles.avatar(m.role)}>
               {m.role === 'user' ? 'You' : 'AI'}
             </div>
-            <div style={styles.msg(m.role)}>
+            <div style={{
+              ...styles.msg(m.role),
+              ...(isMobile ? { maxWidth: '85%', padding: '12px 14px', fontSize: 13 } : {}),
+            }}>
               {m.text}
             </div>
           </div>
@@ -102,7 +148,10 @@ export default function ConversationView({ ws }) {
 
         {/* Scene previews */}
         {ws.previews.map((img, i) => (
-          <div key={`img-${i}`} style={styles.previewWrap}>
+          <div key={`img-${i}`} style={{
+            ...styles.previewWrap,
+            ...(isMobile ? { margin: '12px 0' } : {}),
+          }}>
             <img
               src={`data:image/png;base64,${img}`}
               alt={`Scene preview ${i + 1}`}
@@ -151,11 +200,20 @@ export default function ConversationView({ ws }) {
         </div>
       )}
 
-      <div style={styles.inputArea}>
-        <div style={styles.inputRow}>
+      <div style={{
+        ...styles.inputArea,
+        ...(isMobile ? { paddingBottom: 12 } : {}),
+      }}>
+        <div style={{
+          ...styles.inputRow,
+          ...(isMobile ? { padding: '4px 4px 4px 6px' } : {}),
+        }}>
           {recognitionRef.current && (
             <button
-              style={styles.micBtn(isListening)}
+              style={{
+                ...styles.micBtn(isListening),
+                ...(isMobile && !isListening ? { padding: '0 10px', minWidth: 44, minHeight: 44 } : {}),
+              }}
               onClick={toggleMic}
               title={isListening ? 'Stop listening' : 'Speak your idea'}
             >
@@ -165,11 +223,14 @@ export default function ConversationView({ ws }) {
                 <line x1="12" y1="19" x2="12" y2="23" />
                 <line x1="8" y1="23" x2="16" y2="23" />
               </svg>
-              {!isListening && <span style={styles.micLabel}>Voice</span>}
+              {!isListening && !isMobile && <span style={styles.micLabel}>Voice</span>}
             </button>
           )}
           <input
-            style={styles.input}
+            style={{
+              ...styles.input,
+              ...(isMobile ? { padding: '10px 8px', fontSize: 14 } : {}),
+            }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -177,7 +238,10 @@ export default function ConversationView({ ws }) {
             disabled={isListening}
           />
           <button
-            style={styles.sendBtn}
+            style={{
+              ...styles.sendBtn,
+              ...(isMobile ? { minWidth: 44, minHeight: 44 } : {}),
+            }}
             onClick={handleSend}
             disabled={!input.trim() || isListening}
           >

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 
 export default function useWebSocket() {
   const [messages, setMessages] = useState([])
@@ -107,8 +107,9 @@ export default function useWebSocket() {
     }
   }, [])
 
-  return {
+  return useMemo(() => ({
     messages, scenePlan, previews, progress, videoUrl, error,
     connected, isThinking, connect, sendText, approve, updatePlan
-  }
+  }), [messages, scenePlan, previews, progress, videoUrl, error,
+       connected, isThinking, connect, sendText, approve, updatePlan])
 }

@@ -18,26 +18,70 @@ Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-
 
 ## Architecture
 
-```
-React (Vite) Frontend
-    |
-    | WebSocket
-    v
-FastAPI Backend
-    |
-    +---> Gemini API (conversation + scene planning + inline image generation)
-    |
-    +---> Pipeline Orchestrator
-              |
-              +---> Veo 2.0        (animated video clips per scene)
-              +---> Imagen 4.0     (fallback: static images if Veo fails)
-              +---> Gemini Native   (second fallback: inline image generation)
-              +---> edge-tts       (multi-character voiceover)
-              +---> Wav2Lip        (lipsync for character dialogue scenes)
-              +---> FFmpeg         (Ken Burns, duration adjustment, concat, music mixing)
-              |
-              v
-          Final MP4
+```mermaid
+flowchart TB
+    subgraph Frontend["React (Vite) Frontend"]
+        UI[Chat UI + Voice Input]
+        Editor[Scene Plan Editor]
+        Player[Video Player]
+    end
+
+    subgraph Backend["FastAPI Backend"]
+        WS[WebSocket Server]
+        Agent[ConversationSession]
+        Pipeline[Pipeline Orchestrator]
+    end
+
+    subgraph Gemini["Google Gemini API"]
+        GemImg["gemini-2.5-flash-image\n(text + image interleaved)"]
+        GemTxt["gemini-2.0-flash\n(text-only fallback)"]
+    end
+
+    subgraph VisualGen["Visual Generation (fallback chain)"]
+        Veo["Veo 2.0\nAnimated video clips"]
+        Imagen["Imagen 4.0\nStatic images"]
+        GemNative["Gemini Native\nInline image generation"]
+        Veo -->|fails| Imagen
+        Imagen -->|fails| GemNative
+    end
+
+    subgraph AudioGen["Audio Generation"]
+        TTS["edge-tts\nMulti-character voices"]
+        Lipsync["Wav2Lip\nMouth sync (characters only)"]
+    end
+
+    subgraph Assembly["FFmpeg Assembly"]
+        KB["Ken Burns effect\n(static images)"]
+        DurAdj["Duration adjustment\n(video/audio sync)"]
+        Concat["Concat all scenes"]
+        Music["Mix background music\n(mood-matched, 25% vol)"]
+    end
+
+    UI -- "WebSocket /ws" --> WS
+    WS --> Agent
+    Agent --> GemImg
+    Agent -.->|fallback| GemTxt
+    Agent -->|scene plan JSON| Editor
+    Editor -->|approve / edit| WS
+
+    WS -->|approved plan| Pipeline
+    Pipeline -->|"parallel batches of 3"| VisualGen
+    Pipeline --> TTS
+    TTS --> Lipsync
+    VisualGen --> KB
+    VisualGen --> DurAdj
+    KB --> Concat
+    DurAdj --> Concat
+    Lipsync --> Concat
+    Concat --> Music
+    Music --> MP4["Final MP4"]
+    MP4 --> Player
+
+    subgraph Deploy["Deployment"]
+        Docker --> CloudRun["Google Cloud Run\n2 vCPU / 2GB RAM"]
+    end
+
+    Backend -.-> Docker
 ```
 
 **Pipeline detail per scene:**

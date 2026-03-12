@@ -111,9 +111,7 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
 
             if data["type"] == "text":
                 user_msg = data["text"]
-                await ws.send_json(
-                    {"type": "transcript", "role": "user", "text": user_msg}
-                )
+                # User message shown optimistically on frontend — no echo needed
 
                 text, image_bytes, plan, pipeline_started = (
                     await session.send_message(user_msg)
