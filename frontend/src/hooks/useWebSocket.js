@@ -10,6 +10,8 @@ export default function useWebSocket() {
   const [connected, setConnected] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
   const wsRef = useRef(null)
+  const retriesRef = useRef(0)
+  const reconnectTimer = useRef(null)
 
   const connect = useCallback((demoKey = '') => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
@@ -21,14 +23,20 @@ export default function useWebSocket() {
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
 
-    ws.onopen = () => setConnected(true)
+    ws.onopen = () => {
+      setConnected(true)
+      retriesRef.current = 0
+    }
     ws.onclose = () => {
       setConnected(false)
-      setTimeout(() => {
+      const attempt = (retriesRef.current || 0)
+      retriesRef.current = attempt + 1
+      const delay = Math.min(1000 * Math.pow(2, attempt), 30000)
+      reconnectTimer.current = setTimeout(() => {
         if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
-          connect()
+          connect(key)
         }
-      }, 2000)
+      }, delay)
     }
 
     ws.onmessage = (event) => {
@@ -91,6 +99,7 @@ export default function useWebSocket() {
 
   useEffect(() => {
     return () => {
+      clearTimeout(reconnectTimer.current)
       if (wsRef.current) {
         wsRef.current.onclose = null
         wsRef.current.close()
