@@ -93,11 +93,31 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
     button:active { transform: scale(0.98); }
+    /* Visible focus ring for keyboard navigation */
+    :focus-visible {
+      outline: 2px solid rgba(102,126,234,0.6);
+      outline-offset: 2px;
+    }
+    /* Skip-to-content link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #667eea;
+      color: #fff;
+      padding: 8px 16px;
+      z-index: 1000;
+      font-size: 14px;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-link:focus { top: 0; }
   </style>
-  <script type="module" crossorigin src="/assets/index-DXM6R36b.js"></script>
+  <script type="module" crossorigin src="/assets/index-Cd8V9LpT.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-CdwiJlpV.js">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
   <div id="root"></div>
 </body>
 </html>

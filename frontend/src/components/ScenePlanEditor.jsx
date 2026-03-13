@@ -218,8 +218,9 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
 
             {editingScene === scene.scene_number ? (
               <div style={styles.editArea}>
-                <label style={styles.label}>Speaker</label>
+                <label htmlFor={`speaker-${scene.scene_number}`} style={styles.label}>Speaker</label>
                 <select
+                  id={`speaker-${scene.scene_number}`}
                   style={styles.select}
                   value={editSpeaker}
                   onChange={e => setEditSpeaker(e.target.value)}
@@ -228,15 +229,17 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                   <option value="character_1">Character 1 (close-up, lipsync)</option>
                   <option value="character_2">Character 2 (close-up, lipsync)</option>
                 </select>
-                <label style={styles.label}>Narration</label>
+                <label htmlFor={`narration-${scene.scene_number}`} style={styles.label}>Narration</label>
                 <textarea
+                  id={`narration-${scene.scene_number}`}
                   style={styles.textarea}
                   value={editNarration}
                   onChange={e => setEditNarration(e.target.value)}
                   rows={2}
                 />
-                <label style={styles.label}>Visual Description</label>
+                <label htmlFor={`visual-${scene.scene_number}`} style={styles.label}>Visual Description</label>
                 <textarea
+                  id={`visual-${scene.scene_number}`}
                   style={styles.textarea}
                   value={editVisual}
                   onChange={e => setEditVisual(e.target.value)}
@@ -297,6 +300,8 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
         ...(isMobile ? { flexDirection: 'column', gap: 8 } : {}),
       }}>
         <input
+          id="revision-input"
+          aria-label="Ask AI to revise the scene plan"
           style={{
             ...styles.revisionInput,
             ...(isMobile ? { width: '100%', padding: '14px 14px', fontSize: 14 } : {}),

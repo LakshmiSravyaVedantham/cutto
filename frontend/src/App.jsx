@@ -17,7 +17,7 @@ export default function App() {
 
   if (!hasActiveSession) {
     return (
-      <div style={styles.container} role="main" aria-label="CutTo — AI Video Director">
+      <div id="main-content" style={styles.container} role="main" aria-label="CutTo — AI Video Director">
         {/* Animated background elements */}
         <div style={styles.bgGrid} aria-hidden="true" />
         <div style={styles.glowOrb1} aria-hidden="true" />
