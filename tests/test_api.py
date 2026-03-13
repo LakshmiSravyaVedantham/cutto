@@ -63,3 +63,34 @@ def test_video_served_from_gcs_when_local_missing(client):
     assert resp.status_code == 200
     assert resp.headers["content-type"] == "video/mp4"
     assert resp.content == b"video-bytes"
+
+
+def test_config_lists_new_features(client):
+    resp = client.get("/api/config")
+    data = resp.json()
+    assert data["features"]["image_upload"] is True
+    assert data["features"]["crossfade_transitions"] is True
+    assert data["features"]["ai_prompt_enhancement"] is True
+    assert data["features"]["scene_thumbnails"] is True
+    assert data["features"]["quick_start_templates"] is True
+
+
+def test_plan_endpoint_missing_description(client):
+    resp = client.post("/api/plan", json={})
+    assert resp.status_code == 400
+    assert "description" in resp.json()["error"].lower()
+
+
+def test_plan_endpoint_calls_adk(client):
+    mock_result = {
+        "status": "ok",
+        "video_id": "test-123",
+        "plan": {"title": "Test"},
+        "message": "Created plan",
+    }
+    with patch("backend.adk_agent.plan_video", return_value=mock_result) as mock_pv:
+        resp = client.post("/api/plan", json={"description": "Test video"})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "ok"
+    mock_pv.assert_called_once_with("Test video")
