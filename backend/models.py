@@ -43,3 +43,4 @@ class PipelineProgress(BaseModel):
     step: Literal["visual", "voiceover", "clip", "assembly", "complete", "error"]
     status: Literal["in_progress", "done", "error"]
     message: str = ""
+    thumbnail: str = ""  # base64-encoded JPEG thumbnail for completed scenes

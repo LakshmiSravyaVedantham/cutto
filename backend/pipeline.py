@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import logging
 import tempfile
 from pathlib import Path
@@ -86,6 +87,18 @@ async def run_pipeline(
                 raise RuntimeError("Too many scene failures (3+), aborting pipeline")
             return
 
+        # Extract thumbnail for frontend preview
+        thumb_b64 = ""
+        if clip_path:
+            thumb_path = str(Path(clip_path).parent / "thumb.jpg")
+            try:
+                await asyncio.to_thread(ffmpeg.extract_thumbnail, clip_path, thumb_path)
+                thumb_b64 = base64.b64encode(Path(thumb_path).read_bytes()).decode()
+            except Exception:
+                logger.warning(
+                    f"Thumbnail extraction failed for scene {scene.scene_number}"
+                )
+
         if progress_callback:
             await progress_callback(
                 PipelineProgress(
@@ -93,6 +106,7 @@ async def run_pipeline(
                     scene=scene.scene_number,
                     step="clip",
                     status="done",
+                    thumbnail=thumb_b64,
                 )
             )
 
@@ -207,10 +221,12 @@ def enhance_visual_prompt(prompt: str, mood: str = "") -> str:
 
         client = genai.Client(api_key=GOOGLE_API_KEY)
         enhance_instruction = (
-            "You are a cinematographer. Expand this visual prompt into a single, "
-            "detailed paragraph (max 100 words) optimized for AI video generation. "
-            "Add: camera angle/movement, lighting, color palette, composition. "
-            "Keep the original intent. Do NOT add dialogue or narration. "
+            "You are a cinematographer optimizing prompts for Google Veo video generation. "
+            "Expand this visual prompt into a single detailed paragraph (max 100 words). "
+            "MUST include one camera motion from: slow dolly forward, tracking shot, "
+            "crane shot rising, slow pan left/right, push-in, pull-out, static wide shot. "
+            "Add: lighting setup, color palette, depth of field, composition. "
+            "Keep the original subject and intent. Do NOT add dialogue or narration. "
             f"Mood: {mood or 'cinematic'}. Output ONLY the enhanced prompt, nothing else."
         )
         response = client.models.generate_content(

@@ -468,6 +468,27 @@ def adjust_audio_duration(
     run_ffmpeg(cmd)
 
 
+def extract_thumbnail(video_path: str, output_path: str) -> None:
+    """Extract a single frame from the middle of a video as a JPEG thumbnail.
+
+    Seeks 1 second in, grabs one frame, and scales to 320px wide.
+    """
+    cmd = [
+        "-ss",
+        "1",
+        "-i",
+        video_path,
+        "-vframes",
+        "1",
+        "-vf",
+        "scale=320:-1",
+        "-q:v",
+        "3",
+        output_path,
+    ]
+    run_ffmpeg(cmd)
+
+
 def add_music(
     video_path: str,
     music_path: str,

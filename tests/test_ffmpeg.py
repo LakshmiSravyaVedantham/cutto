@@ -1,6 +1,7 @@
 """Tests for backend.services.ffmpeg module."""
 
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -9,6 +10,7 @@ from backend.services.ffmpeg import (
     build_concat_cmd,
     build_ken_burns_cmd,
     build_scene_clip_cmd,
+    extract_thumbnail,
     get_audio_duration,
     run_ffmpeg,
 )
@@ -217,3 +219,54 @@ class TestGetAudioDuration:
     def test_raises_on_missing_file(self):
         with pytest.raises(RuntimeError, match="ffprobe failed"):
             get_audio_duration("/nonexistent/audio.mp3")
+
+
+# ---------------------------------------------------------------------------
+# extract_thumbnail
+# ---------------------------------------------------------------------------
+
+
+class TestExtractThumbnail:
+    @pytest.fixture(scope="class")
+    def test_video(self, tmp_path_factory):
+        """Create a 2-second black video for thumbnail extraction tests."""
+        video_path = str(tmp_path_factory.mktemp("video") / "test.mp4")
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=blue:s=640x480:d=2",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                video_path,
+            ],
+            capture_output=True,
+            check=True,
+        )
+        return video_path
+
+    def test_creates_thumbnail_file(self, test_video, tmp_path):
+        """extract_thumbnail should create a JPEG file on disk."""
+        thumb_path = str(tmp_path / "thumb.jpg")
+        extract_thumbnail(test_video, thumb_path)
+        assert Path(thumb_path).exists()
+        assert Path(thumb_path).stat().st_size > 0
+
+    def test_thumbnail_is_jpeg(self, test_video, tmp_path):
+        """Output file should start with JPEG magic bytes."""
+        thumb_path = str(tmp_path / "thumb.jpg")
+        extract_thumbnail(test_video, thumb_path)
+        data = Path(thumb_path).read_bytes()
+        # JPEG files start with FF D8
+        assert data[:2] == b"\xff\xd8"
+
+    def test_raises_on_missing_video(self, tmp_path):
+        """extract_thumbnail should raise RuntimeError for nonexistent input."""
+        thumb_path = str(tmp_path / "thumb.jpg")
+        with pytest.raises(RuntimeError, match="ffmpeg failed"):
+            extract_thumbnail("/nonexistent/video.mp4", thumb_path)

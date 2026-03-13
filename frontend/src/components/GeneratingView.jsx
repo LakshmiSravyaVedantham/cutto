@@ -106,6 +106,9 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
                   <span style={styles.pendingDot} />
                 )}
               </div>
+              {isDone && s?.thumbnail && (
+                <img src={`data:image/jpeg;base64,${s.thumbnail}`} style={styles.thumb} alt="" />
+              )}
               <div style={styles.sceneInfo}>
                 <span style={styles.sceneName(isDone, isActive)}>
                   Scene {num}
@@ -275,6 +278,13 @@ const styles = {
     height: 8,
     borderRadius: '50%',
     background: '#333',
+  },
+  thumb: {
+    width: 48,
+    height: 36,
+    borderRadius: 6,
+    objectFit: 'cover',
+    flexShrink: 0,
   },
   sceneInfo: {
     flex: 1,

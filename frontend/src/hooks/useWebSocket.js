@@ -81,7 +81,7 @@ export default function useWebSocket() {
           if (data.scene > 0) {
             setSceneStatuses(prev => ({
               ...prev,
-              [data.scene]: { step: data.step, status: data.status }
+              [data.scene]: { step: data.step, status: data.status, thumbnail: data.thumbnail || prev[data.scene]?.thumbnail }
             }))
           }
           break

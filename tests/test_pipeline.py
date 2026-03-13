@@ -91,6 +91,7 @@ def mock_services():
         patch("backend.pipeline.ffmpeg.concat_clips") as mock_concat,
         patch("backend.pipeline.ffmpeg.crossfade_concat_clips") as mock_crossfade,
         patch("backend.pipeline.ffmpeg.add_music") as mock_add_music,
+        patch("backend.pipeline.ffmpeg.extract_thumbnail") as mock_extract_thumb,
         patch(
             "backend.pipeline.lipsync.is_available", return_value=False
         ) as mock_lipsync_avail,
@@ -125,6 +126,7 @@ def mock_services():
             "concat": mock_concat,
             "crossfade": mock_crossfade,
             "add_music": mock_add_music,
+            "extract_thumb": mock_extract_thumb,
             "lipsync_avail": mock_lipsync_avail,
             "lipsync": mock_lipsync,
             "enhance": mock_enhance,
@@ -596,6 +598,169 @@ class TestRunPipeline:
         # Even with a failed scene, pipeline should complete with remaining clips
         result = await run_pipeline(plan)
         assert isinstance(result, str)
+
+    @pytest.mark.asyncio
+    async def test_progress_callback_includes_thumbnail(self, mock_services):
+        """Clip-done progress events should include a base64 thumbnail."""
+        from backend.pipeline import run_pipeline
+
+        # Make extract_thumbnail write a fake JPEG so the pipeline can base64-encode it
+        def fake_extract(video_path, output_path):
+            Path(output_path).write_bytes(b"\xff\xd8fake-thumb-data")
+
+        mock_services["extract_thumb"].side_effect = fake_extract
+
+        progress_events: list[PipelineProgress] = []
+
+        async def track_progress(p: PipelineProgress):
+            progress_events.append(p)
+
+        plan = make_plan(scenes=[make_scene()])
+        await run_pipeline(plan, progress_callback=track_progress)
+
+        # Find the clip-done event and verify it has a thumbnail
+        clip_done = [
+            e for e in progress_events if e.step == "clip" and e.status == "done"
+        ]
+        assert len(clip_done) == 1
+        assert clip_done[0].thumbnail != ""
+        # Verify it's valid base64 by decoding
+        import base64
+
+        decoded = base64.b64decode(clip_done[0].thumbnail)
+        assert decoded == b"\xff\xd8fake-thumb-data"
+
+    @pytest.mark.asyncio
+    async def test_thumbnail_failure_does_not_break_pipeline(self, mock_services):
+        """If thumbnail extraction fails, pipeline should continue with empty thumbnail."""
+        from backend.pipeline import run_pipeline
+
+        mock_services["extract_thumb"].side_effect = RuntimeError("ffmpeg thumb failed")
+
+        progress_events: list[PipelineProgress] = []
+
+        async def track_progress(p: PipelineProgress):
+            progress_events.append(p)
+
+        plan = make_plan(scenes=[make_scene()])
+        result = await run_pipeline(plan, progress_callback=track_progress)
+
+        # Pipeline should still complete
+        assert isinstance(result, str)
+
+        # Clip-done event should exist but with empty thumbnail
+        clip_done = [
+            e for e in progress_events if e.step == "clip" and e.status == "done"
+        ]
+        assert len(clip_done) == 1
+        assert clip_done[0].thumbnail == ""
+
+
+# ---------------------------------------------------------------------------
+# enhance_visual_prompt — Veo camera motion prompts (issue #22)
+# ---------------------------------------------------------------------------
+
+
+class TestEnhanceVisualPrompt:
+    """Test that enhance_visual_prompt includes Veo camera motion keywords."""
+
+    def _make_genai_mocks(self, response_text=None, client_error=None):
+        """Build mock google.genai module with configurable response or error.
+
+        Returns (mock_google_module, mock_genai_module, mock_client).
+        """
+        mock_genai = MagicMock()
+        mock_types = MagicMock()
+        # Make types.GenerateContentConfig pass through kwargs as attributes
+        mock_types.GenerateContentConfig = lambda **kw: MagicMock(**kw)
+        mock_genai.types = mock_types
+
+        mock_google = MagicMock()
+        mock_google.genai = mock_genai
+
+        if client_error:
+            mock_genai.Client.side_effect = client_error
+            return mock_google, mock_genai, None
+
+        mock_client = MagicMock()
+        mock_genai.Client.return_value = mock_client
+
+        if response_text is not None:
+            mock_response = MagicMock()
+            mock_part = MagicMock()
+            mock_part.text = response_text
+            mock_response.candidates = [MagicMock()]
+            mock_response.candidates[0].content.parts = [mock_part]
+            mock_client.models.generate_content.return_value = mock_response
+
+        return mock_google, mock_genai, mock_client
+
+    def test_includes_camera_motion_in_instruction(self):
+        """The system instruction should require Veo camera motion keywords."""
+        from backend.pipeline import enhance_visual_prompt
+
+        mock_google, mock_genai, mock_client = self._make_genai_mocks(
+            response_text=(
+                "Slow dolly forward through a misty forest, "
+                "a cat walks along a mossy path with shallow depth of field"
+            )
+        )
+
+        with patch.dict(
+            "sys.modules",
+            {"google": mock_google, "google.genai": mock_genai},
+        ):
+            enhance_visual_prompt("A cat walking", mood="calm")
+
+        call_args = mock_client.models.generate_content.call_args
+        config = call_args[1]["config"]
+        instruction = config.system_instruction
+        camera_keywords = [
+            "dolly",
+            "tracking shot",
+            "crane shot",
+            "pan",
+            "push-in",
+            "pull-out",
+            "static wide shot",
+        ]
+        assert any(
+            kw in instruction.lower() for kw in camera_keywords
+        ), f"System instruction missing camera motion keywords: {instruction}"
+
+    def test_returns_enhanced_prompt(self):
+        """Should return the Gemini-enhanced prompt when API succeeds."""
+        from backend.pipeline import enhance_visual_prompt
+
+        enhanced_text = (
+            "Slow dolly forward through a sunlit meadow, "
+            "a golden retriever bounds through wildflowers with warm backlight"
+        )
+        mock_google, mock_genai, _ = self._make_genai_mocks(response_text=enhanced_text)
+
+        with patch.dict(
+            "sys.modules",
+            {"google": mock_google, "google.genai": mock_genai},
+        ):
+            result = enhance_visual_prompt("A dog in a field", mood="upbeat")
+
+        assert result == enhanced_text
+
+    def test_fallback_on_error(self):
+        """Should return original prompt when Gemini fails."""
+        from backend.pipeline import enhance_visual_prompt
+
+        mock_google, mock_genai, _ = self._make_genai_mocks(
+            client_error=RuntimeError("No API key")
+        )
+
+        with patch.dict(
+            "sys.modules",
+            {"google": mock_google, "google.genai": mock_genai},
+        ):
+            result = enhance_visual_prompt("A cat walking", mood="calm")
+
+        assert result == "A cat walking"
 
 
 # ---------------------------------------------------------------------------
