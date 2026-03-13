@@ -61,9 +61,12 @@ export default function useWebSocket() {
     }
     ws.onclose = () => {
       setConnecting(false)
-      const wasConnected = connected
-      setConnected(false)
-      if (wasConnected) setConnectionLost(true)
+      // Use functional setState to read current value — avoids stale closure
+      // (connect has [] deps so the outer 'connected' is always false)
+      setConnected(prev => {
+        if (prev) setConnectionLost(true)
+        return false
+      })
       const attempt = (retriesRef.current || 0)
       retriesRef.current = attempt + 1
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000)
