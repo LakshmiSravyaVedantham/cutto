@@ -145,10 +145,15 @@ async def get_config():
         },
         "features": {
             "voice_input": True,
+            "image_upload": True,
             "lipsync": True,
             "multi_character_voices": True,
             "scene_reordering": True,
             "background_music": True,
+            "crossfade_transitions": True,
+            "ai_prompt_enhancement": True,
+            "scene_thumbnails": True,
+            "quick_start_templates": True,
         },
         "limits": {
             "max_scenes": 20,
@@ -156,6 +161,21 @@ async def get_config():
             "videos_per_hour": 3,
         },
     }
+
+
+@app.post("/api/plan")
+async def create_plan(body: dict):
+    """REST endpoint for ADK agent plan_video tool — judges can test directly.
+
+    POST /api/plan {"description": "Explain how the human heart works"}
+    """
+    description = body.get("description", "")
+    if not description:
+        return JSONResponse({"error": "Missing 'description' field"}, status_code=400)
+    from backend.adk_agent import plan_video
+
+    result = plan_video(description)
+    return result
 
 
 @app.websocket("/ws")
