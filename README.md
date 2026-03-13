@@ -1,5 +1,7 @@
 # CutTo
 
+[![CI](https://github.com/LakshmiSravyaVedantham/cutto/actions/workflows/ci.yml/badge.svg)](https://github.com/LakshmiSravyaVedantham/cutto/actions/workflows/ci.yml)
+
 **AI Video Director for Kids' Education** -- describe any lesson in a conversation, get a finished animated video with AI-generated visuals, multi-character voiceover, lipsync, and background music. Turn lesson ideas into videos kids love to watch.
 
 Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-api/docs/live-agent-challenge) (Creative Storyteller category).
