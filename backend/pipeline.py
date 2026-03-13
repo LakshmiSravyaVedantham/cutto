@@ -40,6 +40,7 @@ async def run_pipeline(
     scene_clips: list[str | None] = [None] * len(plan.scenes)
 
     failed_scenes = 0
+    fail_lock = asyncio.Lock()
 
     async def process_with_progress(scene: Scene, index: int) -> None:
         nonlocal failed_scenes
@@ -65,7 +66,9 @@ async def run_pipeline(
             )
             scene_clips[index] = clip_path
         except (asyncio.TimeoutError, Exception) as e:
-            failed_scenes += 1
+            async with fail_lock:
+                failed_scenes += 1
+                current_failures = failed_scenes
             logger.error(f"Scene {scene.scene_number} failed: {e}")
             if progress_callback:
                 await progress_callback(
@@ -77,7 +80,7 @@ async def run_pipeline(
                         message=str(e)[:200],
                     )
                 )
-            if failed_scenes >= 3:
+            if current_failures >= 3:
                 raise RuntimeError("Too many scene failures (3+), aborting pipeline")
             return
 
@@ -161,8 +164,13 @@ async def generate_video_with_fallback(
             return image_path, False
         except Exception as e3:
             logger.warning(f"Imagen retry failed ({e3}), trying Gemini native fallback")
-            await asyncio.to_thread(gemini_fallback_image, prompt, image_path)
-            return image_path, False
+            try:
+                await asyncio.to_thread(gemini_fallback_image, prompt, image_path)
+                return image_path, False
+            except Exception as e4:
+                raise RuntimeError(
+                    f"All image generation failed (Veo, Imagen x2, Gemini): {e4}"
+                ) from e4
 
 
 def gemini_fallback_image(prompt: str, output_path: str) -> str:

@@ -263,15 +263,18 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
 
 async def run_video_pipeline(ws: WebSocket, plan):
     async def progress_callback(progress: PipelineProgress):
-        await ws.send_json(
-            {
-                "type": "pipeline_progress",
-                "video_id": progress.video_id,
-                "scene": progress.scene,
-                "step": progress.step,
-                "status": progress.status,
-            }
-        )
+        try:
+            await ws.send_json(
+                {
+                    "type": "pipeline_progress",
+                    "video_id": progress.video_id,
+                    "scene": progress.scene,
+                    "step": progress.step,
+                    "status": progress.status,
+                }
+            )
+        except Exception:
+            logger.warning("WebSocket closed during progress update")
 
     try:
         video_path = await run_pipeline(plan, progress_callback=progress_callback)

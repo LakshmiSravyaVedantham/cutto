@@ -32,11 +32,14 @@ class ScenePlan(BaseModel):
     def model_post_init(self, __context):
         if not self.video_id:
             self.video_id = str(uuid.uuid4())
+        # Keep total_scenes in sync with actual scene count
+        if self.total_scenes != len(self.scenes):
+            self.total_scenes = len(self.scenes)
 
 
 class PipelineProgress(BaseModel):
     video_id: str
     scene: int
-    step: Literal["visual", "voiceover", "clip", "assembly", "complete"]
+    step: Literal["visual", "voiceover", "clip", "assembly", "complete", "error"]
     status: Literal["in_progress", "done", "error"]
     message: str = ""
