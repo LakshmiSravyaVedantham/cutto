@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import useWebSocket from './hooks/useWebSocket'
 import useIsMobile from './hooks/useIsMobile'
-import ConversationView from './components/ConversationView'
-import GeneratingView from './components/GeneratingView'
-import DoneView from './components/DoneView'
+
+const ConversationView = lazy(() => import('./components/ConversationView'))
+const GeneratingView = lazy(() => import('./components/GeneratingView'))
+const DoneView = lazy(() => import('./components/DoneView'))
 
 export default function App() {
   const ws = useWebSocket()
@@ -200,20 +201,34 @@ export default function App() {
     )
   }
 
+  const fallback = (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 24, height: 24, border: '2px solid #667eea', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    </div>
+  )
+
   if (isDone) return (
-    <DoneView
-      videoUrl={ws.videoUrl}
-      onReset={ws.reset}
-    />
+    <Suspense fallback={fallback}>
+      <DoneView
+        videoUrl={ws.videoUrl}
+        onReset={ws.reset}
+      />
+    </Suspense>
   )
   if (isGenerating) return (
-    <GeneratingView
-      progress={ws.progress}
-      sceneStatuses={ws.sceneStatuses}
-      scenePlan={ws.scenePlan}
-    />
+    <Suspense fallback={fallback}>
+      <GeneratingView
+        progress={ws.progress}
+        sceneStatuses={ws.sceneStatuses}
+        scenePlan={ws.scenePlan}
+      />
+    </Suspense>
   )
-  return <ConversationView ws={ws} />
+  return (
+    <Suspense fallback={fallback}>
+      <ConversationView ws={ws} />
+    </Suspense>
+  )
 }
 
 const styles = {
