@@ -41,6 +41,8 @@ export default function useWebSocket() {
   }, [isThinking])
 
   const connect = useCallback((demoKey = '') => {
+    // Prevent duplicate connections from rapid clicks
+    if (wsRef.current && wsRef.current.readyState !== WebSocket.CLOSED) return
     const explicitKey = typeof demoKey === 'string' ? demoKey : ''
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host

@@ -317,7 +317,14 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
                         await run_video_pipeline(ws, current_plan)
 
             elif data["type"] == "approve" and current_plan:
-                if not check_rate_limit(client_ip):
+                if not current_plan.scenes:
+                    await ws.send_json(
+                        {
+                            "type": "error",
+                            "message": "Scene plan has no scenes. Add at least one scene.",
+                        }
+                    )
+                elif not check_rate_limit(client_ip):
                     await ws.send_json(
                         {
                             "type": "error",

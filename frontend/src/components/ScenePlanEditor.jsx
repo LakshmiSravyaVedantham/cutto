@@ -52,7 +52,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
       scene_number: lastScene.scene_number + 1,
       speaker: 'narrator',
       narration: 'New scene narration — edit me!',
-      visual_prompt: plan.visual_style_anchor + '. Describe the visual action here.',
+      visual_prompt: (plan.visual_style_anchor || 'Colorful animated style') + '. Describe the visual action here.',
       visual_type: 'video',
       target_duration: 6,
     }

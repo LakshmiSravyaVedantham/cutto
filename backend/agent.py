@@ -332,8 +332,11 @@ def extract_scene_plan(text: str) -> ScenePlan | None:
         json_str = text[start:end].strip()
         data = json.loads(json_str)
         return ScenePlan(**data)
-    except (ValueError, json.JSONDecodeError, Exception) as e:
-        logger.debug(f"No scene plan found in response: {e}")
+    except (ValueError, json.JSONDecodeError) as e:
+        logger.debug(f"No JSON block found in response: {e}")
+        return None
+    except Exception as e:
+        logger.warning(f"Scene plan JSON found but validation failed: {e}")
         return None
 
 
