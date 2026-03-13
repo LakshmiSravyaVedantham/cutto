@@ -152,7 +152,9 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
       )}
 
       <p style={styles.tip}>
-        AI animation takes 1-3 minutes per scene. Creating something beautiful for you.
+        {totalScenes > 0
+          ? `Estimated ${Math.ceil(totalScenes * 1.5)} - ${totalScenes * 3} min total (${totalScenes} scenes in parallel batches)`
+          : 'AI animation takes 1-3 minutes per scene.'}
       </p>
     </div>
   )
