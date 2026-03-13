@@ -405,6 +405,7 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     animation: 'fadeIn 0.8s ease-out 0.4s both',
+    transition: 'all 0.3s ease',
   },
 
   // Quick start

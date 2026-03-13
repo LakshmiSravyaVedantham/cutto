@@ -215,6 +215,7 @@ export default function ConversationView({ ws }) {
               src={`data:image/png;base64,${img}`}
               alt={`Scene preview ${i + 1}`}
               style={styles.preview}
+              onError={e => { e.target.style.display = 'none' }}
             />
             <div style={styles.previewLabel}>Scene Preview {i + 1}</div>
           </div>
