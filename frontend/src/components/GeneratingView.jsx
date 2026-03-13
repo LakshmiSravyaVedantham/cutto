@@ -112,7 +112,17 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
               <div style={styles.sceneInfo}>
                 <span style={styles.sceneName(isDone, isActive)}>
                   Scene {num}
+                  {scenePlan?.scenes?.[i]?.speaker && (
+                    <span style={styles.speakerBadge}>
+                      {scenePlan.scenes[i].speaker === 'narrator' ? 'narr.' : scenePlan.scenes[i].speaker.replace('character_', 'char ')}
+                    </span>
+                  )}
                 </span>
+                {scenePlan?.scenes?.[i]?.narration && (
+                  <span style={styles.narrationPreview}>
+                    {scenePlan.scenes[i].narration.slice(0, 80)}{scenePlan.scenes[i].narration.length > 80 ? '...' : ''}
+                  </span>
+                )}
                 <span style={{
                   ...(styles.sceneStatus(isDone, isActive)),
                   ...(isError ? { color: '#e74c3c' } : {}),
@@ -302,6 +312,23 @@ const styles = {
     color: isDone ? 'rgba(39,174,96,0.6)' : isActive ? '#667eea' : '#444',
     textTransform: 'capitalize',
   }),
+  speakerBadge: {
+    marginLeft: 6,
+    fontSize: 10,
+    fontWeight: 600,
+    padding: '1px 6px',
+    borderRadius: 4,
+    background: 'rgba(102,126,234,0.12)',
+    color: '#667eea',
+    letterSpacing: 0.3,
+    textTransform: 'uppercase',
+  },
+  narrationPreview: {
+    fontSize: 11,
+    color: '#555',
+    lineHeight: 1.4,
+    fontStyle: 'italic',
+  },
   doneTime: {
     fontSize: 11,
     color: '#27ae60',
