@@ -314,7 +314,10 @@ export default function ConversationView({ ws }) {
         <div style={{
           ...styles.inputRow,
           ...(isMobile ? { padding: '4px 4px 4px 6px' } : {}),
-        }}>
+        }}
+          onFocusCapture={e => { e.currentTarget.style.borderColor = 'rgba(102,126,234,0.3)' }}
+          onBlurCapture={e => { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)' }}
+        >
           {/* Image upload button */}
           <button
             style={{

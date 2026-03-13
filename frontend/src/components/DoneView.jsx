@@ -326,7 +326,7 @@ const styles = {
   },
   watermark: {
     marginTop: 48,
-    color: '#2a3050',
+    color: '#4a5070',
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',
