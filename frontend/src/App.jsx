@@ -128,9 +128,9 @@ export default function App() {
               { label: 'How the heart pumps blood', prompt: 'Create a 90-second animated explainer for 8-year-olds about how the human heart pumps blood through its four chambers. Use colorful cartoon characters as red blood cells traveling through the body. Friendly narrator voice, upbeat music.', hint: '~90s video' },
               { label: 'Solar system adventure', prompt: 'Create an animated story for kids (ages 6-10) where a curious alien named Zip visits each planet in our solar system. Educational facts about each planet, Pixar-style animation, exciting and fun mood.', hint: '~90s video' },
               { label: 'Why do volcanoes erupt?', prompt: 'Create a 60-second science explainer for elementary school students about why volcanoes erupt. Show the layers of the earth, magma chambers, and eruption in colorful animated diagrams. Keep it exciting but educational.', hint: '~60s video' },
-            ].map((t, i) => (
+            ].map((t) => (
               <button
-                key={i}
+                key={t.label}
                 style={{
                   ...styles.quickChip,
                   ...(ws.connecting ? { opacity: 0.5, pointerEvents: 'none' } : {}),
@@ -193,9 +193,9 @@ export default function App() {
               label: 'Voice, Lipsync & Music',
               desc: 'Multi-character voices, automatic lipsync, mood-matched soundtrack'
             },
-          ].map((f, i) => (
+          ].map((f) => (
             <div
-              key={i}
+              key={f.label}
               style={styles.featureCard}
               onMouseOver={e => {
                 e.currentTarget.style.borderColor = 'rgba(102,126,234,0.2)'
@@ -227,8 +227,8 @@ export default function App() {
               { num: '2', title: 'Preview', desc: 'See AI-generated scene previews inline in the conversation' },
               { num: '3', title: 'Edit', desc: 'Refine scenes, reorder, change speakers, ask for revisions' },
               { num: '4', title: 'Download', desc: 'Get your finished MP4 with visuals, voice, lipsync & music' },
-            ].map((s, i) => (
-              <div key={i} style={styles.howStep}>
+            ].map((s) => (
+              <div key={s.num} style={styles.howStep}>
                 <div style={styles.howNum}>{s.num}</div>
                 <span style={styles.howStepTitle}>{s.title}</span>
                 <span style={styles.howStepDesc}>{s.desc}</span>
@@ -239,8 +239,8 @@ export default function App() {
 
         {/* Tech stack */}
         <div style={styles.techStack}>
-          {['Gemini 2.5', 'Google ADK', 'Veo 2.0', 'Imagen 4.0', 'Cloud TTS', 'Wav2Lip', 'FFmpeg'].map((t, i) => (
-            <span key={i} style={styles.techBadge}>{t}</span>
+          {['Gemini 2.5', 'Google ADK', 'Veo 2.0', 'Imagen 4.0', 'Cloud TTS', 'Wav2Lip', 'FFmpeg'].map((t) => (
+            <span key={t} style={styles.techBadge}>{t}</span>
           ))}
         </div>
         <p style={styles.poweredBy}>
