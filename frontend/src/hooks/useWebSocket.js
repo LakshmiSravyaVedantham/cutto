@@ -25,6 +25,7 @@ export default function useWebSocket() {
   const [videoUrl, setVideoUrl] = useState(null)
   const [error, setError] = useState(null)
   const [connected, setConnected] = useState(false)
+  const [connecting, setConnecting] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
   const [connectionLost, setConnectionLost] = useState(false)
   const wsRef = useRef(null)
@@ -48,15 +49,18 @@ export default function useWebSocket() {
       explicitKey || new URLSearchParams(window.location.search).get('key') || ''
     const wsUrl = `${protocol}//${host}/ws${key ? `?key=${encodeURIComponent(key)}` : ''}`
 
+    setConnecting(true)
     const ws = new WebSocket(wsUrl)
     wsRef.current = ws
 
     ws.onopen = () => {
+      setConnecting(false)
       setConnected(true)
       setConnectionLost(false)
       retriesRef.current = 0
     }
     ws.onclose = () => {
+      setConnecting(false)
       const wasConnected = connected
       setConnected(false)
       if (wasConnected) setConnectionLost(true)
@@ -215,9 +219,9 @@ export default function useWebSocket() {
 
   return useMemo(() => ({
     messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-    connected, connectionLost, isThinking, connect, connectWithPrompt, sendText,
-    approve, updatePlan, reset, dismissError
+    connected, connecting, connectionLost, isThinking, connect, connectWithPrompt,
+    sendText, approve, updatePlan, reset, dismissError
   }), [messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-       connected, connectionLost, isThinking, connect, connectWithPrompt, sendText,
-       approve, updatePlan, reset, dismissError])
+       connected, connecting, connectionLost, isThinking, connect, connectWithPrompt,
+       sendText, approve, updatePlan, reset, dismissError])
 }

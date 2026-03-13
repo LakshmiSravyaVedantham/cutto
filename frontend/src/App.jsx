@@ -53,22 +53,35 @@ export default function App() {
             style={{
               ...styles.ctaBtn,
               ...(isMobile ? { padding: '18px 36px', fontSize: 16 } : {}),
+              ...(ws.connecting ? { opacity: 0.7, pointerEvents: 'none' } : {}),
             }}
             onClick={ws.connect}
+            disabled={ws.connecting}
             onMouseOver={e => {
-              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'
-              e.currentTarget.style.boxShadow = '0 12px 48px rgba(102,126,234,0.5)'
+              if (!ws.connecting) {
+                e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'
+                e.currentTarget.style.boxShadow = '0 12px 48px rgba(102,126,234,0.5)'
+              }
             }}
             onMouseOut={e => {
               e.currentTarget.style.transform = 'translateY(0) scale(1)'
               e.currentTarget.style.boxShadow = '0 6px 32px rgba(102,126,234,0.35)'
             }}
           >
-            Start Creating
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 8 }}>
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+            {ws.connecting ? (
+              <>
+                Connecting
+                <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginLeft: 10 }} />
+              </>
+            ) : (
+              <>
+                Start Creating
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 8 }}>
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </>
+            )}
           </button>
         </div>
 
