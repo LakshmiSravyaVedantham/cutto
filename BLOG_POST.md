@@ -20,6 +20,10 @@ I built **CutTo** to change that. You describe any video idea in a conversation,
 
 5. **Download your video** — Multi-character voices, lipsync on close-ups, mood-matched background music. All assembled automatically.
 
+**Try the live demo**: [cutto-vu7xxy6oaa-uc.a.run.app](https://cutto-vu7xxy6oaa-uc.a.run.app) — click a quick-start template to see it in action.
+
+CutTo supports 6 video categories: animated stories, medical/science explainers, documentaries, tutorials, marketing videos, and motivational pieces. The full project has 113 automated tests covering the pipeline, services, agent, and API.
+
 ## The tech stack
 
 | Component | Technology |
@@ -77,6 +81,6 @@ Open http://localhost:8000, click "Start Creating", and describe your video.
 
 ---
 
-[GitHub Repo](https://github.com/LakshmiSravyaVedantham/cutto) | MIT License
+[GitHub Repo](https://github.com/LakshmiSravyaVedantham/cutto) | [Live Demo](https://cutto-vu7xxy6oaa-uc.a.run.app) | MIT License
 
-Built for the Google Gemini Live Agent Challenge (Creative Storyteller category).
+Built for the Google Gemini Live Agent Challenge (Creative Storyteller category). Every existing tool makes you the editor. CutTo makes you the director.
