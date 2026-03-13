@@ -58,7 +58,7 @@ CutTo is an AI video director that turns a conversation into a finished video. T
 
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto
 - **Demo Video**: [TODO — record <4 min demo]
-- **Live URL**: [TODO — Cloud Run URL after deploy]
+- **Live URL**: https://cutto-796434140612.us-central1.run.app
 
 ## Hackathon Requirements Checklist
 
