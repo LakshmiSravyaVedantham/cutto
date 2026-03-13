@@ -1,13 +1,16 @@
 """Tests for REST API endpoints."""
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 
 @pytest.fixture
 def client():
     from fastapi.testclient import TestClient
+
     from backend.main import app
+
     return TestClient(app)
 
 
@@ -51,3 +54,12 @@ def test_video_not_found(client):
     assert resp.status_code == 200
     data = resp.json()
     assert data["error"] == "Video not found"
+
+
+def test_video_served_from_gcs_when_local_missing(client):
+    with patch("backend.main.storage.download_video", return_value=b"video-bytes"):
+        resp = client.get("/videos/test-video/final.mp4")
+
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "video/mp4"
+    assert resp.content == b"video-bytes"

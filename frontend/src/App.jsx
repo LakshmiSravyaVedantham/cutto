@@ -103,7 +103,6 @@ export default function App() {
     <DoneView
       videoUrl={ws.videoUrl}
       onReset={() => window.location.reload()}
-      onEditScenes={() => ws.reset()}
     />
   )
   if (isGenerating) return (

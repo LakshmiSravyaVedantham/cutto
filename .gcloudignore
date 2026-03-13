@@ -2,7 +2,6 @@
 .github
 .env
 .env.*
-!.env.example
 __pycache__
 *.pyc
 *.pyo
@@ -13,7 +12,5 @@ frontend/node_modules
 frontend/dist
 tests
 docs
-*.md
-!requirements.txt
 .pytest_cache
 .mypy_cache

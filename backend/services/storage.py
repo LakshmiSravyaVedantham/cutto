@@ -2,8 +2,6 @@
 
 import logging
 import os
-from datetime import timedelta
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -27,30 +25,46 @@ def is_available() -> bool:
     return _gcs_available
 
 
-def upload_video(local_path: str, video_id: str) -> str:
-    """Upload video to GCS and return a signed URL (valid 1 hour).
+def _blob_name(video_id: str) -> str:
+    return f"videos/{video_id}/final.mp4"
 
-    Returns the local path unchanged if GCS is not available.
+
+def upload_video(local_path: str, video_id: str) -> bool:
+    """Upload video to GCS.
+
+    Returns True on success, False on failure or when GCS is unavailable.
     """
     if not _gcs_available:
-        return local_path
+        return False
 
     try:
         client = gcs.Client()
         bucket = client.bucket(GCS_BUCKET)
-        blob_name = f"videos/{video_id}/final.mp4"
+        blob_name = _blob_name(video_id)
         blob = bucket.blob(blob_name)
 
         logger.info(f"Uploading {local_path} to gs://{GCS_BUCKET}/{blob_name}")
         blob.upload_from_filename(local_path, content_type="video/mp4")
-
-        url = blob.generate_signed_url(
-            version="v4",
-            expiration=timedelta(hours=1),
-            method="GET",
-        )
-        logger.info(f"Upload complete — signed URL generated")
-        return url
+        logger.info("Upload complete")
+        return True
     except Exception as e:
         logger.warning(f"GCS upload failed ({e}), serving locally")
-        return local_path
+        return False
+
+
+def download_video(video_id: str) -> bytes | None:
+    """Download a video from GCS as bytes."""
+    if not _gcs_available:
+        return None
+
+    try:
+        client = gcs.Client()
+        bucket = client.bucket(GCS_BUCKET)
+        blob = bucket.blob(_blob_name(video_id))
+        if not blob.exists():
+            return None
+        logger.info(f"Downloading gs://{GCS_BUCKET}/{blob.name}")
+        return blob.download_as_bytes()
+    except Exception as e:
+        logger.warning(f"GCS download failed ({e})")
+        return None

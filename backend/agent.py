@@ -1,9 +1,11 @@
-from google import genai
-from google.genai import types
-from backend.models import ScenePlan
-from backend.config import GOOGLE_API_KEY, GEMINI_MODEL, GEMINI_IMAGE_MODEL
 import json
 import logging
+
+from google import genai
+from google.genai import types
+
+from backend.config import GEMINI_IMAGE_MODEL, GEMINI_MODEL, GOOGLE_API_KEY
+from backend.models import ScenePlan
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +24,20 @@ You create professional short videos on ANY topic: animated stories, medical exp
 ═══════════════════════════════════════
 PHASE 1 — UNDERSTAND THE VIDEO
 ═══════════════════════════════════════
-Ask 2-3 quick questions, but frame them as a creative director would:
+Default behavior: if the user's request is already reasonably clear, DO NOT ask follow-up questions. Go straight to a complete scene plan in your first real response.
+
+Only ask a follow-up question if a critical detail is missing and you genuinely cannot make a strong plan without it. Ask at most 1 concise question in that case.
+
+If you do ask a question, still propose a strong default creative direction so the user can simply say "yes".
+
+Ask quick questions only when needed, and frame them as a creative director would:
 - "What's the story you want to tell?" (not "What is the video about?")
 - "Who's watching this — and what should they FEEL by the end?"
 - "I'm thinking [style suggestion] — does that vibe with what you're imagining?"
 
 Show creative initiative. If the user says "explain how the heart works," don't just ask questions — react: "Great topic! I'm envisioning a clean medical animation, deep blues and whites, with a narrator walking through each chamber. Think 'Inner Body' meets Pixar. Sound good, or were you imagining something different?"
 
-If the request is clear enough, skip questions and get to work — show your creative vision immediately.
+If the request is clear enough, skip questions and get to work immediately. The preferred outcome is: first user prompt -> full 8-scene plan.
 
 DETECT THE VIDEO CATEGORY automatically:
 - STORY: animated narrative with characters (Pixar, anime, etc.)
@@ -204,6 +212,12 @@ class ConversationSession:
         self.client = genai.Client(api_key=GOOGLE_API_KEY)
         self.scene_plan: ScenePlan | None = None
 
+    def _request_history(self) -> list[dict]:
+        """Keep request context bounded so Gemini doesn't hit token limits."""
+        if len(self.history) <= 8:
+            return self.history
+        return self.history[-8:]
+
     async def send_message(
         self, message: str
     ) -> tuple[str, bytes | None, ScenePlan | None, bool]:
@@ -216,7 +230,7 @@ class ConversationSession:
         try:
             response = self.client.models.generate_content(
                 model=GEMINI_IMAGE_MODEL,
-                contents=self.history,
+                contents=self._request_history(),
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     response_modalities=["TEXT", "IMAGE"],
@@ -226,7 +240,7 @@ class ConversationSession:
             logger.error(f"Gemini image model failed: {e}, falling back to text-only")
             response = self.client.models.generate_content(
                 model=GEMINI_MODEL,
-                contents=self.history,
+                contents=self._request_history(),
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                 ),
@@ -236,7 +250,12 @@ class ConversationSession:
         image_bytes = None
 
         if not response.candidates or not response.candidates[0].content.parts:
-            return "I'm thinking about your video idea — could you tell me a bit more?", None, None, False
+            return (
+                "I'm thinking about your video idea — could you tell me a bit more?",
+                None,
+                None,
+                False,
+            )
 
         for part in response.candidates[0].content.parts:
             if hasattr(part, "text") and part.text:
@@ -245,7 +264,10 @@ class ConversationSession:
                 image_bytes = part.inline_data.data
 
         full_text = "\n".join(text_parts)
-        self.history.append({"role": "model", "parts": [{"text": full_text}]})
+        history_text = full_text
+        if len(history_text) > 4000:
+            history_text = history_text[:4000] + "\n...[truncated for history]"
+        self.history.append({"role": "model", "parts": [{"text": history_text}]})
 
         # Try to extract scene plan from response
         scene_plan = extract_scene_plan(full_text)

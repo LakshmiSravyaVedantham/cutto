@@ -165,11 +165,19 @@ class TestRunFfmpeg:
     def test_successful_command(self, tmp_path):
         """Generate a 1-second silent video to prove run_ffmpeg works."""
         out = str(tmp_path / "test.mp4")
-        run_ffmpeg([
-            "-f", "lavfi", "-i", "color=c=black:s=320x240:d=1",
-            "-c:v", "libx264", "-pix_fmt", "yuv420p",
-            out,
-        ])
+        run_ffmpeg(
+            [
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=black:s=320x240:d=1",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                out,
+            ]
+        )
         assert (tmp_path / "test.mp4").exists()
 
 
@@ -185,8 +193,12 @@ class TestGetAudioDuration:
         audio_path = str(tmp_path_factory.mktemp("audio") / "test.mp3")
         subprocess.run(
             [
-                "ffmpeg", "-y",
-                "-f", "lavfi", "-i", "sine=frequency=440:duration=2",
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=440:duration=2",
                 audio_path,
             ],
             capture_output=True,

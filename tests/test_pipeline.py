@@ -7,12 +7,11 @@ Tests verify orchestration logic, fallback chains, and error handling.
 import asyncio
 import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, call, patch
 
 import pytest
 
-from backend.models import Scene, ScenePlan, PipelineProgress
-
+from backend.models import PipelineProgress, Scene, ScenePlan
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -73,21 +72,33 @@ def mock_services():
     with (
         patch("backend.pipeline.veo.generate_video") as mock_veo,
         patch("backend.pipeline.imagen.generate_image") as mock_imagen,
-        patch("backend.pipeline.tts.synthesize_to_file", new_callable=AsyncMock) as mock_tts,
-        patch("backend.pipeline.tts.get_voice_for_speaker", return_value="en-US-GuyNeural") as mock_voice,
-        patch("backend.pipeline.ffmpeg.get_audio_duration", return_value=4.5) as mock_audio_dur,
-        patch("backend.pipeline.ffmpeg.get_video_duration", return_value=5.0) as mock_video_dur,
+        patch(
+            "backend.pipeline.tts.synthesize_to_file", new_callable=AsyncMock
+        ) as mock_tts,
+        patch(
+            "backend.pipeline.tts.get_voice_for_speaker", return_value="en-US-GuyNeural"
+        ) as mock_voice,
+        patch(
+            "backend.pipeline.ffmpeg.get_audio_duration", return_value=4.5
+        ) as mock_audio_dur,
+        patch(
+            "backend.pipeline.ffmpeg.get_video_duration", return_value=5.0
+        ) as mock_video_dur,
         patch("backend.pipeline.ffmpeg.adjust_audio_duration") as mock_adjust_audio,
         patch("backend.pipeline.ffmpeg.adjust_video_duration") as mock_adjust_video,
         patch("backend.pipeline.ffmpeg.create_ken_burns") as mock_ken_burns,
         patch("backend.pipeline.ffmpeg.create_scene_clip") as mock_scene_clip,
         patch("backend.pipeline.ffmpeg.concat_clips") as mock_concat,
         patch("backend.pipeline.ffmpeg.add_music") as mock_add_music,
-        patch("backend.pipeline.lipsync.is_available", return_value=False) as mock_lipsync_avail,
+        patch(
+            "backend.pipeline.lipsync.is_available", return_value=False
+        ) as mock_lipsync_avail,
         patch("backend.pipeline.lipsync.apply_lipsync") as mock_lipsync,
     ):
         # Veo returns the output path by default
-        mock_veo.side_effect = lambda prompt, output_path, duration, seed=None: output_path
+        mock_veo.side_effect = (
+            lambda prompt, output_path, duration, seed=None: output_path
+        )
 
         # Imagen returns the output path
         mock_imagen.side_effect = lambda prompt, output_path: output_path
@@ -439,7 +450,7 @@ class TestAssembleFinal:
     @pytest.mark.asyncio
     async def test_unknown_mood_defaults_to_calm(self, mock_services, tmp_path):
         """An unrecognized mood should default to 'calm.mp3'."""
-        from backend.pipeline import assemble_final, MUSIC_MAP
+        from backend.pipeline import MUSIC_MAP, assemble_final
 
         plan = make_plan(mood="mysterious")
         # "mysterious" is not in MUSIC_MAP, so it defaults to calm.mp3
@@ -530,7 +541,7 @@ class TestRunPipeline:
     @pytest.mark.asyncio
     async def test_batch_processing(self, mock_services):
         """Scenes should be processed in batches of PARALLEL_BATCH_SIZE."""
-        from backend.pipeline import run_pipeline, PARALLEL_BATCH_SIZE
+        from backend.pipeline import PARALLEL_BATCH_SIZE, run_pipeline
 
         # Create more scenes than the batch size
         scenes = [make_scene(scene_number=i) for i in range(1, PARALLEL_BATCH_SIZE + 3)]

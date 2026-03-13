@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from typing import Literal
 import uuid
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 
 class Scene(BaseModel):
@@ -23,7 +24,9 @@ class ScenePlan(BaseModel):
     total_scenes: int = Field(gt=0, le=20)
     mood: str
     visual_style_anchor: str = ""
-    audio_driven: bool = False  # True = audio drives duration, False = video drives duration
+    audio_driven: bool = (
+        False  # True = audio drives duration, False = video drives duration
+    )
     scenes: list[Scene]
 
     def model_post_init(self, __context):

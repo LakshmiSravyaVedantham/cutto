@@ -36,7 +36,12 @@ def test_tool_names():
     from backend.adk_agent import root_agent
 
     tool_names = {t.__name__ for t in root_agent.tools}
-    assert tool_names == {"plan_video", "get_pipeline_status", "list_video_categories", "revise_scene"}
+    assert tool_names == {
+        "plan_video",
+        "get_pipeline_status",
+        "list_video_categories",
+        "revise_scene",
+    }
 
 
 def test_list_video_categories_returns_categories():

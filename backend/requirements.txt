@@ -13,6 +13,13 @@ google-adk>=1.0
 google-cloud-texttospeech>=2.14
 google-cloud-storage>=2.14
 
+# Video / lipsync runtime
+librosa>=0.11
+numpy>=1.26
+opencv-python-headless>=4.10
+scipy>=1.11
+tqdm>=4.66
+
 # TTS fallback
 edge-tts>=6.1
 

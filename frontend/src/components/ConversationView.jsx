@@ -92,7 +92,7 @@ export default function ConversationView({ ws }) {
   }
 
   const handleSend = () => {
-    if (!input.trim()) return
+    if (!input.trim() || ws.isThinking || !ws.connected) return
     ws.sendText(input.trim())
     setInput('')
   }
@@ -237,7 +237,7 @@ export default function ConversationView({ ws }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
             placeholder={isListening ? 'Listening...' : 'Describe your video idea...'}
-            disabled={isListening}
+            disabled={isListening || ws.isThinking || !ws.connected}
           />
           <button
             style={{
@@ -245,7 +245,7 @@ export default function ConversationView({ ws }) {
               ...(isMobile ? { minWidth: 44, minHeight: 44 } : {}),
             }}
             onClick={handleSend}
-            disabled={!input.trim() || isListening}
+            disabled={!input.trim() || isListening || ws.isThinking || !ws.connected}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="22" y1="2" x2="11" y2="13" />

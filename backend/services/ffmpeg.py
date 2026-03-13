@@ -32,8 +32,10 @@ def get_audio_duration(audio_path: str) -> float:
     """Use ffprobe to get audio duration in seconds."""
     cmd = [
         "ffprobe",
-        "-v", "quiet",
-        "-print_format", "json",
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
         "-show_format",
         audio_path,
     ]
@@ -50,8 +52,10 @@ def get_video_duration(video_path: str) -> float:
     """Use ffprobe to get video duration in seconds."""
     cmd = [
         "ffprobe",
-        "-v", "quiet",
-        "-print_format", "json",
+        "-v",
+        "quiet",
+        "-print_format",
+        "json",
         "-show_format",
         video_path,
     ]
@@ -80,15 +84,18 @@ def build_ken_burns_cmd(
     """
     total_frames = duration * 30
     return [
-        "-loop", "1",
-        "-i", image_path,
-        "-vf", (
-            f"zoompan=z='min(zoom+0.002,1.2)'"
-            f":d={total_frames}:s=1280x720:fps=30"
-        ),
-        "-t", str(duration),
-        "-c:v", "libx264",
-        "-pix_fmt", "yuv420p",
+        "-loop",
+        "1",
+        "-i",
+        image_path,
+        "-vf",
+        (f"zoompan=z='min(zoom+0.002,1.2)'" f":d={total_frames}:s=1280x720:fps=30"),
+        "-t",
+        str(duration),
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
         output_path,
     ]
 
@@ -100,10 +107,14 @@ def build_scene_clip_cmd(
 ) -> list[str]:
     """Combine a video clip with an audio track (voiceover)."""
     return [
-        "-i", visual_path,
-        "-i", audio_path,
-        "-c:v", "copy",
-        "-c:a", "aac",
+        "-i",
+        visual_path,
+        "-i",
+        audio_path,
+        "-c:v",
+        "copy",
+        "-c:a",
+        "aac",
         "-shortest",
         output_path,
     ]
@@ -124,10 +135,14 @@ def build_concat_cmd(
         Path(output_path).parent / f".concat_{Path(output_path).stem}.txt"
     )
     return [
-        "-f", "concat",
-        "-safe", "0",
-        "-i", concat_list_path,
-        "-c", "copy",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        concat_list_path,
+        "-c",
+        "copy",
         output_path,
     ]
 
@@ -162,17 +177,21 @@ def build_crossfade_concat_cmd(
 
     # Concat all audio streams
     audio_inputs = "".join(f"[{i}:a]" for i in range(len(clip_paths)))
-    filters.append(
-        f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]"
-    )
+    filters.append(f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]")
 
     return inputs + [
-        "-filter_complex", ";".join(filters),
-        "-map", prev_v,
-        "-map", "[aout]",
-        "-c:v", "libx264",
-        "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
+        "-filter_complex",
+        ";".join(filters),
+        "-map",
+        prev_v,
+        "-map",
+        "[aout]",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
         output_path,
     ]
 
@@ -180,10 +199,15 @@ def build_crossfade_concat_cmd(
 def _video_has_audio(video_path: str) -> bool:
     """Check if a video file contains an audio stream."""
     cmd = [
-        "ffprobe", "-v", "quiet",
-        "-select_streams", "a",
-        "-show_entries", "stream=index",
-        "-of", "csv=p=0",
+        "ffprobe",
+        "-v",
+        "quiet",
+        "-select_streams",
+        "a",
+        "-show_entries",
+        "stream=index",
+        "-of",
+        "csv=p=0",
         video_path,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -204,30 +228,42 @@ def build_add_music_cmd(
     """
     if has_audio:
         return [
-            "-i", video_path,
-            "-i", music_path,
+            "-i",
+            video_path,
+            "-i",
+            music_path,
             "-filter_complex",
             (
                 f"[1:a]volume={music_volume}[bg];"
                 "[0:a][bg]amix=inputs=2:duration=first:dropout_transition=2[out]"
             ),
-            "-map", "0:v",
-            "-map", "[out]",
-            "-c:v", "copy",
-            "-c:a", "aac",
+            "-map",
+            "0:v",
+            "-map",
+            "[out]",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
             output_path,
         ]
     else:
         # No existing audio — just add music at volume
         return [
-            "-i", video_path,
-            "-i", music_path,
+            "-i",
+            video_path,
+            "-i",
+            music_path,
             "-filter_complex",
             f"[1:a]volume={music_volume}[out]",
-            "-map", "0:v",
-            "-map", "[out]",
-            "-c:v", "copy",
-            "-c:a", "aac",
+            "-map",
+            "0:v",
+            "-map",
+            "[out]",
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
             "-shortest",
             output_path,
         ]
@@ -243,11 +279,16 @@ def build_adjust_duration_cmd(
     If video is longer, trims it. If shorter, freezes the last frame.
     """
     return [
-        "-i", video_path,
-        "-t", str(target_duration),
-        "-vf", f"tpad=stop_mode=clone:stop_duration={target_duration}",
-        "-c:v", "libx264",
-        "-pix_fmt", "yuv420p",
+        "-i",
+        video_path,
+        "-t",
+        str(target_duration),
+        "-vf",
+        f"tpad=stop_mode=clone:stop_duration={target_duration}",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
         "-an",
         output_path,
     ]
@@ -322,10 +363,14 @@ def adjust_audio_duration(
     if 0.95 <= ratio <= 1.05:
         # Close enough — just trim or pad
         cmd = [
-            "-i", audio_path,
-            "-af", f"apad=whole_dur={target_duration}",
-            "-t", str(target_duration),
-            "-c:a", "aac",
+            "-i",
+            audio_path,
+            "-af",
+            f"apad=whole_dur={target_duration}",
+            "-t",
+            str(target_duration),
+            "-c:a",
+            "libmp3lame",
             output_path,
         ]
     elif ratio > 1.0:
@@ -339,23 +384,33 @@ def adjust_audio_duration(
             remaining /= step
         filter_str = ",".join(filters) if filters else "atempo=1.0"
         cmd = [
-            "-i", audio_path,
-            "-af", filter_str,
-            "-t", str(target_duration),
-            "-c:a", "aac",
+            "-i",
+            audio_path,
+            "-af",
+            filter_str,
+            "-t",
+            str(target_duration),
+            "-c:a",
+            "libmp3lame",
             output_path,
         ]
     else:
         # Audio too short — pad with silence
         cmd = [
-            "-i", audio_path,
-            "-af", f"apad=whole_dur={target_duration}",
-            "-t", str(target_duration),
-            "-c:a", "aac",
+            "-i",
+            audio_path,
+            "-af",
+            f"apad=whole_dur={target_duration}",
+            "-t",
+            str(target_duration),
+            "-c:a",
+            "libmp3lame",
             output_path,
         ]
 
-    logger.info(f"Adjusting audio: {actual:.1f}s -> {target_duration:.1f}s (ratio={ratio:.2f})")
+    logger.info(
+        f"Adjusting audio: {actual:.1f}s -> {target_duration:.1f}s (ratio={ratio:.2f})"
+    )
     run_ffmpeg(cmd)
 
 
@@ -368,5 +423,7 @@ def add_music(
     """Add background music to a video. Auto-detects if video has audio."""
     has_audio = _video_has_audio(video_path)
     logger.info(f"Adding music (has_existing_audio={has_audio})")
-    cmd = build_add_music_cmd(video_path, music_path, output_path, music_volume, has_audio)
+    cmd = build_add_music_cmd(
+        video_path, music_path, output_path, music_volume, has_audio
+    )
     run_ffmpeg(cmd)

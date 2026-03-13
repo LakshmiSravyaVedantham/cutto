@@ -1,12 +1,18 @@
 import asyncio
-import tempfile
 import logging
+import tempfile
 from pathlib import Path
 from typing import Callable, Optional
 
-from backend.models import ScenePlan, Scene, PipelineProgress
-from backend.services import imagen, tts, ffmpeg, veo, lipsync
-from backend.config import MUSIC_DIR, GOOGLE_API_KEY, GEMINI_IMAGE_MODEL
+from backend.config import (
+    GEMINI_IMAGE_MODEL,
+    GOOGLE_API_KEY,
+    MUSIC_DIR,
+    PIPELINE_PARALLEL_BATCH_SIZE,
+    SCENE_TIMEOUT_SECONDS,
+)
+from backend.models import PipelineProgress, Scene, ScenePlan
+from backend.services import ffmpeg, imagen, lipsync, tts, veo
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +25,8 @@ MUSIC_MAP = {
 }
 
 
-PARALLEL_BATCH_SIZE = 3  # Process 3 scenes at once (avoids Veo rate limits)
-PIPELINE_TIMEOUT = 300   # 5 minutes max for entire pipeline
-SCENE_TIMEOUT = 180      # 3 minutes max per scene
+PARALLEL_BATCH_SIZE = max(1, PIPELINE_PARALLEL_BATCH_SIZE)
+SCENE_TIMEOUT = max(60, SCENE_TIMEOUT_SECONDS)
 
 
 async def run_pipeline(
@@ -30,10 +35,6 @@ async def run_pipeline(
 ) -> str:
     """Run the full video generation pipeline with parallel scene processing."""
     work_dir = Path(tempfile.mkdtemp(prefix="cutto_"))
-
-    # Generate a consistent seed from video_id so all scenes share visual style
-    seed = hash(plan.video_id) % (2**31)
-    logger.info(f"[Pipeline] Using seed={seed} for visual consistency across scenes")
 
     # Process scenes in parallel batches for speed
     scene_clips: list[str | None] = [None] * len(plan.scenes)
@@ -55,10 +56,10 @@ async def run_pipeline(
         try:
             clip_path = await asyncio.wait_for(
                 process_scene(
-                    scene, work_dir,
+                    scene,
+                    work_dir,
                     style_anchor=plan.visual_style_anchor,
                     audio_driven=plan.audio_driven,
-                    seed=seed,
                 ),
                 timeout=SCENE_TIMEOUT,
             )
@@ -130,7 +131,9 @@ async def run_pipeline(
     return final_path
 
 
-async def generate_video_with_fallback(prompt: str, output_path: str, duration: int = 8, seed: int | None = None) -> tuple[str, bool]:
+async def generate_video_with_fallback(
+    prompt: str, output_path: str, duration: int = 8
+) -> tuple[str, bool]:
     """Try Veo video generation first, fall back to Imagen static image.
 
     Returns (output_path, is_video) — is_video=True means animated clip, False means static image.
@@ -138,7 +141,9 @@ async def generate_video_with_fallback(prompt: str, output_path: str, duration: 
     # Try Veo for animated video
     try:
         logger.info("Attempting Veo video generation...")
-        result = await asyncio.to_thread(veo.generate_video, prompt, output_path, duration, seed=seed)
+        result = await asyncio.to_thread(
+            veo.generate_video, prompt, output_path, duration
+        )
         logger.info("Veo succeeded — animated video generated")
         return result, True
     except Exception as e:
@@ -181,8 +186,10 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
 
 
 async def process_scene(
-    scene: Scene, work_dir: Path, style_anchor: str = "", audio_driven: bool = False,
-    seed: int | None = None,
+    scene: Scene,
+    work_dir: Path,
+    style_anchor: str = "",
+    audio_driven: bool = False,
 ) -> str:
     """Process a single scene: generate video/image, voiceover, combine.
 
@@ -198,16 +205,18 @@ async def process_scene(
         visual_prompt = f"{style_anchor}. {visual_prompt}"
 
     # Strip quotation marks — Veo best practices say avoid quotes in prompts
-    visual_prompt = visual_prompt.replace('"', '').replace("'", '')
+    visual_prompt = visual_prompt.replace('"', "").replace("'", "")
 
     # Step 2: Generate voiceover with speaker-specific voice (parallel with visual)
     raw_audio = str(scene_dir / "narration_raw.mp3")
-    tts_task = asyncio.create_task(generate_tts(scene.narration, raw_audio, scene.speaker))
+    tts_task = asyncio.create_task(
+        generate_tts(scene.narration, raw_audio, scene.speaker)
+    )
 
     # Step 3: Generate visual (video via Veo, or fallback to Imagen)
     visual_output = str(scene_dir / "visual.mp4")
     visual_path, is_video = await generate_video_with_fallback(
-        visual_prompt, visual_output, duration=scene.target_duration, seed=seed
+        visual_prompt, visual_output, duration=scene.target_duration
     )
 
     # Step 4: Wait for TTS, then decide who drives duration
@@ -253,15 +262,21 @@ async def process_scene(
     is_character = scene.speaker.startswith("character_")
     if is_character:
         if is_video and lipsync.is_available():
-            logger.info(f"[Lipsync] Applying for {scene.speaker} (scene {scene.scene_number})")
+            logger.info(
+                f"[Lipsync] Applying for {scene.speaker} (scene {scene.scene_number})"
+            )
             synced_path = str(scene_dir / "visual_synced.mp4")
             visual_path = await asyncio.to_thread(
                 lipsync.apply_lipsync, visual_path, audio_path, synced_path
             )
         elif not is_video:
-            logger.info(f"[Lipsync] Skipped — static image, no face (scene {scene.scene_number})")
+            logger.info(
+                f"[Lipsync] Skipped — static image, no face (scene {scene.scene_number})"
+            )
         elif not lipsync.is_available():
-            logger.warning(f"[Lipsync] Skipped — Wav2Lip not available (scene {scene.scene_number})")
+            logger.warning(
+                f"[Lipsync] Skipped — Wav2Lip not available (scene {scene.scene_number})"
+            )
     else:
         logger.info(f"[Lipsync] Skipped — narrator scene (scene {scene.scene_number})")
 

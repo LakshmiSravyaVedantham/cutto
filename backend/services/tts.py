@@ -9,11 +9,11 @@ logger = logging.getLogger(__name__)
 
 # Google Cloud TTS voice mapping (WaveNet voices for high quality)
 CLOUD_VOICE_MAP = {
-    "narrator": ("en-US-Wavenet-D", "MALE"),       # Deep, authoritative narrator
-    "character_1": ("en-US-Wavenet-F", "FEMALE"),   # Female character
-    "character_2": ("en-US-Wavenet-B", "MALE"),     # Male character
-    "character_3": ("en-US-Wavenet-E", "FEMALE"),   # Young female
-    "character_4": ("en-US-Wavenet-A", "MALE"),     # Older male
+    "narrator": ("en-US-Wavenet-D", "MALE"),  # Deep, authoritative narrator
+    "character_1": ("en-US-Wavenet-F", "FEMALE"),  # Female character
+    "character_2": ("en-US-Wavenet-B", "MALE"),  # Male character
+    "character_3": ("en-US-Wavenet-E", "FEMALE"),  # Young female
+    "character_4": ("en-US-Wavenet-A", "MALE"),  # Older male
 }
 
 # edge-tts voice mapping (fallback)
@@ -32,7 +32,9 @@ _cloud_tts_available = False
 try:
     from google.cloud import texttospeech
 
-    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") or os.environ.get("GOOGLE_API_KEY"):
+    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") or os.environ.get(
+        "GOOGLE_API_KEY"
+    ):
         _cloud_tts_available = True
         logger.info("Google Cloud TTS available — using as primary")
     else:
@@ -61,7 +63,9 @@ async def synthesize_to_file(
 
     logger.info(
         "Synthesizing TTS (edge-tts): %d chars -> %s (voice=%s)",
-        len(text), output_path, voice,
+        len(text),
+        output_path,
+        voice,
     )
     communicate = edge_tts.Communicate(text, voice)
     await communicate.save(output_path)
@@ -69,10 +73,13 @@ async def synthesize_to_file(
 
 
 async def _cloud_tts_synthesize(
-    text: str, output_path: str, speaker: str = "narrator",
+    text: str,
+    output_path: str,
+    speaker: str = "narrator",
 ) -> str:
     """Synthesize using Google Cloud Text-to-Speech API."""
     import asyncio
+
     from google.cloud import texttospeech
 
     voice_name, ssml_gender = CLOUD_VOICE_MAP.get(speaker, ("en-US-Wavenet-D", "MALE"))
@@ -84,7 +91,9 @@ async def _cloud_tts_synthesize(
 
     logger.info(
         "Synthesizing TTS (Cloud): %d chars -> %s (voice=%s)",
-        len(text), output_path, voice_name,
+        len(text),
+        output_path,
+        voice_name,
     )
 
     def _sync_synthesize():
@@ -101,7 +110,9 @@ async def _cloud_tts_synthesize(
             pitch=0.0,
         )
         response = client.synthesize_speech(
-            input=synthesis_input, voice=voice_params, audio_config=audio_config,
+            input=synthesis_input,
+            voice=voice_params,
+            audio_config=audio_config,
         )
         with open(output_path, "wb") as f:
             f.write(response.audio_content)

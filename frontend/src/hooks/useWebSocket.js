@@ -13,12 +13,20 @@ export default function useWebSocket() {
   const wsRef = useRef(null)
   const retriesRef = useRef(0)
   const reconnectTimer = useRef(null)
+  const isThinkingRef = useRef(false)
+  const lastSentRef = useRef({ text: '', at: 0 })
+
+  useEffect(() => {
+    isThinkingRef.current = isThinking
+  }, [isThinking])
 
   const connect = useCallback((demoKey = '') => {
+    const explicitKey = typeof demoKey === 'string' ? demoKey : ''
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host
     // Pass demo key from URL param or explicit argument
-    const key = demoKey || new URLSearchParams(window.location.search).get('key') || ''
+    const key =
+      explicitKey || new URLSearchParams(window.location.search).get('key') || ''
     const wsUrl = `${protocol}//${host}/ws${key ? `?key=${encodeURIComponent(key)}` : ''}`
 
     const ws = new WebSocket(wsUrl)
@@ -96,11 +104,26 @@ export default function useWebSocket() {
   }, [])
 
   const sendText = useCallback((text) => {
+    const normalized = text.trim()
+    if (!normalized) return
+
+    // Ignore accidental double-submits while the agent is already working.
+    if (isThinkingRef.current) return
+
+    const now = Date.now()
+    if (
+      lastSentRef.current.text === normalized &&
+      now - lastSentRef.current.at < 2000
+    ) {
+      return
+    }
+    lastSentRef.current = { text: normalized, at: now }
+
     // Optimistic: show user message immediately
-    setMessages(prev => [...prev, { role: 'user', text }])
+    setMessages(prev => [...prev, { role: 'user', text: normalized }])
     setIsThinking(true)
     setError(null)
-    send({ type: 'text', text })
+    send({ type: 'text', text: normalized })
   }, [send])
 
   const approve = useCallback(() => {

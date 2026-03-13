@@ -71,6 +71,7 @@ VIDEO_CATEGORIES = [
 # ADK Function Tools
 # ---------------------------------------------------------------------------
 
+
 def plan_video(description: str) -> dict:
     """Take a user's video description and return an 8-scene plan.
 
@@ -89,7 +90,8 @@ def plan_video(description: str) -> dict:
     try:
         from google import genai
         from google.genai import types
-        from backend.config import GOOGLE_API_KEY, GEMINI_MODEL
+
+        from backend.config import GEMINI_MODEL, GOOGLE_API_KEY
 
         client = genai.Client(api_key=GOOGLE_API_KEY)
 
@@ -222,7 +224,8 @@ def revise_scene(video_id: str, scene_number: int, revision_note: str) -> dict:
     try:
         from google import genai
         from google.genai import types
-        from backend.config import GOOGLE_API_KEY, GEMINI_MODEL
+
+        from backend.config import GEMINI_MODEL, GOOGLE_API_KEY
 
         client = genai.Client(api_key=GOOGLE_API_KEY)
 
@@ -248,6 +251,7 @@ def revise_scene(video_id: str, scene_number: int, revision_note: str) -> dict:
 
         if response.candidates and response.candidates[0].content.parts:
             import json
+
             text = response.candidates[0].content.parts[0].text
             # Try to extract JSON from response
             try:
@@ -343,11 +347,20 @@ try:
     )
 
 except ImportError:
+
     class _StubAgent:
         """Minimal stand-in when google.adk is not installed."""
 
-        def __init__(self, *, name: str, model: str, description: str,
-                     instruction: str, tools: list, sub_agents: list | None = None):
+        def __init__(
+            self,
+            *,
+            name: str,
+            model: str,
+            description: str,
+            instruction: str,
+            tools: list,
+            sub_agents: list | None = None,
+        ):
             self.name = name
             self.model = model
             self.description = description
