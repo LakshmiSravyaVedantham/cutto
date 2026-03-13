@@ -22,10 +22,13 @@ RUN pip install --no-cache-dir \
     torchvision==0.25.0 && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy backend + music + Wav2Lip assets
+# Copy backend + music assets
 COPY backend/ backend/
 COPY music/ music/
-COPY wav2lip_repo/ wav2lip_repo/
+# Wav2Lip is optional — lipsync is skipped if wav2lip_repo/ is absent.
+# To enable, clone Wav2Lip into wav2lip_repo/ before building:
+#   git clone https://github.com/Rudrabha/Wav2Lip.git wav2lip_repo
+#   COPY wav2lip_repo/ wav2lip_repo/
 
 # Copy built frontend from stage 1
 COPY --from=frontend /app/frontend/dist static/
