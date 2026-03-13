@@ -38,7 +38,11 @@ async def lifespan(app: FastAPI):
     logger.info(f"  Gemini image model: {GEMINI_IMAGE_MODEL}")
     logger.info(f"  Imagen model:       {IMAGEN_MODEL}")
     logger.info(f"  Veo model:          {VEO_MODEL}")
-    logger.info(f"  API key configured: {'yes' if GOOGLE_API_KEY else 'NO'}")
+    if GOOGLE_API_KEY:
+        logger.info("  API key configured: yes")
+    else:
+        logger.warning("  API key configured: NO — set GOOGLE_API_KEY in .env")
+        logger.warning("  Video generation will fail without a valid API key")
     logger.info(
         f"  Cloud Storage:      {'enabled' if storage.is_available() else 'disabled'}"
     )
