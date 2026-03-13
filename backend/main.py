@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="CutTo",
     version="0.1.0",
-    description="AI Video Director — describe any video idea, get a finished video",
+    description="AI Video Director for Kids' Education — turn any lesson into an animated video with AI visuals, voiceover, lipsync, and music",
     lifespan=lifespan,
 )
 
@@ -227,7 +227,13 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
         {
             "type": "transcript",
             "role": "agent",
-            "text": "Hi! I'm CutTo, your AI video director. Tell me what video you'd like to create — an animated story, medical explainer, tutorial, product demo, documentary, or anything else.",
+            "text": (
+                "Hey! I'm your AI video director. Tell me what you'd like to create "
+                "and I'll turn it into a finished animated video.\n\n"
+                "I'm great at kids' educational content — science explainers, animated "
+                "stories, lesson walkthroughs — but I can handle any topic. "
+                "What are we making today?"
+            ),
         }
     )
 
