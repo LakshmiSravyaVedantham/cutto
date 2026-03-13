@@ -528,7 +528,7 @@ const styles = {
     background: 'rgba(8,8,20,0.7)',
     backdropFilter: 'blur(16px)',
     borderRadius: 20,
-    border: '1px solid rgba(102,126,234,0.08)',
+    border: '1px solid rgba(102,126,234,0.15)',
     animation: 'fadeInScale 0.4s ease-out',
   },
   previewWrap: {

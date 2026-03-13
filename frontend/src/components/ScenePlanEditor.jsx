@@ -161,6 +161,8 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                     disabled={scene.scene_number === 1}
                     title="Move up"
                     aria-label={`Move scene ${scene.scene_number} up`}
+                    onMouseOver={e => { e.currentTarget.style.color = '#8b9cf7'; e.currentTarget.style.borderColor = 'rgba(102,126,234,0.3)' }}
+                    onMouseOut={e => { e.currentTarget.style.color = '#4a5070'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="18 15 12 9 6 15" />
@@ -175,6 +177,8 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                     disabled={scene.scene_number === plan.scenes.length}
                     title="Move down"
                     aria-label={`Move scene ${scene.scene_number} down`}
+                    onMouseOver={e => { e.currentTarget.style.color = '#8b9cf7'; e.currentTarget.style.borderColor = 'rgba(102,126,234,0.3)' }}
+                    onMouseOut={e => { e.currentTarget.style.color = '#4a5070'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="6 9 12 15 18 9" />
@@ -199,6 +203,8 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                 }} onClick={() => removeScene(scene.scene_number)}
                   title="Remove scene"
                   aria-label={`Remove scene ${scene.scene_number}`}
+                  onMouseOver={e => { e.currentTarget.style.color = '#e74c3c'; e.currentTarget.style.borderColor = 'rgba(231,76,60,0.3)'; e.currentTarget.style.background = 'rgba(231,76,60,0.06)' }}
+                  onMouseOut={e => { e.currentTarget.style.color = '#4a5070'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.background = 'transparent' }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -300,7 +306,10 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
         <button style={{
           ...styles.revisionBtn,
           ...(isMobile ? { width: '100%', minHeight: 44, fontSize: 14 } : {}),
-        }} onClick={handleRevision}>
+        }} onClick={handleRevision}
+          onMouseOver={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #667eea, #764ba2)'; e.currentTarget.style.color = '#fff'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(102,126,234,0.3)' }}
+          onMouseOut={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15))'; e.currentTarget.style.color = '#a8b4f7'; e.currentTarget.style.boxShadow = 'none' }}
+        >
           Revise
         </button>
       </div>
@@ -583,9 +592,9 @@ const styles = {
   revisionBtn: {
     padding: '12px 24px',
     borderRadius: 12,
-    background: 'rgba(102,126,234,0.1)',
-    color: '#8b9cf7',
-    border: '1px solid rgba(102,126,234,0.15)',
+    background: 'linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15))',
+    color: '#a8b4f7',
+    border: '1px solid rgba(102,126,234,0.25)',
     cursor: 'pointer',
     fontSize: 13,
     fontWeight: 700,

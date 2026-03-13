@@ -251,8 +251,9 @@ export default function App() {
   }
 
   const fallback = (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
       <div style={{ width: 24, height: 24, border: '2px solid #667eea', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+      <span style={{ color: '#5a6080', fontSize: 13, fontWeight: 500 }}>Loading CutTo...</span>
     </div>
   )
 
