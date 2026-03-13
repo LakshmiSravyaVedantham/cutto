@@ -216,8 +216,26 @@ export default function ConversationView({ ws }) {
         <div ref={bottomRef} />
       </div>
 
+      {ws.connectionLost && (
+        <div style={styles.connectionBanner}>
+          <span style={styles.connectionDot} />
+          Connection lost — reconnecting...
+        </div>
+      )}
+
       {ws.error && (
-        <div style={styles.error}>{ws.error}</div>
+        <div style={styles.error}>
+          <span style={{ flex: 1 }}>{ws.error}</span>
+          <button
+            style={styles.errorDismiss}
+            onClick={ws.dismissError}
+            title="Dismiss"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {/* Mic listening overlay */}
@@ -503,14 +521,52 @@ const styles = {
     fontWeight: 600,
   },
   error: {
-    color: '#ff6b6b',
+    color: '#ff8a8a',
     padding: '12px 16px',
-    textAlign: 'center',
-    background: 'rgba(255,107,107,0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    background: 'rgba(255,107,107,0.06)',
     borderRadius: 12,
-    border: '1px solid rgba(255,107,107,0.15)',
+    border: '1px solid rgba(255,107,107,0.12)',
     marginBottom: 8,
-    fontSize: 14,
+    fontSize: 13,
+    animation: 'fadeIn 0.3s ease-out',
+  },
+  errorDismiss: {
+    background: 'transparent',
+    border: 'none',
+    color: '#ff8a8a',
+    cursor: 'pointer',
+    padding: 4,
+    borderRadius: 6,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    opacity: 0.6,
+  },
+  connectionBanner: {
+    padding: '10px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    background: 'rgba(245,158,11,0.06)',
+    borderRadius: 12,
+    border: '1px solid rgba(245,158,11,0.12)',
+    marginBottom: 8,
+    fontSize: 13,
+    color: '#f59e0b',
+    fontWeight: 500,
+    animation: 'fadeIn 0.3s ease-out',
+  },
+  connectionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    background: '#f59e0b',
+    animation: 'pulse 1.5s ease-in-out infinite',
+    flexShrink: 0,
   },
   // Listening overlay — full screen, unmistakable
   listeningOverlay: {

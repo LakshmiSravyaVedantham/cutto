@@ -1,5 +1,21 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 
+function friendlyError(message) {
+  if (!message) return 'Something went wrong. Please try again.'
+  const lower = message.toLowerCase()
+  if (lower.includes('quota') || lower.includes('rate limit') || lower.includes('429'))
+    return 'API rate limit reached. Please wait a minute and try again.'
+  if (lower.includes('api key') || lower.includes('api_key') || lower.includes('invalid key'))
+    return 'API key issue. The server may need a valid Google API key configured.'
+  if (lower.includes('veo') && (lower.includes('fail') || lower.includes('error')))
+    return 'Video generation failed. The AI will retry with a fallback method.'
+  if (lower.includes('timeout'))
+    return 'Request timed out. The server may be busy — try again in a moment.'
+  if (lower.includes('model') && lower.includes('not found'))
+    return 'AI model unavailable. Please try again later.'
+  return message
+}
+
 export default function useWebSocket() {
   const [messages, setMessages] = useState([])
   const [scenePlan, setScenePlan] = useState(null)
@@ -10,12 +26,14 @@ export default function useWebSocket() {
   const [error, setError] = useState(null)
   const [connected, setConnected] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
+  const [connectionLost, setConnectionLost] = useState(false)
   const wsRef = useRef(null)
   const retriesRef = useRef(0)
   const reconnectTimer = useRef(null)
   const isThinkingRef = useRef(false)
   const lastSentRef = useRef({ text: '', at: 0 })
   const pendingPromptRef = useRef(null)
+  const errorTimerRef = useRef(null)
 
   useEffect(() => {
     isThinkingRef.current = isThinking
@@ -35,10 +53,13 @@ export default function useWebSocket() {
 
     ws.onopen = () => {
       setConnected(true)
+      setConnectionLost(false)
       retriesRef.current = 0
     }
     ws.onclose = () => {
+      const wasConnected = connected
       setConnected(false)
+      if (wasConnected) setConnectionLost(true)
       const attempt = (retriesRef.current || 0)
       retriesRef.current = attempt + 1
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000)
@@ -47,6 +68,9 @@ export default function useWebSocket() {
           connect(key)
         }
       }, delay)
+    }
+    ws.onerror = () => {
+      // onerror fires before onclose; don't duplicate state changes
     }
 
     ws.onmessage = (event) => {
@@ -106,9 +130,13 @@ export default function useWebSocket() {
           setSceneStatuses({})
           break
         case 'error':
-          setError(data.message)
+          setError(friendlyError(data.message))
           setIsThinking(false)
-          setProgress(null)
+          // Only clear progress for fatal errors, not scene-level ones
+          if (!data.scene) setProgress(null)
+          // Auto-dismiss non-critical errors after 10s
+          clearTimeout(errorTimerRef.current)
+          errorTimerRef.current = setTimeout(() => setError(null), 10000)
           break
       }
     }
@@ -154,9 +182,15 @@ export default function useWebSocket() {
     send({ type: 'update_plan', plan })
   }, [send])
 
+  const dismissError = useCallback(() => {
+    setError(null)
+    clearTimeout(errorTimerRef.current)
+  }, [])
+
   useEffect(() => {
     return () => {
       clearTimeout(reconnectTimer.current)
+      clearTimeout(errorTimerRef.current)
       if (wsRef.current) {
         wsRef.current.onclose = null
         wsRef.current.close()
@@ -181,7 +215,9 @@ export default function useWebSocket() {
 
   return useMemo(() => ({
     messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-    connected, isThinking, connect, connectWithPrompt, sendText, approve, updatePlan, reset
+    connected, connectionLost, isThinking, connect, connectWithPrompt, sendText,
+    approve, updatePlan, reset, dismissError
   }), [messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-       connected, isThinking, connect, connectWithPrompt, sendText, approve, updatePlan, reset])
+       connected, connectionLost, isThinking, connect, connectWithPrompt, sendText,
+       approve, updatePlan, reset, dismissError])
 }
