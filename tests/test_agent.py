@@ -70,6 +70,42 @@ class TestExtractScenePlan:
         text = "```json\n{invalid}\n```"
         assert extract_scene_plan(text) is None
 
+    def test_returns_none_for_missing_scenes(self):
+        """Pydantic validation should reject a plan without scenes."""
+        text = '```json\n{"title": "No Scenes"}\n```'
+        assert extract_scene_plan(text) is None
+
+    def test_returns_none_for_empty_scenes(self):
+        """Plan with 0 scenes is rejected by Pydantic (total_scenes must be > 0)."""
+        text = '```json\n{"title": "Empty", "total_scenes": 0, "mood": "calm", "visual_style_anchor": "x", "scenes": []}\n```'
+        assert extract_scene_plan(text) is None
+
+    def test_extracts_plan_with_extra_fields(self):
+        """Gemini may return extra fields — they should be ignored."""
+        text = """```json
+{
+  "title": "Extra Fields",
+  "total_scenes": 1,
+  "mood": "upbeat",
+  "visual_style_anchor": "style",
+  "extra_field": "ignored",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "speaker": "narrator",
+      "narration": "Test",
+      "visual_prompt": "A scene",
+      "visual_type": "video",
+      "target_duration": 8,
+      "bonus": true
+    }
+  ]
+}
+```"""
+        plan = extract_scene_plan(text)
+        assert plan is not None
+        assert plan.title == "Extra Fields"
+
 
 # ---------------------------------------------------------------------------
 # is_approved
