@@ -21,8 +21,9 @@ Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-
 ```mermaid
 flowchart TB
     subgraph Frontend["React (Vite) Frontend"]
-        UI[Chat UI + Voice Input]
+        UI["Chat UI + Voice Input\n+ Image Upload"]
         Editor[Scene Plan Editor]
+        GenView["Generating View\n(thumbnails + narration)"]
         Player[Video Player]
     end
 
@@ -50,10 +51,14 @@ flowchart TB
         Lipsync["Wav2Lip\nMouth sync (characters only)"]
     end
 
+    subgraph Enhancement["AI Enhancement"]
+        Enhance["Gemini Prompt Enhancement\n(cinematography details)"]
+    end
+
     subgraph Assembly["FFmpeg Assembly"]
         KB["Ken Burns effect\n(static images)"]
         DurAdj["Duration adjustment\n(video/audio sync)"]
-        Concat["Concat all scenes"]
+        XFade["Crossfade transitions\n(duration-aware offsets)"]
         Music["Mix background music\n(mood-matched, 25% vol)"]
     end
 
@@ -65,17 +70,19 @@ flowchart TB
     Editor -->|approve / edit| WS
 
     WS -->|approved plan| Pipeline
-    Pipeline -->|"parallel batches of 3"| VisualGen
+    Pipeline --> Enhance
+    Enhance -->|"parallel batches of 3"| VisualGen
     Pipeline --> TTS
     TTS --> Lipsync
     VisualGen --> KB
     VisualGen --> DurAdj
-    KB --> Concat
-    DurAdj --> Concat
-    Lipsync --> Concat
-    Concat --> Music
+    KB --> XFade
+    DurAdj --> XFade
+    Lipsync --> XFade
+    XFade --> Music
     Music --> MP4["Final MP4"]
-    MP4 --> Player
+    MP4 --> GenView
+    GenView -->|complete| Player
 
     subgraph Deploy["Deployment"]
         Docker --> CloudRun["Google Cloud Run\n2 vCPU / 2GB RAM"]
@@ -86,12 +93,13 @@ flowchart TB
 
 **Pipeline detail per scene:**
 
-1. Visual generation: Veo 2.0 animated clip -> Imagen 4.0 static image -> Gemini native image (fallback chain)
-2. TTS voiceover with speaker-specific voice (runs in parallel with visual generation)
-3. If static image: Ken Burns zoom effect to create motion. If Veo video: duration adjustment to match audio.
-4. Wav2Lip lipsync applied to character dialogue scenes (skipped for narrator wide shots)
-5. Visual + audio combined into scene clip
-6. All scene clips concatenated, background music mixed at 25% volume
+1. **AI prompt enhancement**: Gemini expands the visual prompt with cinematography details (camera motion, lighting, color palette, depth of field)
+2. **Visual generation**: Veo 2.0 animated clip -> Imagen 4.0 static image -> Gemini native image (3-level fallback chain with retries)
+3. **TTS voiceover** with speaker-specific voice (runs in parallel with visual generation)
+4. If static image: **Ken Burns zoom** effect to create motion. If Veo video: **duration adjustment** to match audio.
+5. **Wav2Lip lipsync** applied to character dialogue scenes (skipped for narrator wide shots)
+6. Visual + audio combined into scene clip, **JPEG thumbnail** extracted for real-time preview
+7. All scene clips joined with **crossfade transitions** (duration-aware xfade offsets), background music mixed at 25% volume
 
 Scenes are processed in **parallel batches of 3** to balance speed against Veo rate limits.
 
@@ -118,14 +126,20 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 
 - **Conversational scene planning** with Gemini producing interleaved text and images
 - **Voice input** via Web Speech API -- speak your video idea instead of typing
+- **Reference image upload** -- upload a photo, sketch, or mood board and Gemini analyzes the visual style, color palette, and composition to generate a matching `visual_style_anchor`
+- **Quick-start templates** -- one-click demo prompts (medical explainer, Pixar story, product launch) that auto-connect and generate
+- **AI prompt enhancement** -- Gemini expands every visual prompt with cinematography details (camera motion, lighting, color palette, depth of field) before sending to Veo
 - **3 distinct voice tracks**: narrator (en-US-GuyNeural), character 1 (en-US-JennyNeural), character 2 (en-US-ChristopherNeural)
 - **Scene plan editor**: edit narration, visual prompts, and speaker assignments per scene; add, remove, or reorder scenes; ask the AI for revisions in natural language
-- **Visual generation fallback chain**: Veo 2.0 -> Imagen 4.0 -> Gemini native image
-- **Visual consistency via seed parameter**: All scenes in a video share the same Veo seed for consistent character design and style
+- **Visual generation fallback chain**: Veo 2.0 -> Imagen 4.0 -> Gemini native image (with automatic retries)
+- **Visual consistency via style anchor**: All scenes in a video share the same visual_style_anchor for consistent character design and style
 - **Veo prompt optimization**: Follows Google's official best practices — motion-focused, specific camera terms, no quotation marks
 - **Wav2Lip lipsync** automatically applied to character dialogue scenes with visible faces
 - **Ken Burns effect** on static images to create camera movement
+- **Crossfade transitions** between scenes with duration-aware xfade offsets
 - **Parallel scene processing** in batches of 3 for faster generation
+- **Scene preview thumbnails** -- see JPEG thumbnails of completed scenes during generation
+- **Scene narration preview** -- see what each scene says alongside its status during generation
 - **5 mood-matched background music tracks**: dramatic, upbeat, calm, inspiring, playful
 - **Real-time progress tracking** via WebSocket -- see each scene's status as it generates
 - **Rate limiting**: 3 videos per IP per hour
@@ -136,6 +150,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Graceful error handling**: failed scenes show visual indicator, pipeline continues with remaining scenes
 - **Exponential backoff reconnection**: WebSocket auto-reconnects with 1s->30s delay
 - **Mobile responsive**: touch-friendly buttons, stacking cards, compact layout
+- **109 automated tests** covering pipeline, FFmpeg, models, agent, TTS, Veo, Imagen, and API
 
 ---
 
@@ -264,6 +279,8 @@ cutto/
     playful.mp3
   tests/
     test_adk.py
+    test_agent.py
+    test_api.py
     test_ffmpeg.py
     test_imagen.py
     test_models.py
@@ -292,7 +309,7 @@ export GOOGLE_API_KEY=your-key
 ./deploy.sh your-gcp-project-id
 ```
 
-The deploy script builds the frontend, copies it to `static/`, builds a Docker container, and deploys to Cloud Run with 2 vCPUs, 2GB RAM, and 5-minute timeout per request.
+The deploy script builds the frontend, copies it to `static/`, builds a Docker container, and deploys to Cloud Run with 4 vCPUs, 4GB RAM, session affinity, and 15-minute timeout per request.
 
 ### Docker (local)
 
@@ -327,7 +344,7 @@ Lipsync is optional. Without it, character dialogue scenes play the video as-is 
 pytest tests/ -v
 ```
 
-Test coverage includes FFmpeg command building, Imagen/Veo service interfaces, Pydantic model validation, and TTS voice mapping.
+109 tests covering FFmpeg command building, pipeline orchestration, agent MIME detection/plan extraction, Imagen/Veo service interfaces, Pydantic model validation, API endpoints, and TTS voice mapping.
 
 ---
 
