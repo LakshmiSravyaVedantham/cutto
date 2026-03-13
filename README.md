@@ -227,6 +227,14 @@ uvicorn backend.main:app --reload --port 8000
 
 Open `http://localhost:8000` in your browser.
 
+**API docs**: FastAPI auto-generates interactive API documentation at `http://localhost:8000/docs` — browse all REST endpoints, try them out, and inspect request/response schemas.
+
+**Judge-friendly endpoints**:
+- `GET /api/agent` — inspect the ADK multi-agent architecture graph
+- `POST /api/plan` — generate a scene plan directly (no WebSocket needed)
+- `GET /api/categories` — list all supported video types
+- `GET /api/config` — view models, features, and limits
+
 ---
 
 ## Environment Variables

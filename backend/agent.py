@@ -259,12 +259,14 @@ class ConversationSession:
         """
         user_parts: list[dict] = [{"text": message}]
         if image_bytes:
-            user_parts.append({
-                "inline_data": {
-                    "mime_type": _guess_mime_type(image_bytes),
-                    "data": image_bytes,
+            user_parts.append(
+                {
+                    "inline_data": {
+                        "mime_type": _guess_mime_type(image_bytes),
+                        "data": image_bytes,
+                    }
                 }
-            })
+            )
         self.history.append({"role": "user", "parts": user_parts})
 
         try:

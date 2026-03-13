@@ -4,7 +4,6 @@ import pytest
 
 from backend.agent import _guess_mime_type, extract_scene_plan, is_approved
 
-
 # ---------------------------------------------------------------------------
 # _guess_mime_type
 # ---------------------------------------------------------------------------
