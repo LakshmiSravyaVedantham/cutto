@@ -1,14 +1,55 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import useIsMobile from '../hooks/useIsMobile'
+
+function Confetti() {
+  const [particles] = useState(() =>
+    Array.from({ length: 24 }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 0.8,
+      duration: 1.5 + Math.random() * 1.5,
+      size: 4 + Math.random() * 4,
+      color: ['#667eea', '#764ba2', '#27ae60', '#2ecc71', '#e879f9', '#34d399'][i % 6],
+    }))
+  )
+
+  return (
+    <div style={{ position: 'fixed', top: '40%', left: 0, right: 0, pointerEvents: 'none', zIndex: 50 }}>
+      {particles.map(p => (
+        <div
+          key={p.id}
+          style={{
+            position: 'absolute',
+            left: `${p.left}%`,
+            width: p.size,
+            height: p.size,
+            borderRadius: '50%',
+            background: p.color,
+            animation: `confetti ${p.duration}s ease-out ${p.delay}s forwards`,
+            opacity: 0,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export default function DoneView({ videoUrl, onReset, onEditScenes }) {
   const isMobile = useIsMobile()
   const [videoError, setVideoError] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowConfetti(false), 3500)
+    return () => clearTimeout(timer)
+  }, [])
+
   return (
     <div style={{
       ...styles.container,
       ...(isMobile ? { padding: '0 12px' } : {}),
     }}>
+      {showConfetti && <Confetti />}
       <div style={styles.glowOrb1} />
       <div style={styles.glowOrb2} />
       <div style={styles.glowOrb3} />
@@ -60,11 +101,11 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
         }} href={videoUrl} download
           onMouseOver={e => {
             e.currentTarget.style.transform = 'translateY(-2px)'
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(102,126,234,0.4)'
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(102,126,234,0.45)'
           }}
           onMouseOut={e => {
             e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(102,126,234,0.25)'
+            e.currentTarget.style.boxShadow = '0 4px 24px rgba(102,126,234,0.3)'
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -85,7 +126,7 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
             }}
             onMouseOut={e => {
               e.currentTarget.style.borderColor = 'rgba(102,126,234,0.15)'
-              e.currentTarget.style.background = 'rgba(17,17,17,0.8)'
+              e.currentTarget.style.background = 'rgba(12,12,24,0.8)'
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -104,8 +145,8 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
             e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
           }}
           onMouseOut={e => {
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-            e.currentTarget.style.background = 'rgba(17,17,17,0.8)'
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+            e.currentTarget.style.background = 'rgba(12,12,24,0.8)'
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -140,7 +181,7 @@ const styles = {
     width: 500,
     height: 500,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(39,174,96,0.06) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(39,174,96,0.08) 0%, transparent 70%)',
     pointerEvents: 'none',
   },
   glowOrb2: {
@@ -172,7 +213,10 @@ const styles = {
   },
   successIcon: {
     marginBottom: 16,
-    animation: 'float 3s ease-in-out infinite',
+    animation: 'glowPulse 2s ease-in-out infinite',
+    borderRadius: '50%',
+    display: 'inline-flex',
+    padding: 8,
   },
   title: {
     fontSize: 32,
@@ -183,7 +227,7 @@ const styles = {
     letterSpacing: -0.5,
   },
   subtitle: {
-    color: '#666',
+    color: '#5a6080',
     fontSize: 14,
     marginTop: 6,
   },
@@ -192,24 +236,24 @@ const styles = {
     width: '100%',
     maxWidth: 720,
     marginBottom: 32,
-    animation: 'fadeIn 0.6s ease-out 0.2s both',
+    animation: 'fadeInScale 0.6s ease-out 0.2s both',
   },
   video: {
     width: '100%',
     borderRadius: 20,
     border: '1px solid rgba(255,255,255,0.06)',
-    boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+    boxShadow: '0 16px 64px rgba(0,0,0,0.6)',
     position: 'relative',
     zIndex: 1,
   },
   videoGlow: {
     position: 'absolute',
-    bottom: -20,
-    left: '10%',
-    right: '10%',
-    height: 60,
-    background: 'radial-gradient(ellipse, rgba(102,126,234,0.15) 0%, transparent 70%)',
-    filter: 'blur(20px)',
+    bottom: -24,
+    left: '8%',
+    right: '8%',
+    height: 80,
+    background: 'radial-gradient(ellipse, rgba(102,126,234,0.2) 0%, transparent 70%)',
+    filter: 'blur(24px)',
     pointerEvents: 'none',
   },
   btnRow: {
@@ -231,13 +275,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    boxShadow: '0 4px 20px rgba(102,126,234,0.25)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
+    boxShadow: '0 4px 24px rgba(102,126,234,0.3)',
   },
   editBtn: {
     padding: '16px 32px',
     borderRadius: 16,
-    background: 'rgba(17,17,17,0.8)',
+    background: 'rgba(12,12,24,0.8)',
     backdropFilter: 'blur(10px)',
     color: '#667eea',
     border: '1px solid rgba(102,126,234,0.15)',
@@ -247,26 +290,24 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    transition: 'all 0.2s',
   },
   resetBtn: {
     padding: '16px 32px',
     borderRadius: 16,
-    background: 'rgba(17,17,17,0.8)',
+    background: 'rgba(12,12,24,0.8)',
     backdropFilter: 'blur(10px)',
-    color: '#aaa',
-    border: '1px solid rgba(255,255,255,0.08)',
+    color: '#8b9cf7',
+    border: '1px solid rgba(255,255,255,0.06)',
     cursor: 'pointer',
     fontSize: 15,
     fontWeight: 600,
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    transition: 'all 0.2s',
   },
   watermark: {
     marginTop: 48,
-    color: '#333',
+    color: '#2a3050',
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase',

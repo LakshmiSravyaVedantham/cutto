@@ -13,7 +13,6 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
     error: 'retrying...',
   }
 
-  // Count completed scenes from per-scene tracking
   const completedScenes = Array.from({ length: totalScenes }, (_, i) => {
     const s = sceneStatuses?.[i + 1]
     return s && s.step === 'clip' && s.status === 'done'
@@ -38,9 +37,9 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
         ...(isMobile ? { paddingTop: 36, paddingBottom: 24 } : {}),
       }}>
         <div style={styles.filmStrip}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" strokeWidth="1.5">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#genGrad)" strokeWidth="1.5">
             <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="genGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#667eea" />
                 <stop offset="100%" stopColor="#764ba2" />
               </linearGradient>
@@ -87,7 +86,7 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
           return (
             <div key={num} style={{
               ...styles.scene(isDone, isActive),
-              ...(isError ? { border: '1px solid rgba(231,76,60,0.2)', background: 'rgba(231,76,60,0.05)' } : {}),
+              ...(isError ? { border: '1px solid rgba(231,76,60,0.2)', background: 'rgba(231,76,60,0.04)' } : {}),
               ...(isMobile ? { padding: '12px 14px', gap: 10 } : {}),
             }}>
               <div style={styles.sceneIcon(isDone, isActive)}>
@@ -178,8 +177,9 @@ const styles = {
     width: 500,
     height: 500,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(102,126,234,0.08) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(102,126,234,0.1) 0%, transparent 70%)',
     pointerEvents: 'none',
+    animation: 'float 8s ease-in-out infinite',
   },
   glowOrb2: {
     position: 'fixed',
@@ -188,7 +188,7 @@ const styles = {
     width: 500,
     height: 500,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(118,75,162,0.06) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(118,75,162,0.08) 0%, transparent 70%)',
     pointerEvents: 'none',
   },
   header: {
@@ -210,7 +210,7 @@ const styles = {
     letterSpacing: -0.5,
   },
   subtitle: {
-    color: '#777',
+    color: '#5a6080',
     fontSize: 14,
     marginTop: 6,
   },
@@ -224,18 +224,20 @@ const styles = {
   progressTrack: {
     flex: 1,
     height: 6,
-    background: 'rgba(255,255,255,0.06)',
+    background: 'rgba(255,255,255,0.04)',
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    background: 'linear-gradient(90deg, #667eea, #764ba2)',
+    background: 'linear-gradient(90deg, #667eea, #9b6dff, #764ba2)',
+    backgroundSize: '200% 100%',
     borderRadius: 3,
     transition: 'width 0.8s ease-out',
+    animation: 'gradientFlow 3s ease-in-out infinite',
   },
   progressText: {
-    color: '#888',
+    color: '#6b7cc7',
     fontSize: 13,
     fontWeight: 600,
     minWidth: 50,
@@ -253,14 +255,15 @@ const styles = {
     gap: 14,
     padding: '14px 18px',
     background: isActive
-      ? 'rgba(102,126,234,0.08)'
-      : 'rgba(17,17,17,0.6)',
+      ? 'rgba(102,126,234,0.06)'
+      : 'rgba(12,12,24,0.6)',
     backdropFilter: 'blur(10px)',
     borderRadius: 14,
     border: isActive
       ? '1px solid rgba(102,126,234,0.2)'
-      : '1px solid rgba(255,255,255,0.04)',
+      : '1px solid rgba(255,255,255,0.03)',
     transition: 'all 0.3s ease',
+    animation: isDone ? 'fadeInScale 0.3s ease-out' : 'none',
   }),
   sceneIcon: (isDone, isActive) => ({
     width: 32,
@@ -273,8 +276,8 @@ const styles = {
     background: isDone
       ? 'rgba(39,174,96,0.1)'
       : isActive
-      ? 'rgba(102,126,234,0.15)'
-      : 'rgba(255,255,255,0.04)',
+      ? 'rgba(102,126,234,0.12)'
+      : 'rgba(255,255,255,0.03)',
   }),
   spinner: {
     display: 'inline-block',
@@ -289,7 +292,7 @@ const styles = {
     width: 8,
     height: 8,
     borderRadius: '50%',
-    background: '#333',
+    background: '#1a1a2e',
   },
   thumb: {
     width: 48,
@@ -297,6 +300,7 @@ const styles = {
     borderRadius: 6,
     objectFit: 'cover',
     flexShrink: 0,
+    border: '1px solid rgba(255,255,255,0.04)',
   },
   sceneInfo: {
     flex: 1,
@@ -307,11 +311,11 @@ const styles = {
   sceneName: (isDone, isActive) => ({
     fontSize: 14,
     fontWeight: 600,
-    color: isDone ? '#27ae60' : isActive ? '#fff' : '#555',
+    color: isDone ? '#27ae60' : isActive ? '#d0d5f0' : '#4a5070',
   }),
   sceneStatus: (isDone, isActive) => ({
     fontSize: 12,
-    color: isDone ? 'rgba(39,174,96,0.6)' : isActive ? '#667eea' : '#444',
+    color: isDone ? 'rgba(39,174,96,0.6)' : isActive ? '#667eea' : '#3a4060',
     textTransform: 'capitalize',
   }),
   speakerBadge: {
@@ -320,14 +324,14 @@ const styles = {
     fontWeight: 600,
     padding: '1px 6px',
     borderRadius: 4,
-    background: 'rgba(102,126,234,0.12)',
+    background: 'rgba(102,126,234,0.1)',
     color: '#667eea',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
   },
   narrationPreview: {
     fontSize: 11,
-    color: '#555',
+    color: '#4a5070',
     lineHeight: 1.4,
     fontStyle: 'italic',
   },
@@ -344,20 +348,20 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 14,
-    background: 'linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08))',
+    background: 'linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.06))',
     backdropFilter: 'blur(10px)',
     borderRadius: 16,
-    border: '1px solid rgba(102,126,234,0.15)',
+    border: '1px solid rgba(102,126,234,0.12)',
     animation: 'fadeIn 0.4s ease-out',
   },
   assemblyText: {
-    color: '#667eea',
+    color: '#8b9cf7',
     fontWeight: 600,
     fontSize: 14,
   },
   tip: {
     textAlign: 'center',
-    color: '#444',
+    color: '#3a4060',
     fontSize: 12,
     marginTop: 32,
     letterSpacing: 0.3,

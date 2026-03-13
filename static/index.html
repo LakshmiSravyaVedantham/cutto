@@ -8,22 +8,82 @@
   <meta property="og:description" content="Describe any video idea, get a finished video with AI visuals, voiceover, lipsync, and music." />
   <meta property="og:type" content="website" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <title>CutTo — AI Video Director</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #050510;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    /* Animated mesh gradient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 40%, rgba(102,126,234,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(118,75,162,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 60% at 50% 80%, rgba(52,211,153,0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: meshShift 20s ease-in-out infinite alternate;
+    }
+    #root { position: relative; z-index: 1; }
+
+    @keyframes meshShift {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05) rotate(1deg); }
+      100% { opacity: 1; transform: scale(1) rotate(-1deg); }
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     @keyframes waveBar { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes borderGlow {
+      0%, 100% { border-color: rgba(102,126,234,0.2); }
+      50% { border-color: rgba(118,75,162,0.4); }
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(-200px) rotate(720deg); opacity: 0; }
+    }
+    @keyframes glowPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(102,126,234,0.2); }
+      50% { box-shadow: 0 0 40px rgba(102,126,234,0.4); }
+    }
+    @keyframes typewriter {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
     ::selection { background: rgba(102,126,234,0.3); }
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: rgba(102,126,234,0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(102,126,234,0.4); }
+
+    /* Smooth transitions for all interactive elements */
+    button, a, input, textarea, select {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    button:active { transform: scale(0.98); }
   </style>
-  <script type="module" crossorigin src="/assets/index-BE0wjngC.js"></script>
+  <script type="module" crossorigin src="/assets/index-BCWIOkLv.js"></script>
 </head>
 <body>
   <div id="root"></div>

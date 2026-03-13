@@ -15,89 +15,76 @@ export default function App() {
   if (!ws.connected) {
     return (
       <div style={styles.container}>
+        {/* Animated background elements */}
+        <div style={styles.bgGrid} />
         <div style={styles.glowOrb1} />
         <div style={styles.glowOrb2} />
         <div style={styles.glowOrb3} />
 
-        <div style={styles.header}>
-          <div style={styles.logoWrap}>
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="url(#landingGrad)" strokeWidth="1.5" style={{ animation: 'float 3s ease-in-out infinite' }}>
-              <defs>
-                <linearGradient id="landingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#667eea" />
-                  <stop offset="100%" stopColor="#764ba2" />
-                </linearGradient>
-              </defs>
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
+        {/* Hero */}
+        <div style={styles.hero}>
+          <div style={styles.badgeWrap}>
+            <span style={styles.heroBadge}>
+              <span style={styles.heroBadgeDot} />
+              Built with Google Gemini &amp; Veo
+            </span>
           </div>
+
           <h1 style={{
             ...styles.title,
-            ...(isMobile ? { fontSize: 48, letterSpacing: -2 } : {}),
-          }}>CutTo</h1>
+            ...(isMobile ? { fontSize: 44, letterSpacing: -1.5 } : {}),
+          }}>
+            <span style={styles.titleGradient}>CutTo</span>
+          </h1>
           <p style={{
             ...styles.subtitle,
-            ...(isMobile ? { fontSize: 16 } : {}),
-          }}>Describe any video. We'll direct it.</p>
-          <p style={styles.description}>
-            Medical explainer, animated story, product demo, tutorial, documentary —
-            just describe what you need. CutTo writes the script, generates visuals,
-            adds voiceover with lipsync, and delivers a finished video.
+            ...(isMobile ? { fontSize: 17, maxWidth: 300 } : {}),
+          }}>
+            AI Video Director for Kids&apos; Education
           </p>
+          <p style={styles.description}>
+            Turn any lesson into an animated video. Describe your idea —
+            CutTo writes the script, generates visuals, adds voiceover
+            with lipsync, and delivers a finished video.
+          </p>
+
+          <button
+            style={{
+              ...styles.ctaBtn,
+              ...(isMobile ? { padding: '18px 36px', fontSize: 16 } : {}),
+            }}
+            onClick={ws.connect}
+            onMouseOver={e => {
+              e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'
+              e.currentTarget.style.boxShadow = '0 12px 48px rgba(102,126,234,0.5)'
+            }}
+            onMouseOut={e => {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = '0 6px 32px rgba(102,126,234,0.35)'
+            }}
+          >
+            Start Creating
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 8 }}>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
         </div>
 
-        <div style={{
-          ...styles.features,
-          ...(isMobile ? { flexDirection: 'column', gap: 10, marginTop: 32 } : {}),
-        }}>
-          {[
-            { icon: '🎬', label: 'Any Video Type', desc: 'Stories, explainers, tutorials, marketing, documentaries' },
-            { icon: '🎨', label: 'AI-Generated Visuals', desc: 'Animated scenes, diagrams, cinematic footage via Veo' },
-            { icon: '🎙️', label: 'Voice, Lipsync & Music', desc: 'Multi-character voices, lipsync, mood-matched soundtrack' },
-          ].map((f, i) => (
-            <div key={i} style={styles.featureCard}>
-              <span style={styles.featureIcon}>{f.icon}</span>
-              <span style={styles.featureLabel}>{f.label}</span>
-              <span style={styles.featureDesc}>{f.desc}</span>
-            </div>
-          ))}
-        </div>
-
-        <button
-          style={{
-            ...styles.startBtn,
-            ...(isMobile ? { padding: '18px 40px', fontSize: 16 } : {}),
-          }}
-          onClick={ws.connect}
-          onMouseOver={e => {
-            e.currentTarget.style.transform = 'translateY(-3px) scale(1.02)'
-            e.currentTarget.style.boxShadow = '0 8px 40px rgba(102,126,234,0.45)'
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.transform = 'translateY(0) scale(1)'
-            e.currentTarget.style.boxShadow = '0 4px 24px rgba(102,126,234,0.3)'
-          }}
-        >
-          Start Creating
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginLeft: 8 }}>
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </button>
-
+        {/* Quick start templates */}
         <div style={{
           ...styles.quickStart,
           ...(isMobile ? { flexDirection: 'column' } : {}),
         }}>
-          <p style={styles.quickStartLabel}>Or try a quick start:</p>
+          <p style={styles.quickLabel}>Quick start:</p>
           <div style={{
-            ...styles.quickStartChips,
+            ...styles.quickChips,
             ...(isMobile ? { flexDirection: 'column', alignItems: 'stretch' } : {}),
           }}>
             {[
-              { label: 'How the heart works', prompt: 'Create a 90-second medical explainer on how the human heart pumps blood through its four chambers. Target audience: high school biology students. Style: clean 3D medical animation with labels.' },
-              { label: 'Pixar-style story', prompt: 'Create an animated short story about a lonely robot in a junkyard who discovers a flower growing through the metal. Pixar style, warm and emotional, inspiring mood.' },
-              { label: 'Product launch video', prompt: 'Create a sleek product launch video for a new AI-powered fitness watch called "PulseAI". Modern, clean, upbeat. Show features: heart rate, sleep tracking, AI coaching.' },
+              { label: 'How the heart pumps blood', prompt: 'Create a 90-second animated explainer for 8-year-olds about how the human heart pumps blood through its four chambers. Use colorful cartoon characters as red blood cells traveling through the body. Friendly narrator voice, upbeat music.' },
+              { label: 'Solar system adventure', prompt: 'Create an animated story for kids (ages 6-10) where a curious alien named Zip visits each planet in our solar system. Educational facts about each planet, Pixar-style animation, exciting and fun mood.' },
+              { label: 'Why do volcanoes erupt?', prompt: 'Create a 60-second science explainer for elementary school students about why volcanoes erupt. Show the layers of the earth, magma chambers, and eruption in colorful animated diagrams. Keep it exciting but educational.' },
             ].map((t, i) => (
               <button
                 key={i}
@@ -105,11 +92,13 @@ export default function App() {
                 onClick={() => ws.connectWithPrompt(t.prompt)}
                 onMouseOver={e => {
                   e.currentTarget.style.borderColor = 'rgba(102,126,234,0.4)'
-                  e.currentTarget.style.background = 'rgba(102,126,234,0.1)'
+                  e.currentTarget.style.background = 'rgba(102,126,234,0.08)'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
                 }}
                 onMouseOut={e => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-                  e.currentTarget.style.background = 'rgba(17,17,17,0.6)'
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'
+                  e.currentTarget.style.background = 'rgba(15,15,25,0.6)'
+                  e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
                 {t.label}
@@ -118,16 +107,94 @@ export default function App() {
           </div>
         </div>
 
+        {/* Feature cards */}
+        <div style={{
+          ...styles.features,
+          ...(isMobile ? { flexDirection: 'column', gap: 12 } : {}),
+        }}>
+          {[
+            {
+              icon: (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#feat1)" strokeWidth="1.5">
+                  <defs><linearGradient id="feat1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#667eea"/><stop offset="100%" stopColor="#764ba2"/></linearGradient></defs>
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+              ),
+              label: 'Any Video Type',
+              desc: 'Stories, science explainers, tutorials, documentaries, marketing'
+            },
+            {
+              icon: (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#feat2)" strokeWidth="1.5">
+                  <defs><linearGradient id="feat2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#667eea"/><stop offset="100%" stopColor="#764ba2"/></linearGradient></defs>
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                </svg>
+              ),
+              label: 'AI Visuals via Veo & Imagen',
+              desc: 'Animated scenes generated by Veo 2.0 with consistent visual style'
+            },
+            {
+              icon: (
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#feat3)" strokeWidth="1.5">
+                  <defs><linearGradient id="feat3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#667eea"/><stop offset="100%" stopColor="#764ba2"/></linearGradient></defs>
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                </svg>
+              ),
+              label: 'Voice, Lipsync & Music',
+              desc: 'Multi-character voices, automatic lipsync, mood-matched soundtrack'
+            },
+          ].map((f, i) => (
+            <div
+              key={i}
+              style={styles.featureCard}
+              onMouseOver={e => {
+                e.currentTarget.style.borderColor = 'rgba(102,126,234,0.2)'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)'
+              }}
+              onMouseOut={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}
+            >
+              <div style={styles.featureIcon}>{f.icon}</div>
+              <span style={styles.featureLabel}>{f.label}</span>
+              <span style={styles.featureDesc}>{f.desc}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* How it works */}
+        <div style={styles.howSection}>
+          <h3 style={styles.howTitle}>How it works</h3>
+          <div style={{
+            ...styles.howSteps,
+            ...(isMobile ? { flexDirection: 'column', gap: 16 } : {}),
+          }}>
+            {[
+              { num: '1', title: 'Describe', desc: 'Tell the AI director your video idea via text or voice' },
+              { num: '2', title: 'Preview', desc: 'See AI-generated scene previews inline in the conversation' },
+              { num: '3', title: 'Edit', desc: 'Refine scenes, reorder, change speakers, ask for revisions' },
+              { num: '4', title: 'Download', desc: 'Get your finished MP4 with visuals, voice, lipsync & music' },
+            ].map((s, i) => (
+              <div key={i} style={styles.howStep}>
+                <div style={styles.howNum}>{s.num}</div>
+                <span style={styles.howStepTitle}>{s.title}</span>
+                <span style={styles.howStepDesc}>{s.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Tech stack */}
         <div style={styles.techStack}>
-          <span style={styles.techBadge}>Gemini 2.0</span>
-          <span style={styles.techBadge}>Google ADK</span>
-          <span style={styles.techBadge}>Veo 2.0</span>
-          <span style={styles.techBadge}>Imagen 4.0</span>
-          <span style={styles.techBadge}>Cloud TTS</span>
-          <span style={styles.techBadge}>Cloud Run</span>
+          {['Gemini 2.5', 'Google ADK', 'Veo 2.0', 'Imagen 4.0', 'Cloud TTS', 'Wav2Lip', 'FFmpeg'].map((t, i) => (
+            <span key={i} style={styles.techBadge}>{t}</span>
+          ))}
         </div>
         <p style={styles.poweredBy}>
-          Built with Google AI &amp; Google Cloud
+          Built with Google AI &amp; Google Cloud for the Gemini Live Agent Challenge
         </p>
       </div>
     )
@@ -151,9 +218,9 @@ export default function App() {
 
 const styles = {
   container: {
-    maxWidth: 800,
+    maxWidth: 860,
     margin: '0 auto',
-    padding: '0 24px',
+    padding: '0 24px 60px',
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
@@ -162,102 +229,108 @@ const styles = {
     position: 'relative',
     overflow: 'hidden',
   },
+  bgGrid: {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundImage: `linear-gradient(rgba(102,126,234,0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(102,126,234,0.03) 1px, transparent 1px)`,
+    backgroundSize: '64px 64px',
+    pointerEvents: 'none',
+  },
   glowOrb1: {
     position: 'fixed',
-    top: -250,
-    right: -250,
-    width: 600,
-    height: 600,
+    top: -300,
+    right: -200,
+    width: 700,
+    height: 700,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(102,126,234,0.1) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 60%)',
     pointerEvents: 'none',
+    animation: 'float 8s ease-in-out infinite',
   },
   glowOrb2: {
     position: 'fixed',
-    bottom: -250,
-    left: -250,
-    width: 600,
-    height: 600,
+    bottom: -300,
+    left: -200,
+    width: 700,
+    height: 700,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(118,75,162,0.08) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(118,75,162,0.1) 0%, transparent 60%)',
     pointerEvents: 'none',
+    animation: 'float 10s ease-in-out 2s infinite',
   },
   glowOrb3: {
     position: 'fixed',
-    top: '40%',
+    top: '30%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 800,
-    height: 800,
+    width: 900,
+    height: 900,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(102,126,234,0.03) 0%, transparent 50%)',
+    background: 'radial-gradient(circle, rgba(52,211,153,0.03) 0%, transparent 40%)',
     pointerEvents: 'none',
   },
-  header: {
+
+  // Hero
+  hero: {
     textAlign: 'center',
     animation: 'fadeIn 0.8s ease-out',
+    marginBottom: 12,
   },
-  logoWrap: {
-    marginBottom: 20,
+  badgeWrap: {
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 72,
-    fontWeight: 900,
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    letterSpacing: -3,
-    lineHeight: 1,
-  },
-  subtitle: {
-    color: '#999',
-    marginTop: 12,
-    fontSize: 20,
-    fontWeight: 500,
-    letterSpacing: 0.5,
-  },
-  description: {
-    color: '#555',
-    marginTop: 16,
-    fontSize: 14,
-    lineHeight: 1.7,
-    maxWidth: 480,
-  },
-  features: {
-    display: 'flex',
-    gap: 12,
-    marginTop: 48,
-    animation: 'fadeIn 0.8s ease-out 0.3s both',
-  },
-  featureCard: {
-    flex: 1,
-    padding: '24px 16px',
-    background: 'rgba(17,17,17,0.6)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: 18,
-    border: '1px solid rgba(255,255,255,0.05)',
-    display: 'flex',
-    flexDirection: 'column',
+  heroBadge: {
+    display: 'inline-flex',
     alignItems: 'center',
     gap: 8,
-    textAlign: 'center',
-  },
-  featureIcon: {
-    fontSize: 28,
-  },
-  featureLabel: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#ddd',
+    padding: '6px 16px',
+    borderRadius: 20,
+    background: 'rgba(102,126,234,0.08)',
+    border: '1px solid rgba(102,126,234,0.15)',
+    color: '#8b9cf7',
+    fontSize: 12,
+    fontWeight: 600,
     letterSpacing: 0.3,
+    animation: 'borderGlow 3s ease-in-out infinite',
   },
-  featureDesc: {
-    fontSize: 11,
-    color: '#666',
-    lineHeight: 1.5,
+  heroBadgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: '50%',
+    background: '#27ae60',
+    animation: 'pulse 2s ease-in-out infinite',
   },
-  startBtn: {
-    marginTop: 48,
+  title: {
+    fontSize: 80,
+    fontWeight: 900,
+    letterSpacing: -4,
+    lineHeight: 1,
+    marginBottom: 16,
+  },
+  titleGradient: {
+    background: 'linear-gradient(135deg, #667eea 0%, #9b6dff 40%, #764ba2 100%)',
+    backgroundSize: '200% auto',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    animation: 'gradientFlow 4s ease-in-out infinite',
+  },
+  subtitle: {
+    fontSize: 22,
+    fontWeight: 600,
+    color: '#b8c0e8',
+    letterSpacing: 0.3,
+    marginBottom: 12,
+  },
+  description: {
+    color: '#5a6080',
+    fontSize: 15,
+    lineHeight: 1.7,
+    maxWidth: 500,
+    margin: '0 auto',
+  },
+  ctaBtn: {
+    marginTop: 32,
     padding: '20px 56px',
     fontSize: 18,
     fontWeight: 700,
@@ -266,53 +339,29 @@ const styles = {
     border: 'none',
     borderRadius: 18,
     cursor: 'pointer',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 24px rgba(102,126,234,0.3)',
-    display: 'flex',
+    boxShadow: '0 6px 32px rgba(102,126,234,0.35)',
+    display: 'inline-flex',
     alignItems: 'center',
-    animation: 'fadeIn 0.8s ease-out 0.5s both',
+    animation: 'fadeIn 0.8s ease-out 0.4s both',
   },
-  techStack: {
-    display: 'flex',
-    gap: 8,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginTop: 32,
-    animation: 'fadeIn 0.8s ease-out 0.7s both',
-  },
-  techBadge: {
-    padding: '4px 12px',
-    borderRadius: 8,
-    background: 'rgba(102,126,234,0.08)',
-    border: '1px solid rgba(102,126,234,0.12)',
-    color: '#667eea',
-    fontSize: 11,
-    fontWeight: 600,
-    letterSpacing: 0.3,
-  },
-  poweredBy: {
-    marginTop: 12,
-    color: '#333',
-    fontSize: 11,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    animation: 'fadeIn 0.8s ease-out 0.8s both',
-  },
+
+  // Quick start
   quickStart: {
-    marginTop: 32,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: 12,
-    animation: 'fadeIn 0.8s ease-out 0.6s both',
+    marginTop: 24,
+    animation: 'fadeIn 0.8s ease-out 0.5s both',
   },
-  quickStartLabel: {
+  quickLabel: {
     fontSize: 12,
-    color: '#555',
-    letterSpacing: 0.5,
+    color: '#4a5070',
+    letterSpacing: 1,
     textTransform: 'uppercase',
+    fontWeight: 600,
   },
-  quickStartChips: {
+  quickChips: {
     display: 'flex',
     gap: 8,
     flexWrap: 'wrap',
@@ -321,13 +370,130 @@ const styles = {
   quickChip: {
     padding: '10px 18px',
     borderRadius: 12,
-    background: 'rgba(17,17,17,0.6)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    color: '#aaa',
+    background: 'rgba(15,15,25,0.6)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    color: '#8b9cf7',
     fontSize: 13,
     fontWeight: 500,
     cursor: 'pointer',
-    transition: 'all 0.2s',
     backdropFilter: 'blur(10px)',
+  },
+
+  // Features
+  features: {
+    display: 'flex',
+    gap: 14,
+    marginTop: 56,
+    width: '100%',
+    animation: 'fadeIn 0.8s ease-out 0.6s both',
+  },
+  featureCard: {
+    flex: 1,
+    padding: '28px 20px',
+    background: 'rgba(12,12,24,0.7)',
+    backdropFilter: 'blur(16px)',
+    borderRadius: 20,
+    border: '1px solid rgba(255,255,255,0.04)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 10,
+    textAlign: 'center',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  featureIcon: {
+    marginBottom: 4,
+  },
+  featureLabel: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#d0d5f0',
+    letterSpacing: 0.2,
+  },
+  featureDesc: {
+    fontSize: 12,
+    color: '#5a6080',
+    lineHeight: 1.6,
+  },
+
+  // How it works
+  howSection: {
+    marginTop: 64,
+    width: '100%',
+    textAlign: 'center',
+    animation: 'fadeIn 0.8s ease-out 0.7s both',
+  },
+  howTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: '#667eea',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 28,
+  },
+  howSteps: {
+    display: 'flex',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  howStep: {
+    flex: 1,
+    maxWidth: 180,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    padding: '20px 12px',
+  },
+  howNum: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    background: 'linear-gradient(135deg, rgba(102,126,234,0.15), rgba(118,75,162,0.15))',
+    border: '1px solid rgba(102,126,234,0.2)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    fontWeight: 800,
+    color: '#667eea',
+  },
+  howStepTitle: {
+    fontSize: 14,
+    fontWeight: 700,
+    color: '#c8d0f0',
+  },
+  howStepDesc: {
+    fontSize: 12,
+    color: '#5a6080',
+    lineHeight: 1.5,
+  },
+
+  // Tech stack
+  techStack: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 48,
+    animation: 'fadeIn 0.8s ease-out 0.8s both',
+  },
+  techBadge: {
+    padding: '5px 14px',
+    borderRadius: 8,
+    background: 'rgba(102,126,234,0.06)',
+    border: '1px solid rgba(102,126,234,0.1)',
+    color: '#6b7cc7',
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: 0.3,
+  },
+  poweredBy: {
+    marginTop: 16,
+    color: '#2a3050',
+    fontSize: 11,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    animation: 'fadeIn 0.8s ease-out 0.9s both',
   },
 }
