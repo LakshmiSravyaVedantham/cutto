@@ -183,12 +183,16 @@ async def agent_info():
     """Describe the ADK multi-agent architecture — judges can inspect the agent graph."""
     from backend.adk_agent import director_agent, root_agent, storyboard_agent
 
+    def tool_summary(t):
+        doc = (t.__doc__ or "").strip().split("\n")[0]  # first line of docstring
+        return {"name": t.__name__, "description": doc}
+
     def agent_summary(agent):
         return {
             "name": agent.name,
             "model": agent.model,
             "description": agent.description,
-            "tools": [t.__name__ for t in agent.tools],
+            "tools": [tool_summary(t) for t in agent.tools],
         }
 
     return {
@@ -202,10 +206,13 @@ async def agent_info():
             ],
         },
         "tool_count": len(root_agent.tools),
+        "specialty": "Kids' educational content (ages 6-12)",
         "description": (
             "CutTo uses a 3-agent ADK architecture: the root orchestrator routes "
             "between a Creative Director (vision & conversation) and a Storyboard "
-            "Artist (structured scene planning). Each agent has specialized tools."
+            "Artist (structured scene planning). Each agent has specialized tools "
+            "for planning videos, tracking pipeline status, listing categories, "
+            "and revising individual scenes."
         ),
     }
 
