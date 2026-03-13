@@ -31,6 +31,22 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
       ...styles.container,
       ...(isMobile ? { padding: '0 16px' } : {}),
     }}>
+      {/* Floating particles */}
+      {!isMobile && Array.from({ length: 12 }, (_, i) => (
+        <div key={`p-${i}`} aria-hidden="true" style={{
+          position: 'fixed',
+          width: i % 3 === 0 ? 3 : 2,
+          height: i % 3 === 0 ? 3 : 2,
+          borderRadius: '50%',
+          background: i % 4 === 0 ? '#764ba2' : '#667eea',
+          top: `${10 + (i * 7.3) % 80}%`,
+          left: `${5 + (i * 8.1) % 90}%`,
+          opacity: 0.12 + (i % 5) * 0.06,
+          animation: `starTwinkle ${3 + (i % 4)}s ease-in-out ${(i * 0.7) % 4}s infinite, floatSlow ${12 + (i % 8)}s ease-in-out ${(i * 0.5) % 6}s infinite`,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
+      ))}
       <div style={styles.glowOrb1} aria-hidden="true" />
       <div style={styles.glowOrb2} aria-hidden="true" />
 
@@ -38,27 +54,29 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
         ...styles.header,
         ...(isMobile ? { paddingTop: 36, paddingBottom: 24 } : {}),
       }}>
-        <div style={styles.filmStrip}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#genGrad)" strokeWidth="1.5">
-            <defs>
-              <linearGradient id="genGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#667eea" />
-                <stop offset="100%" stopColor="#764ba2" />
-              </linearGradient>
-            </defs>
-            <rect x="2" y="2" width="20" height="20" rx="2.18" />
-            <line x1="7" y1="2" x2="7" y2="22" />
-            <line x1="17" y1="2" x2="17" y2="22" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <line x1="2" y1="7" x2="7" y2="7" />
-            <line x1="2" y1="17" x2="7" y2="17" />
-            <line x1="17" y1="7" x2="22" y2="7" />
-            <line x1="17" y1="17" x2="22" y2="17" />
-          </svg>
+        <div style={styles.iconWrap}>
+          <div style={styles.filmStrip}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="url(#genGrad)" strokeWidth="1.5">
+              <defs>
+                <linearGradient id="genGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#667eea" />
+                  <stop offset="100%" stopColor="#764ba2" />
+                </linearGradient>
+              </defs>
+              <rect x="2" y="2" width="20" height="20" rx="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="2" y1="7" x2="7" y2="7" />
+              <line x1="2" y1="17" x2="7" y2="17" />
+              <line x1="17" y1="7" x2="22" y2="7" />
+              <line x1="17" y1="17" x2="22" y2="17" />
+            </svg>
+          </div>
         </div>
         <h2 style={{
           ...styles.title,
-          ...(isMobile ? { fontSize: 22 } : {}),
+          ...(isMobile ? { fontSize: 28 } : {}),
         }}>Creating your video</h2>
         <p style={styles.subtitle}>{scenePlan?.title || 'Processing...'}</p>
       </div>
@@ -88,12 +106,13 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
           return (
             <div key={num} style={{
               ...styles.scene(isDone, isActive),
-              ...(isError ? { border: '1px solid rgba(231,76,60,0.2)', background: 'rgba(231,76,60,0.04)' } : {}),
+              ...(isError ? { border: '1px solid rgba(231,76,60,0.25)', background: 'rgba(231,76,60,0.05)' } : {}),
               ...(isMobile ? { padding: '12px 14px', gap: 10 } : {}),
+              animationDelay: `${0.3 + i * 0.06}s`,
             }}>
-              <div style={styles.sceneIcon(isDone, isActive)}>
+              <div style={styles.sceneIcon(isDone, isActive, isError)}>
                 {isDone ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 ) : isError ? (
@@ -145,6 +164,7 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
 
       {currentStep === 'assembly' && (
         <div style={styles.assembly}>
+          <div style={styles.assemblyGlow} aria-hidden="true" />
           <span style={styles.spinner} />
           <span style={styles.assemblyText}>
             Adding music and assembling final video...
@@ -154,10 +174,11 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
 
       {error && (
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '12px 16px', marginTop: 16, borderRadius: 12,
-          background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.12)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '14px 18px', marginTop: 16, borderRadius: 14,
+          background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.15)',
           color: '#ff8a8a', fontSize: 13, animation: 'fadeIn 0.3s ease-out',
+          backdropFilter: 'blur(10px)',
         }}>
           <span style={{ flex: 1 }}>{error}</span>
           {onDismissError && (
@@ -204,7 +225,7 @@ const styles = {
     width: 500,
     height: 500,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(102,126,234,0.1) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(102,126,234,0.12) 0%, transparent 70%)',
     pointerEvents: 'none',
     animation: 'float 8s ease-in-out infinite',
   },
@@ -215,31 +236,49 @@ const styles = {
     width: 500,
     height: 500,
     borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(118,75,162,0.08) 0%, transparent 70%)',
+    background: 'radial-gradient(circle, rgba(118,75,162,0.1) 0%, transparent 70%)',
     pointerEvents: 'none',
+    animation: 'float 12s ease-in-out 2s infinite',
   },
   header: {
     textAlign: 'center',
-    paddingTop: 60,
+    paddingTop: 56,
     paddingBottom: 32,
     animation: 'fadeIn 0.6s ease-out',
   },
+  iconWrap: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    background: 'linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1))',
+    border: '1px solid rgba(102,126,234,0.15)',
+    marginBottom: 20,
+    animation: 'glowPulse 3s ease-in-out infinite, float 3s ease-in-out infinite',
+  },
   filmStrip: {
-    marginBottom: 16,
-    animation: 'float 3s ease-in-out infinite',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 28,
-    fontWeight: 800,
-    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+    fontSize: 36,
+    fontWeight: 900,
+    background: 'linear-gradient(135deg, #667eea, #e879f9, #764ba2)',
+    backgroundSize: '200% auto',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
-    letterSpacing: -0.5,
+    letterSpacing: -1,
+    animation: 'shimmer 4s linear infinite',
+    filter: 'drop-shadow(0 0 20px rgba(102,126,234,0.15))',
   },
   subtitle: {
-    color: '#5a6080',
-    fontSize: 14,
-    marginTop: 6,
+    color: '#6b7cc7',
+    fontSize: 15,
+    marginTop: 8,
+    fontWeight: 500,
   },
   progressWrap: {
     display: 'flex',
@@ -250,61 +289,76 @@ const styles = {
   },
   progressTrack: {
     flex: 1,
-    height: 6,
+    height: 8,
     background: 'rgba(255,255,255,0.04)',
-    borderRadius: 3,
+    borderRadius: 4,
     overflow: 'hidden',
+    border: '1px solid rgba(255,255,255,0.03)',
   },
   progressBar: {
     height: '100%',
-    background: 'linear-gradient(90deg, #667eea, #9b6dff, #764ba2)',
-    backgroundSize: '200% 100%',
-    borderRadius: 3,
+    background: 'linear-gradient(90deg, #667eea, #9b6dff, #e879f9, #764ba2)',
+    backgroundSize: '300% 100%',
+    borderRadius: 4,
     transition: 'width 0.8s ease-out',
     animation: 'gradientFlow 3s ease-in-out infinite',
+    boxShadow: '0 0 12px rgba(102,126,234,0.4)',
   },
   progressText: {
-    color: '#6b7cc7',
-    fontSize: 13,
-    fontWeight: 600,
+    color: '#8b9cf7',
+    fontSize: 14,
+    fontWeight: 700,
     minWidth: 50,
     textAlign: 'right',
   },
   sceneList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 6,
+    gap: 8,
     animation: 'fadeIn 0.6s ease-out 0.3s both',
   },
   scene: (isDone, isActive) => ({
     display: 'flex',
     alignItems: 'center',
     gap: 14,
-    padding: '14px 18px',
+    padding: '16px 20px',
     background: isActive
       ? 'rgba(102,126,234,0.06)'
+      : isDone
+      ? 'rgba(52,211,153,0.03)'
       : 'rgba(12,12,24,0.6)',
-    backdropFilter: 'blur(10px)',
-    borderRadius: 14,
+    backdropFilter: 'blur(12px)',
+    borderRadius: 16,
     border: isActive
-      ? '1px solid rgba(102,126,234,0.2)'
-      : '1px solid rgba(255,255,255,0.03)',
-    transition: 'all 0.3s ease',
-    animation: isDone ? 'fadeInScale 0.3s ease-out' : 'none',
+      ? '1px solid rgba(102,126,234,0.25)'
+      : isDone
+      ? '1px solid rgba(52,211,153,0.12)'
+      : '1px solid rgba(255,255,255,0.04)',
+    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    animation: 'fadeIn 0.4s ease-out both',
+    ...(isActive ? { boxShadow: '0 4px 20px rgba(102,126,234,0.1)' } : {}),
   }),
-  sceneIcon: (isDone, isActive) => ({
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+  sceneIcon: (isDone, isActive, isError) => ({
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
     background: isDone
-      ? 'rgba(39,174,96,0.1)'
+      ? 'rgba(52,211,153,0.12)'
+      : isError
+      ? 'rgba(231,76,60,0.1)'
       : isActive
-      ? 'rgba(102,126,234,0.12)'
-      : 'rgba(255,255,255,0.03)',
+      ? 'rgba(102,126,234,0.15)'
+      : 'rgba(255,255,255,0.04)',
+    border: isDone
+      ? '1px solid rgba(52,211,153,0.2)'
+      : isActive
+      ? '1px solid rgba(102,126,234,0.2)'
+      : '1px solid transparent',
+    transition: 'all 0.3s ease',
   }),
   spinner: {
     display: 'inline-block',
@@ -323,75 +377,89 @@ const styles = {
     animation: 'pulse 2s ease-in-out infinite',
   },
   thumb: {
-    width: 48,
-    height: 36,
-    borderRadius: 6,
+    width: 52,
+    height: 40,
+    borderRadius: 8,
     objectFit: 'cover',
     flexShrink: 0,
-    border: '1px solid rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
   },
   sceneInfo: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    gap: 2,
+    gap: 3,
   },
   sceneName: (isDone, isActive) => ({
     fontSize: 14,
     fontWeight: 600,
-    color: isDone ? '#27ae60' : isActive ? '#d0d5f0' : '#4a5070',
+    color: isDone ? '#34d399' : isActive ? '#d0d5f0' : '#5a6080',
   }),
   sceneStatus: (isDone, isActive) => ({
     fontSize: 12,
-    color: isDone ? 'rgba(39,174,96,0.6)' : isActive ? '#667eea' : '#3a4060',
+    color: isDone ? 'rgba(52,211,153,0.7)' : isActive ? '#8b9cf7' : '#3a4060',
     textTransform: 'capitalize',
+    fontWeight: isActive ? 500 : 400,
   }),
   speakerBadge: {
     marginLeft: 6,
     fontSize: 10,
     fontWeight: 600,
-    padding: '1px 6px',
-    borderRadius: 4,
-    background: 'rgba(102,126,234,0.1)',
-    color: '#667eea',
+    padding: '2px 7px',
+    borderRadius: 6,
+    background: 'rgba(102,126,234,0.12)',
+    color: '#8b9cf7',
     letterSpacing: 0.3,
     textTransform: 'uppercase',
+    border: '1px solid rgba(102,126,234,0.1)',
   },
   narrationPreview: {
     fontSize: 11,
-    color: '#4a5070',
+    color: '#5a6080',
     lineHeight: 1.4,
     fontStyle: 'italic',
   },
   doneTime: {
     fontSize: 11,
-    color: '#27ae60',
-    fontWeight: 600,
+    color: '#34d399',
+    fontWeight: 700,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   assembly: {
     marginTop: 24,
-    padding: '20px 24px',
+    padding: '22px 28px',
     display: 'flex',
     alignItems: 'center',
-    gap: 14,
-    background: 'linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.06))',
-    backdropFilter: 'blur(10px)',
-    borderRadius: 16,
-    border: '1px solid rgba(102,126,234,0.12)',
-    animation: 'fadeIn 0.4s ease-out',
+    gap: 16,
+    background: 'linear-gradient(135deg, rgba(102,126,234,0.08), rgba(118,75,162,0.08))',
+    backdropFilter: 'blur(12px)',
+    borderRadius: 18,
+    border: '1px solid rgba(102,126,234,0.2)',
+    animation: 'fadeIn 0.4s ease-out, glowPulse 3s ease-in-out infinite',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  assemblyGlow: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    background: 'linear-gradient(90deg, transparent, rgba(102,126,234,0.05), transparent)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 2s linear infinite',
+    pointerEvents: 'none',
   },
   assemblyText: {
-    color: '#8b9cf7',
-    fontWeight: 600,
-    fontSize: 14,
+    color: '#a0b0ff',
+    fontWeight: 700,
+    fontSize: 15,
   },
   tip: {
     textAlign: 'center',
-    color: '#3a4060',
+    color: '#4a5070',
     fontSize: 12,
     marginTop: 32,
     letterSpacing: 0.3,
+    paddingBottom: 32,
   },
 }
