@@ -14,10 +14,16 @@ export default function ConversationView({ ws }) {
   const bottomRef = useRef(null)
   const recognitionRef = useRef(null)
   const fileInputRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [ws.messages, ws.previews, ws.isThinking, ws.scenePlan])
+
+  // Auto-focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
 
   // Global keyboard shortcut: V to toggle voice input
   useEffect(() => {
@@ -337,6 +343,7 @@ export default function ConversationView({ ws }) {
             </button>
           )}
           <input
+            ref={inputRef}
             style={{
               ...styles.input,
               ...(isMobile ? { padding: '10px 8px', fontSize: 14 } : {}),
