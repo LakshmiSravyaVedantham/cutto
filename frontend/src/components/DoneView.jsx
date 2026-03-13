@@ -37,6 +37,7 @@ function Confetti() {
 export default function DoneView({ videoUrl, onReset, onEditScenes }) {
   const isMobile = useIsMobile()
   const [videoError, setVideoError] = useState(false)
+  const [retrying, setRetrying] = useState(false)
   const [showConfetti, setShowConfetti] = useState(true)
 
   useEffect(() => {
@@ -77,10 +78,28 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
       }}>
         {videoError ? (
           <div style={{ padding: 32, textAlign: 'center', color: '#e74c3c' }}>
-            <p style={{ fontSize: 14, marginBottom: 12 }}>Video failed to load.</p>
-            <a href={videoUrl} download style={{ color: '#667eea', textDecoration: 'underline' }}>
-              Download directly
-            </a>
+            <p style={{ fontSize: 14, marginBottom: 12 }}>Video failed to load in browser.</p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                style={{
+                  padding: '10px 20px', borderRadius: 10,
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  color: '#fff', border: 'none', cursor: 'pointer',
+                  fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
+                }}
+                onClick={() => { setRetrying(true); setVideoError(false); setTimeout(() => setRetrying(false), 500) }}
+              >
+                {retrying ? 'Retrying...' : 'Retry Playback'}
+              </button>
+              <a href={videoUrl} download style={{
+                padding: '10px 20px', borderRadius: 10,
+                background: 'rgba(102,126,234,0.1)', color: '#667eea',
+                border: '1px solid rgba(102,126,234,0.2)',
+                textDecoration: 'none', fontSize: 13, fontWeight: 600,
+              }}>
+                Download Instead
+              </a>
+            </div>
           </div>
         ) : (
           <video style={{

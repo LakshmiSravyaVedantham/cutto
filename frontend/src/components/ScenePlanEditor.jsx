@@ -8,6 +8,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
   const [editVisual, setEditVisual] = useState('')
   const [editSpeaker, setEditSpeaker] = useState('narrator')
   const [revisionNote, setRevisionNote] = useState('')
+  const [deletedScene, setDeletedScene] = useState(null)
 
   const totalDuration = plan.scenes.reduce((sum, s) => sum + (s.target_duration || 0), 0)
   const durationLabel = totalDuration >= 60
@@ -80,6 +81,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
 
   const removeScene = (sceneNum) => {
     if (plan.scenes.length <= 1) return
+    const removed = plan.scenes.find(s => s.scene_number === sceneNum)
     const filtered = plan.scenes
       .filter(s => s.scene_number !== sceneNum)
       .map((s, i) => ({ ...s, scene_number: i + 1 }))
@@ -90,6 +92,15 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
     }
     onUpdate(updated)
     if (editingScene === sceneNum) setEditingScene(null)
+    // Show undo toast for 4 seconds
+    setDeletedScene({ scene: removed, previousPlan: plan })
+    setTimeout(() => setDeletedScene(prev => prev?.scene === removed ? null : prev), 4000)
+  }
+
+  const undoDelete = () => {
+    if (!deletedScene) return
+    onUpdate(deletedScene.previousPlan)
+    setDeletedScene(null)
   }
 
   return (
@@ -175,7 +186,9 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                 <button style={{
                   ...styles.editBtn,
                   ...(isMobile ? { minHeight: 44, minWidth: 44, padding: '8px 16px' } : {}),
-                }} onClick={() => startEdit(scene)}>
+                }} onClick={() => startEdit(scene)}
+                  aria-label={`Edit scene ${scene.scene_number} narration and visuals`}
+                >
                   Edit
                 </button>
               )}
@@ -183,7 +196,10 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
                 <button style={{
                   ...styles.deleteBtn,
                   ...(isMobile ? { width: 44, height: 44, borderRadius: 10 } : {}),
-                }} onClick={() => removeScene(scene.scene_number)} title="Remove scene">
+                }} onClick={() => removeScene(scene.scene_number)}
+                  title="Remove scene"
+                  aria-label={`Remove scene ${scene.scene_number}`}
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                   </svg>
@@ -288,6 +304,31 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
           Revise
         </button>
       </div>
+
+      {/* Undo delete toast */}
+      {deletedScene && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 16px', marginBottom: 8, borderRadius: 12,
+          background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.15)',
+          animation: 'fadeIn 0.3s ease-out',
+        }}>
+          <span style={{ color: '#e74c3c', fontSize: 13 }}>
+            Scene deleted
+          </span>
+          <button
+            style={{
+              padding: '4px 14px', borderRadius: 8,
+              background: 'rgba(231,76,60,0.12)', color: '#e74c3c',
+              border: '1px solid rgba(231,76,60,0.2)', cursor: 'pointer',
+              fontSize: 12, fontWeight: 700,
+            }}
+            onClick={undoDelete}
+          >
+            Undo
+          </button>
+        </div>
+      )}
 
       {/* Approve */}
       <button style={{

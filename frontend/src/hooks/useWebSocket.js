@@ -146,9 +146,9 @@ export default function useWebSocket() {
           setIsThinking(false)
           // Only clear progress for fatal errors, not scene-level ones
           if (!data.scene) setProgress(null)
-          // Auto-dismiss non-critical errors after 10s
+          // Auto-dismiss non-critical errors after 15s
           clearTimeout(errorTimerRef.current)
-          errorTimerRef.current = setTimeout(() => setError(null), 10000)
+          errorTimerRef.current = setTimeout(() => setError(null), 15000)
           break
       }
     }
