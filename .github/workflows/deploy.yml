@@ -39,17 +39,19 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --memory 2Gi \
-            --cpu 2 \
-            --timeout 300 \
+            --memory 4Gi \
+            --cpu 4 \
+            --timeout 900 \
             --concurrency 1 \
             --min-instances 0 \
-            --max-instances 3 \
+            --max-instances 2 \
             --session-affinity \
             --set-env-vars "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" \
             --set-env-vars "DEMO_SECRET=${{ secrets.DEMO_SECRET }}" \
             --set-env-vars "MUSIC_DIR=./music" \
-            --set-env-vars "GCS_BUCKET=${{ secrets.GCS_BUCKET }}"
+            --set-env-vars "GCS_BUCKET=${{ secrets.GCS_BUCKET }}" \
+            --set-env-vars "PIPELINE_PARALLEL_BATCH_SIZE=1" \
+            --set-env-vars "SCENE_TIMEOUT_SECONDS=420"
 
       - name: Show URL
         run: |
