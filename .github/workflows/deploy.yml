@@ -1,8 +1,6 @@
 name: Deploy to Cloud Run
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 env:
@@ -12,7 +10,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.GCP_SA_KEY != '' }}
 
     permissions:
       contents: read
