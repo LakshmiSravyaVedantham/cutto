@@ -51,7 +51,7 @@ def test_config_endpoint(client):
 
 def test_video_not_found(client):
     resp = client.get("/videos/nonexistent-id/final.mp4")
-    assert resp.status_code == 200
+    assert resp.status_code == 404
     data = resp.json()
     assert data["error"] == "Video not found"
 

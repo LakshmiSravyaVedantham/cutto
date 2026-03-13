@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import useIsMobile from '../hooks/useIsMobile'
 
 export default function DoneView({ videoUrl, onReset, onEditScenes }) {
   const isMobile = useIsMobile()
+  const [videoError, setVideoError] = useState(false)
   return (
     <div style={{
       ...styles.container,
@@ -33,10 +34,19 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
         ...styles.videoWrap,
         ...(isMobile ? { maxWidth: '100%' } : {}),
       }}>
-        <video style={{
-          ...styles.video,
-          ...(isMobile ? { borderRadius: 14 } : {}),
-        }} src={videoUrl} controls autoPlay />
+        {videoError ? (
+          <div style={{ padding: 32, textAlign: 'center', color: '#e74c3c' }}>
+            <p style={{ fontSize: 14, marginBottom: 12 }}>Video failed to load.</p>
+            <a href={videoUrl} download style={{ color: '#667eea', textDecoration: 'underline' }}>
+              Download directly
+            </a>
+          </div>
+        ) : (
+          <video style={{
+            ...styles.video,
+            ...(isMobile ? { borderRadius: 14 } : {}),
+          }} src={videoUrl} controls autoPlay onError={() => setVideoError(true)} />
+        )}
         <div style={styles.videoGlow} />
       </div>
 

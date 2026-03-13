@@ -8,7 +8,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from backend.agent import ConversationSession, extract_scene_plan
@@ -97,7 +97,7 @@ async def serve_video(video_id: str):
                 "Content-Disposition": f'attachment; filename="cutto-{video_id[:8]}.mp4"'
             },
         )
-    return {"error": "Video not found"}
+    return JSONResponse({"error": "Video not found"}, status_code=404)
 
 
 # Rate limiting: 3 videos per IP per hour
@@ -306,4 +306,5 @@ async def run_video_pipeline(ws: WebSocket, plan):
             friendly = (
                 "Multiple scenes failed to generate. Try simpler visual descriptions."
             )
+        await ws.send_json({"type": "pipeline_progress", "video_id": "", "scene": 0, "step": "error", "status": "error"})
         await ws.send_json({"type": "error", "message": friendly})

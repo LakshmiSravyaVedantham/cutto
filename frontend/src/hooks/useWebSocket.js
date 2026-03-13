@@ -54,6 +54,7 @@ export default function useWebSocket() {
         data = JSON.parse(event.data)
       } catch {
         console.warn('Malformed WebSocket message:', event.data)
+        setIsThinking(false)
         return
       }
 
@@ -92,6 +93,7 @@ export default function useWebSocket() {
         case 'error':
           setError(data.message)
           setIsThinking(false)
+          setProgress(null)
           break
       }
     }

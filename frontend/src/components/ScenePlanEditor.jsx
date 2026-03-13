@@ -45,6 +45,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
   }
 
   const addScene = () => {
+    if (plan.scenes.length >= 20) return
     const lastScene = plan.scenes[plan.scenes.length - 1]
     const newScene = {
       scene_number: lastScene.scene_number + 1,
