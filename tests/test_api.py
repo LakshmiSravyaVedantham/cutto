@@ -94,3 +94,18 @@ def test_plan_endpoint_calls_adk(client):
     data = resp.json()
     assert data["status"] == "ok"
     mock_pv.assert_called_once_with("Test video")
+
+
+def test_agent_info_endpoint(client):
+    resp = client.get("/api/agent")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["architecture"] == "multi-agent"
+    assert data["framework"] == "Google ADK"
+    root = data["root_agent"]
+    assert root["name"] == "cutto_director"
+    assert len(root["sub_agents"]) == 2
+    agent_names = {a["name"] for a in root["sub_agents"]}
+    assert "creative_director" in agent_names
+    assert "storyboard_artist" in agent_names
+    assert data["tool_count"] == 4

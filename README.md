@@ -150,7 +150,8 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Graceful error handling**: failed scenes show visual indicator, pipeline continues with remaining scenes
 - **Exponential backoff reconnection**: WebSocket auto-reconnects with 1s->30s delay
 - **Mobile responsive**: touch-friendly buttons, stacking cards, compact layout
-- **109 automated tests** covering pipeline, FFmpeg, models, agent, TTS, Veo, Imagen, and API
+- **REST API for judges**: `/api/plan` for direct plan generation, `/api/agent` for ADK architecture introspection
+- **113 automated tests** covering pipeline, FFmpeg, models, agent, TTS, Veo, Imagen, and API
 
 ---
 
@@ -344,7 +345,7 @@ Lipsync is optional. Without it, character dialogue scenes play the video as-is 
 pytest tests/ -v
 ```
 
-109 tests covering FFmpeg command building, pipeline orchestration, agent MIME detection/plan extraction, Imagen/Veo service interfaces, Pydantic model validation, API endpoints, and TTS voice mapping.
+113 tests covering FFmpeg command building, pipeline orchestration, agent MIME detection/plan extraction, Imagen/Veo service interfaces, Pydantic model validation, API endpoints, ADK agent architecture, and TTS voice mapping.
 
 ---
 

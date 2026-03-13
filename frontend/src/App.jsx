@@ -120,6 +120,7 @@ export default function App() {
 
         <div style={styles.techStack}>
           <span style={styles.techBadge}>Gemini 2.0</span>
+          <span style={styles.techBadge}>Google ADK</span>
           <span style={styles.techBadge}>Veo 2.0</span>
           <span style={styles.techBadge}>Imagen 4.0</span>
           <span style={styles.techBadge}>Cloud TTS</span>

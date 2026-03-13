@@ -178,6 +178,38 @@ async def create_plan(body: dict):
     return result
 
 
+@app.get("/api/agent")
+async def agent_info():
+    """Describe the ADK multi-agent architecture — judges can inspect the agent graph."""
+    from backend.adk_agent import director_agent, root_agent, storyboard_agent
+
+    def agent_summary(agent):
+        return {
+            "name": agent.name,
+            "model": agent.model,
+            "description": agent.description,
+            "tools": [t.__name__ for t in agent.tools],
+        }
+
+    return {
+        "architecture": "multi-agent",
+        "framework": "Google ADK",
+        "root_agent": {
+            **agent_summary(root_agent),
+            "sub_agents": [
+                agent_summary(director_agent),
+                agent_summary(storyboard_agent),
+            ],
+        },
+        "tool_count": len(root_agent.tools),
+        "description": (
+            "CutTo uses a 3-agent ADK architecture: the root orchestrator routes "
+            "between a Creative Director (vision & conversation) and a Storyboard "
+            "Artist (structured scene planning). Each agent has specialized tools."
+        ),
+    }
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
     # Auth gate

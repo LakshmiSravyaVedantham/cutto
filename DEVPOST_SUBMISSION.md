@@ -54,7 +54,8 @@ CutTo supports 6 video categories: animated stories, medical/science explainers,
 - The creative director persona makes the AI feel like a real collaborator, not just a tool
 - Multi-agent ADK architecture with specialized roles (Director for creative vision, Storyboard for structured planning)
 - Voice input breaks the "text box paradigm" — users can literally speak their video idea
-- 82 automated tests covering the pipeline, services, and ADK agents
+- Reference image upload — upload a photo or mood board and the AI matches the visual style
+- 112 automated tests covering the pipeline, services, agent, API, and ADK agents
 
 ## What we learned
 - Gemini's interleaved text + image output is powerful for creative workflows — showing preview images during conversation makes planning feel immediate
@@ -76,5 +77,5 @@ gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, re
 
 ## Links
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto
-- **Demo URL**: [Cloud Run URL — fill after deploy]
+- **Demo URL**: https://cutto-vu7xxy6oaa-uc.a.run.app
 - **Demo Video**: [YouTube URL — fill after recording]
