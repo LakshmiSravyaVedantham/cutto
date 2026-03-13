@@ -286,6 +286,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
         ...styles.approveBtn,
         ...(isMobile ? { padding: '16px 20px', fontSize: 15, minHeight: 52 } : {}),
       }} onClick={onApprove}
+        aria-label="Approve scene plan and start video generation"
         onMouseOver={e => {
           e.currentTarget.style.transform = 'translateY(-2px)'
           e.currentTarget.style.boxShadow = '0 8px 32px rgba(39,174,96,0.4)'
@@ -295,7 +296,7 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
           e.currentTarget.style.boxShadow = '0 4px 24px rgba(39,174,96,0.3)'
         }}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
           <polygon points="5 3 19 12 5 21 5 3"/>
         </svg>
         Looks great — Make my video!

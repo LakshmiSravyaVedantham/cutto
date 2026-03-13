@@ -14,18 +14,18 @@ export default function App() {
 
   if (!ws.connected) {
     return (
-      <div style={styles.container}>
+      <div style={styles.container} role="main" aria-label="CutTo — AI Video Director">
         {/* Animated background elements */}
-        <div style={styles.bgGrid} />
-        <div style={styles.glowOrb1} />
-        <div style={styles.glowOrb2} />
-        <div style={styles.glowOrb3} />
+        <div style={styles.bgGrid} aria-hidden="true" />
+        <div style={styles.glowOrb1} aria-hidden="true" />
+        <div style={styles.glowOrb2} aria-hidden="true" />
+        <div style={styles.glowOrb3} aria-hidden="true" />
 
         {/* Hero */}
         <div style={styles.hero}>
           <div style={styles.badgeWrap}>
-            <span style={styles.heroBadge}>
-              <span style={styles.heroBadgeDot} />
+            <span style={styles.heroBadge} aria-label="Built with Google Gemini and Veo">
+              <span style={styles.heroBadgeDot} aria-hidden="true" />
               Built with Google Gemini &amp; Veo
             </span>
           </div>

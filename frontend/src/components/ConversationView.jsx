@@ -141,21 +141,21 @@ export default function ConversationView({ ws }) {
       ...styles.container,
       ...(isMobile ? { padding: '0 12px' } : {}),
     }}>
-      <div style={styles.glowOrb1} />
-      <div style={styles.glowOrb2} />
+      <div style={styles.glowOrb1} aria-hidden="true" />
+      <div style={styles.glowOrb2} aria-hidden="true" />
 
-      <div style={styles.header}>
+      <header style={styles.header}>
         <div style={styles.logoWrap}>
-          <span style={styles.logoIcon}>&#9655;</span>
+          <span style={styles.logoIcon} aria-hidden="true">&#9655;</span>
           <h1 style={styles.title}>CutTo</h1>
         </div>
         <p style={styles.headerSub}>Your AI Video Director</p>
-      </div>
+      </header>
 
-      <div style={styles.messages}>
+      <div style={styles.messages} role="log" aria-label="Conversation" aria-live="polite">
         {ws.messages.map((m, i) => (
-          <div key={i} style={styles.msgRow(m.role)}>
-            <div style={styles.avatar(m.role)}>
+          <div key={i} style={styles.msgRow(m.role)} role="article" aria-label={`${m.role === 'user' ? 'You' : 'AI Director'} said`}>
+            <div style={styles.avatar(m.role)} aria-hidden="true">
               {m.role === 'user' ? 'You' : 'AI'}
             </div>
             <div style={{
@@ -333,6 +333,8 @@ export default function ConversationView({ ws }) {
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSend() } }}
             placeholder={isListening ? 'Listening...' : 'Describe your video idea...'}
             disabled={isListening || ws.isThinking || !ws.connected}
+            aria-label="Video idea input"
+            autoComplete="off"
           />
           <button
             style={{
