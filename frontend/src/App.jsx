@@ -123,9 +123,9 @@ export default function App() {
             ...(isMobile ? { flexDirection: 'column', alignItems: 'stretch' } : {}),
           }}>
             {[
-              { label: 'How the heart pumps blood', prompt: 'Create a 90-second animated explainer for 8-year-olds about how the human heart pumps blood through its four chambers. Use colorful cartoon characters as red blood cells traveling through the body. Friendly narrator voice, upbeat music.' },
-              { label: 'Solar system adventure', prompt: 'Create an animated story for kids (ages 6-10) where a curious alien named Zip visits each planet in our solar system. Educational facts about each planet, Pixar-style animation, exciting and fun mood.' },
-              { label: 'Why do volcanoes erupt?', prompt: 'Create a 60-second science explainer for elementary school students about why volcanoes erupt. Show the layers of the earth, magma chambers, and eruption in colorful animated diagrams. Keep it exciting but educational.' },
+              { label: 'How the heart pumps blood', prompt: 'Create a 90-second animated explainer for 8-year-olds about how the human heart pumps blood through its four chambers. Use colorful cartoon characters as red blood cells traveling through the body. Friendly narrator voice, upbeat music.', hint: '~90s video' },
+              { label: 'Solar system adventure', prompt: 'Create an animated story for kids (ages 6-10) where a curious alien named Zip visits each planet in our solar system. Educational facts about each planet, Pixar-style animation, exciting and fun mood.', hint: '~90s video' },
+              { label: 'Why do volcanoes erupt?', prompt: 'Create a 60-second science explainer for elementary school students about why volcanoes erupt. Show the layers of the earth, magma chambers, and eruption in colorful animated diagrams. Keep it exciting but educational.', hint: '~60s video' },
             ].map((t, i) => (
               <button
                 key={i}
@@ -147,6 +147,7 @@ export default function App() {
                   e.currentTarget.style.background = 'rgba(15,15,25,0.6)'
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
+              title={t.hint}
               >
                 {t.label}
               </button>

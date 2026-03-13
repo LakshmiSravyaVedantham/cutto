@@ -18,7 +18,9 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
     return s && s.step === 'clip' && s.status === 'done'
   }).filter(Boolean).length
 
-  const pct = currentStep === 'assembly' || currentStep === 'complete'
+  const pct = currentStep === 'complete'
+    ? 100
+    : currentStep === 'assembly'
     ? 95
     : totalScenes > 0
     ? Math.round((completedScenes / totalScenes) * 90)
