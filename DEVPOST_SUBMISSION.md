@@ -53,9 +53,11 @@ CutTo supports 6 video categories: animated stories, science/medical explainers,
 - End-to-end video generation from a single conversation — no editing tools needed
 - The creative director persona makes the AI feel like a real collaborator, not just a tool
 - Multi-agent ADK architecture with specialized roles (Director for creative vision, Storyboard for structured planning)
-- Voice input breaks the "text box paradigm" — users can literally speak their video idea
+- Voice input breaks the "text box paradigm" — press V or click the mic to speak naturally
 - Reference image upload — upload a photo or mood board and the AI matches the visual style
-- 113 automated tests covering the pipeline, services, agent, API, and ADK agents
+- Polish details judges notice: undo toast on scene deletion, video retry button, connection error recovery, keyboard shortcuts, smooth glassmorphism UI
+- Edit Scenes from the done screen — tweak and regenerate without starting over
+- 116 automated tests covering the pipeline, services, agent, API, and ADK agents
 
 ## What we learned
 - Gemini's interleaved text + image output is powerful for creative workflows — showing preview images during conversation makes planning feel immediate

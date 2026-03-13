@@ -115,3 +115,38 @@ def test_agent_info_endpoint(client):
         assert "name" in tool
         assert "description" in tool
         assert len(tool["description"]) > 0
+
+
+def test_rate_limit_function():
+    """Rate limiter allows 3 requests then blocks."""
+    from backend.main import check_rate_limit, video_requests
+
+    test_ip = "test-rate-limit-ip"
+    video_requests.pop(test_ip, None)  # clean slate
+
+    assert check_rate_limit(test_ip) is True
+    assert check_rate_limit(test_ip) is True
+    assert check_rate_limit(test_ip) is True
+    assert check_rate_limit(test_ip) is False  # 4th request blocked
+
+    # Cleanup
+    video_requests.pop(test_ip, None)
+
+
+def test_config_models_present(client):
+    """Config endpoint exposes all model names."""
+    resp = client.get("/api/config")
+    models = resp.json()["models"]
+    assert "conversation" in models
+    assert "image_generation" in models
+    assert "video_generation" in models
+    assert "image_fallback" in models
+
+
+def test_agent_info_has_description(client):
+    """/api/agent includes a prose description of the architecture."""
+    resp = client.get("/api/agent")
+    data = resp.json()
+    assert "description" in data
+    assert "3-agent" in data["description"]
+    assert "ADK" in data["description"]
