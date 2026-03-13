@@ -2,13 +2,18 @@ import React, { useState, useRef, useEffect } from 'react'
 import ScenePlanEditor from './ScenePlanEditor'
 import useIsMobile from '../hooks/useIsMobile'
 
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5 MB
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
 export default function ConversationView({ ws }) {
   const isMobile = useIsMobile()
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [hasMic, setHasMic] = useState(false)
+  const [attachedImage, setAttachedImage] = useState(null) // { dataUrl, base64 }
   const bottomRef = useRef(null)
   const recognitionRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -91,10 +96,36 @@ export default function ConversationView({ ws }) {
     }
   }
 
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    // Reset so the same file can be re-selected
+    e.target.value = ''
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      return // silently ignore unsupported types
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      return // too large
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result
+      // dataUrl is "data:<mime>;base64,<data>" — send the full string,
+      // backend strips the prefix.
+      setAttachedImage({ dataUrl, base64: dataUrl })
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const removeAttachedImage = () => setAttachedImage(null)
+
   const handleSend = () => {
     if (!input.trim() || ws.isThinking || !ws.connected) return
-    ws.sendText(input.trim())
+    ws.sendText(input.trim(), attachedImage?.base64 || null)
     setInput('')
+    setAttachedImage(null)
   }
 
   const handlePlanUpdate = (updatedPlan) => {
@@ -131,6 +162,13 @@ export default function ConversationView({ ws }) {
               ...styles.msg(m.role),
               ...(isMobile ? { maxWidth: '85%', padding: '12px 14px', fontSize: 13 } : {}),
             }}>
+              {m.image && (
+                <img
+                  src={m.image}
+                  alt="Attached reference"
+                  style={styles.msgImage}
+                />
+              )}
               {m.text}
             </div>
           </div>
@@ -202,14 +240,53 @@ export default function ConversationView({ ws }) {
         </div>
       )}
 
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        style={{ display: 'none' }}
+        onChange={handleImageSelect}
+      />
+
       <div style={{
         ...styles.inputArea,
         ...(isMobile ? { paddingBottom: 12 } : {}),
       }}>
+        {/* Attached image thumbnail */}
+        {attachedImage && (
+          <div style={styles.thumbnailRow}>
+            <div style={styles.thumbnailWrap}>
+              <img src={attachedImage.dataUrl} alt="Attached" style={styles.thumbnail} />
+              <button style={styles.thumbnailRemove} onClick={removeAttachedImage} title="Remove image">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <span style={styles.thumbnailLabel}>Reference image attached</span>
+          </div>
+        )}
+
         <div style={{
           ...styles.inputRow,
           ...(isMobile ? { padding: '4px 4px 4px 6px' } : {}),
         }}>
+          {/* Image upload button */}
+          <button
+            style={{
+              ...styles.uploadBtn,
+              ...(isMobile ? { minWidth: 44, minHeight: 44 } : {}),
+            }}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isListening || ws.isThinking || !ws.connected}
+            title="Attach reference image"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+            </svg>
+          </button>
           {hasMic && (
             <button
               style={{
@@ -547,5 +624,68 @@ const styles = {
     justifyContent: 'center',
     flexShrink: 0,
     transition: 'transform 0.2s',
+  },
+  uploadBtn: {
+    height: 44,
+    minWidth: 44,
+    borderRadius: 14,
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    background: 'rgba(255,255,255,0.06)',
+    color: '#888',
+    transition: 'all 0.2s',
+  },
+  thumbnailRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    padding: '8px 12px 0',
+  },
+  thumbnailWrap: {
+    position: 'relative',
+    width: 48,
+    height: 48,
+    flexShrink: 0,
+  },
+  thumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+    objectFit: 'cover',
+    border: '1px solid rgba(102,126,234,0.3)',
+  },
+  thumbnailRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    background: 'rgba(255,80,80,0.9)',
+    color: '#fff',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 0,
+  },
+  thumbnailLabel: {
+    fontSize: 12,
+    color: '#888',
+    fontWeight: 500,
+  },
+  msgImage: {
+    maxWidth: '100%',
+    maxHeight: 120,
+    borderRadius: 10,
+    marginBottom: 8,
+    objectFit: 'cover',
+    border: '1px solid rgba(255,255,255,0.08)',
+    display: 'block',
   },
 }

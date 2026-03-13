@@ -187,8 +187,31 @@ async def websocket_endpoint(ws: WebSocket, key: str = Query(default="")):
                 user_msg = data["text"]
                 # User message shown optimistically on frontend — no echo needed
 
+                # Decode optional reference image from base64
+                ref_image_bytes = None
+                if data.get("image"):
+                    try:
+                        from backend.agent import MAX_IMAGE_SIZE
+
+                        raw = data["image"]
+                        # Strip optional data-URI prefix
+                        if "," in raw:
+                            raw = raw.split(",", 1)[1]
+                        ref_image_bytes = base64.b64decode(raw)
+                        if len(ref_image_bytes) > MAX_IMAGE_SIZE:
+                            await ws.send_json(
+                                {
+                                    "type": "error",
+                                    "message": "Image too large. Maximum size is 5 MB.",
+                                }
+                            )
+                            ref_image_bytes = None
+                    except Exception:
+                        logger.warning("Failed to decode uploaded image, ignoring")
+                        ref_image_bytes = None
+
                 text, image_bytes, plan, pipeline_started = await session.send_message(
-                    user_msg
+                    user_msg, image_bytes=ref_image_bytes
                 )
 
                 await ws.send_json(

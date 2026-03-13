@@ -111,6 +111,18 @@ Every video can use up to 3 voice tracks:
 Not every video needs all 3. An explainer might use only narrator. A story needs all 3. Choose what fits.
 
 ═══════════════════════════════════════
+REFERENCE IMAGE ANALYSIS
+═══════════════════════════════════════
+When a reference image is provided alongside the user's text prompt, analyze it carefully:
+- Identify the art style (photorealistic, illustration, watercolor, 3D render, anime, etc.)
+- Extract the dominant color palette (list 3-5 key colors)
+- Assess the composition style (symmetrical, rule of thirds, dynamic angles, etc.)
+- Determine the mood and atmosphere (warm, cold, dramatic, whimsical, gritty, etc.)
+- Note any distinctive visual techniques (lighting style, texture, grain, blur effects)
+
+Use these observations as the PRIMARY foundation for your visual_style_anchor. The generated video should look like it belongs in the same visual universe as the reference image.
+
+═══════════════════════════════════════
 VISUAL STYLE ANCHOR
 ═══════════════════════════════════════
 Before writing scenes, create a "visual_style_anchor" — a detailed description of the consistent visual look:
@@ -204,6 +216,26 @@ HARD RULES
 """
 
 
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+# JPEG: FF D8 FF, PNG: 89 50 4E 47, WebP: RIFF....WEBP
+_MAGIC_JPEG = b"\xff\xd8\xff"
+_MAGIC_PNG = b"\x89PNG"
+_MAGIC_WEBP_RIFF = b"RIFF"
+_MAGIC_WEBP_TAG = b"WEBP"
+
+
+def _guess_mime_type(data: bytes) -> str:
+    """Return MIME type from file magic bytes. Defaults to image/jpeg."""
+    if data[:3] == _MAGIC_JPEG:
+        return "image/jpeg"
+    if data[:4] == _MAGIC_PNG:
+        return "image/png"
+    if data[:4] == _MAGIC_WEBP_RIFF and data[8:12] == _MAGIC_WEBP_TAG:
+        return "image/webp"
+    return "image/jpeg"
+
+
 class ConversationSession:
     """Manages a conversation with Gemini for video planning."""
 
@@ -219,13 +251,21 @@ class ConversationSession:
         return self.history[-8:]
 
     async def send_message(
-        self, message: str
+        self, message: str, image_bytes: bytes | None = None
     ) -> tuple[str, bytes | None, ScenePlan | None, bool]:
         """Send message to Gemini.
 
         Returns: (text_response, image_bytes_or_none, scene_plan_or_none, pipeline_approved)
         """
-        self.history.append({"role": "user", "parts": [{"text": message}]})
+        user_parts: list[dict] = [{"text": message}]
+        if image_bytes:
+            user_parts.append({
+                "inline_data": {
+                    "mime_type": _guess_mime_type(image_bytes),
+                    "data": image_bytes,
+                }
+            })
+        self.history.append({"role": "user", "parts": user_parts})
 
         try:
             response = self.client.models.generate_content(

@@ -105,7 +105,7 @@ export default function useWebSocket() {
     }
   }, [])
 
-  const sendText = useCallback((text) => {
+  const sendText = useCallback((text, image = null) => {
     const normalized = text.trim()
     if (!normalized) return
 
@@ -122,10 +122,12 @@ export default function useWebSocket() {
     lastSentRef.current = { text: normalized, at: now }
 
     // Optimistic: show user message immediately
-    setMessages(prev => [...prev, { role: 'user', text: normalized }])
+    setMessages(prev => [...prev, { role: 'user', text: normalized, image }])
     setIsThinking(true)
     setError(null)
-    send({ type: 'text', text: normalized })
+    const msg = { type: 'text', text: normalized }
+    if (image) msg.image = image
+    send(msg)
   }, [send])
 
   const approve = useCallback(() => {
