@@ -135,7 +135,7 @@ export default function App() {
   if (isDone) return (
     <DoneView
       videoUrl={ws.videoUrl}
-      onReset={() => window.location.reload()}
+      onReset={ws.reset}
     />
   )
   if (isGenerating) return (
