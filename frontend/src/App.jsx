@@ -12,8 +12,10 @@ export default function App() {
 
   const isGenerating = ws.progress && !ws.videoUrl
   const isDone = !!ws.videoUrl
+  // Show active views even during brief disconnects so progress isn't lost
+  const hasActiveSession = ws.connected || isDone || isGenerating || ws.messages.length > 0
 
-  if (!ws.connected) {
+  if (!hasActiveSession) {
     return (
       <div style={styles.container} role="main" aria-label="CutTo — AI Video Director">
         {/* Animated background elements */}
