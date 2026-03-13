@@ -83,6 +83,33 @@ export default function App() {
               </>
             )}
           </button>
+
+          {/* Connection error */}
+          {ws.error && (
+            <div style={{
+              marginTop: 16, padding: '12px 20px', borderRadius: 12,
+              background: 'rgba(231,76,60,0.08)', border: '1px solid rgba(231,76,60,0.15)',
+              color: '#e74c3c', fontSize: 13, display: 'flex', alignItems: 'center',
+              gap: 10, animation: 'fadeIn 0.3s ease-out', maxWidth: 420, margin: '16px auto 0',
+            }} role="alert">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{ws.error}</span>
+              <button
+                onClick={ws.dismissError}
+                style={{
+                  marginLeft: 'auto', background: 'none', border: 'none',
+                  color: '#e74c3c', cursor: 'pointer', padding: 4, flexShrink: 0,
+                }}
+                aria-label="Dismiss error"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Quick start templates */}
