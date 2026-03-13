@@ -102,6 +102,7 @@ def test_agent_info_endpoint(client):
     data = resp.json()
     assert data["architecture"] == "multi-agent"
     assert data["framework"] == "Google ADK"
+    assert data["specialty"] == "Kids' educational content (ages 6-12)"
     root = data["root_agent"]
     assert root["name"] == "cutto_director"
     assert len(root["sub_agents"]) == 2
@@ -109,3 +110,8 @@ def test_agent_info_endpoint(client):
     assert "creative_director" in agent_names
     assert "storyboard_artist" in agent_names
     assert data["tool_count"] == 4
+    # Tools include descriptions from docstrings
+    for tool in root["tools"]:
+        assert "name" in tool
+        assert "description" in tool
+        assert len(tool["description"]) > 0
