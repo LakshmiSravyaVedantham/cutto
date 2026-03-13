@@ -4,7 +4,7 @@
 CutTo — AI Video Director
 
 ## Tagline
-Describe any video idea in conversation, get a finished video with AI-generated visuals, multi-character voiceover, lipsync, and background music.
+Turn any lesson into an animated video — describe it in conversation, CutTo directs the rest.
 
 ## Category
 Creative Storyteller
@@ -12,23 +12,23 @@ Creative Storyteller
 ---
 
 ## Inspiration
-Creating professional videos requires expensive software, stock footage libraries, voiceover talent, and hours of editing. Most people with great ideas — teachers, doctors, marketers, storytellers — never make their video because the barrier is too high. We wanted to make video creation as simple as having a conversation.
+I run a kids' educational YouTube channel. Every video needs animated visuals, voiceover, music, and editing — which means expensive software and 4-8 hours per upload. Most teachers and educational content creators have the same problem: great lesson ideas, no practical way to turn them into engaging videos. I wanted to make video creation as simple as describing a lesson in a conversation.
 
 ## What it does
-CutTo is an AI Video Director that turns a conversation into a finished video. Users describe their video idea (via text or voice), and CutTo:
+CutTo is an AI Video Director that turns a lesson idea into a finished animated video. You describe what you want to teach (via text or voice), and CutTo:
 
-1. **Understands the vision** — A creative AI director asks 2-3 follow-up questions about story, audience, and visual style
-2. **Plans the video** — Gemini generates a scene-by-scene plan with inline preview images (interleaved text + image output)
-3. **Lets you edit** — An interactive scene editor lets you modify narration, visuals, speakers, reorder scenes, and ask the AI for revisions
+1. **Shapes the vision** — A creative AI director with a strong persona collaborates on the concept: "I'm seeing this as a journey inside the earth — layers peeling away, magma chambers glowing..."
+2. **Plans the video** — Gemini generates a scene-by-scene plan with inline preview images (interleaved text + image output) so you see the visual direction before committing
+3. **Lets you edit** — An interactive scene editor lets you modify narration, visuals, speakers, reorder scenes, and ask the AI for revisions in natural language
 4. **Generates the video** — Veo 2.0 creates animated clips, Cloud TTS produces multi-character voiceover, Wav2Lip applies lipsync, and FFmpeg assembles everything with mood-matched music
-5. **Delivers the result** — Watch and download the finished MP4
+5. **Delivers the result** — Watch, download, and upload the finished MP4 directly to your channel
 
-CutTo supports 6 video categories: animated stories, medical/science explainers, documentaries, tutorials, marketing videos, and motivational pieces.
+CutTo supports 6 video categories: animated stories, science/medical explainers, documentaries, tutorials, marketing videos, and motivational pieces. Built specifically for educational content creators who need professional-quality videos without professional-level budgets.
 
 ## How we built it
 - **Frontend**: React 18 + Vite 5, WebSocket communication, Web Speech API for voice input
 - **Backend**: Python 3.11 + FastAPI, WebSocket server, pipeline orchestrator
-- **AI Conversation**: Gemini 2.0 Flash (text) + Gemini 2.5 Flash (interleaved text + image) via google-genai SDK
+- **AI Conversation**: Gemini 2.5 Flash (interleaved text + image) via google-genai SDK
 - **ADK Integration**: Multi-agent architecture with 3 specialized agents (Creative Director, Storyboard Artist, Orchestrator) using Google ADK with 4 function tools
 - **Video Generation**: Veo 2.0 for animated clips, with fallback chain to Imagen 4.0 and Gemini native image generation
 - **Voice Synthesis**: Google Cloud TTS (WaveNet voices) with edge-tts fallback, 3 distinct character voices
@@ -64,16 +64,16 @@ CutTo supports 6 video categories: animated stories, medical/science explainers,
 - The gap between "AI generates content" and "AI directs a production" is mostly about persona and workflow design
 
 ## What's next for CutTo
-- Veo 3.1 integration for native audio in video clips
-- Multi-language support (narration in any language)
-- Template system for common video types (course intro, product launch, explainer series)
-- Collaborative editing — multiple users refining the same video plan
-- Export to social media formats (vertical for TikTok/Reels, square for Instagram)
+- **Curriculum integration** — teachers paste a learning objective, CutTo generates a full lesson video series
+- **Multi-language support** — narration in any language for global classrooms
+- **Template library** — pre-built templates for common educational topics (human body, solar system, history)
+- **Veo 3.1 integration** — native audio in video clips for even better quality
+- **Export to social media formats** — vertical for TikTok/YouTube Shorts, square for Instagram
 
 ---
 
 ## Built With
-gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, react, ffmpeg, wav2lip, python, javascript, websockets
+gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, react, ffmpeg, wav2lip, python, javascript, websockets, docker
 
 ## Links
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto

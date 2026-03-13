@@ -1,34 +1,46 @@
-# I Built an AI Video Director with Gemini, Veo, and Google Cloud
+# I Built an AI Video Director That Turns Lessons Into Animated Videos
 
 *#GeminiLiveAgentChallenge #gemini #ai #python #opensource*
 
 ---
 
-Making a professional video today means juggling video editing software, stock footage, voiceover talent, background music, and hours of tedious editing. Most people with great ideas never make their video because the barrier is too high.
+I run a kids' educational YouTube channel. Every video needs animations, voiceover, music, and careful editing — which means expensive software and hours of work per upload. Most teachers and content creators I know have the same problem: great lesson ideas, no way to turn them into videos.
 
-I built **CutTo** to change that. You describe any video idea in a conversation, and CutTo writes the script, generates animated visuals, adds multi-character voiceover with lipsync, and delivers a finished MP4.
+I built **CutTo** to fix this. You describe a lesson in a conversation — "explain how volcanoes erupt for 8-year-olds" — and CutTo writes the script, generates animated visuals, adds voiceover with lipsync, and delivers a finished MP4 you can upload directly.
 
 ## How it works
 
-1. **Talk to the director** — CutTo's AI has a strong creative persona. It reacts to your ideas with genuine enthusiasm: *"I love this — I'm seeing something really cinematic here..."*
+1. **Talk to the director** — CutTo's AI has a creative director persona. It reacts to your ideas with enthusiasm: *"I'm seeing this as a cinematic journey into the earth — layers peeling away, magma rising..."* It shapes your rough idea into a visual plan.
 
-2. **See preview images inline** — As you plan, Gemini generates preview images directly in the conversation using interleaved text + image output. No waiting for a separate step.
+2. **See preview images inline** — As you plan, Gemini generates preview images directly in the conversation using interleaved text + image output. You see what the AI is thinking before committing to anything.
 
-3. **Edit the scene plan** — An interactive editor lets you modify narration, reorder scenes, change speakers, and ask the AI for revisions in natural language.
+3. **Edit the scene plan** — An interactive editor lets you modify narration, reorder scenes, change speakers, and ask the AI for revisions in natural language: "make the eruption more dramatic."
 
-4. **Watch it generate** — Real-time progress tracking shows each scene being animated. If a scene fails, the pipeline gracefully continues with the rest.
+4. **Watch it generate** — Real-time progress tracking shows each scene being animated in parallel. If a scene fails, the pipeline gracefully continues with the rest.
 
-5. **Download your video** — Multi-character voices, lipsync on close-ups, mood-matched background music. All assembled automatically.
+5. **Download your video** — Multi-character voices, lipsync on close-ups, mood-matched background music. Ready to upload.
 
-**Try the live demo**: [cutto-vu7xxy6oaa-uc.a.run.app](https://cutto-vu7xxy6oaa-uc.a.run.app) — click a quick-start template to see it in action.
+CutTo supports 6 video categories: animated stories, science explainers, documentaries, tutorials, marketing videos, and motivational pieces. The project has 113 automated tests covering the pipeline, services, agent, and API.
 
-CutTo supports 6 video categories: animated stories, medical/science explainers, documentaries, tutorials, marketing videos, and motivational pieces. The full project has 113 automated tests covering the pipeline, services, agent, and API.
+## The real use case: kids' education
+
+Here's why this matters to me personally. My YouTube channel targets kids ages 6-12. A typical video — "How does the heart pump blood?" — requires:
+
+- Writing a kid-friendly script
+- Finding or creating animated visuals
+- Recording voiceover (or hiring someone)
+- Adding background music
+- Editing everything together in Premiere/DaVinci
+
+That's 4-8 hours per video minimum, or $200+ if I outsource it.
+
+With CutTo, I describe the lesson, review the scene plan, and click generate. The entire process takes one conversation. The AI handles the creative direction, visual generation, voice synthesis, and assembly.
 
 ## The tech stack
 
 | Component | Technology |
 |---|---|
-| Conversation + Planning | Gemini 2.0 Flash + 2.5 Flash (interleaved text + image) |
+| Conversation + Planning | Gemini 2.5 Flash (interleaved text + image) |
 | Video Generation | Veo 2.0 (animated clips) |
 | Image Fallback | Imagen 4.0 + Gemini native image |
 | Voice Synthesis | Google Cloud TTS (WaveNet) + edge-tts |
@@ -42,28 +54,35 @@ CutTo supports 6 video categories: animated stories, medical/science explainers,
 ## Architecture
 
 ```
-User speaks idea
+User speaks lesson idea
     |
     v
 Gemini generates scene plan with inline preview images
     |
     v
-Interactive scene editor (edit, reorder, revise)
+Interactive scene editor (edit, reorder, revise with AI)
     |
     v
 Pipeline: Veo -> TTS -> Wav2Lip -> FFmpeg -> Final MP4
-(3 scenes in parallel, circuit breaker on failures)
+(parallel batches of 3, circuit breaker on failures)
 ```
+
+The ADK multi-agent architecture uses three specialized agents:
+- **Creative Director** — shapes the vision, asks clarifying questions
+- **Storyboard Artist** — generates structured scene plans with visual prompts
+- **Orchestrator** — routes between agents based on conversation state
+
+Each agent has its own tools and system instructions. The Creative Director has access to image generation for inline previews; the Storyboard Artist outputs structured JSON that feeds directly into the video pipeline.
 
 ## What I learned
 
-**Gemini's interleaved output is magic for creative tools.** Showing preview images *during* the conversation — not after — makes planning feel immediate and collaborative. The user sees what the AI is thinking before committing to anything.
+**Gemini's interleaved output is the killer feature for creative tools.** Showing preview images *during* the conversation — not after — makes planning feel immediate. The user sees what the AI is imagining and can redirect before any expensive generation happens.
 
-**Visual consistency needs engineering, not just prompting.** I use a "visual style anchor" (a detailed description of art style, color palette, character appearances) that gets prepended to every scene's visual prompt. Combined with Veo's seed parameter (all scenes share the same seed derived from video_id), this keeps characters and style consistent across scenes.
+**Visual consistency requires engineering.** I use a "visual style anchor" — a detailed description of art style, color palette, and character appearances — prepended to every scene's visual prompt. Combined with Veo's seed parameter (all scenes share a seed derived from video_id), characters and style stay consistent across scenes.
 
-**The ADK multi-agent pattern maps naturally to creative workflows.** I have three agents: a Creative Director who shapes the vision, a Storyboard Artist who generates structured scene plans, and an Orchestrator who routes between them. Each has specialized tools and instructions.
+**Audio-video sync is harder than it looks.** I implemented two modes: video-driven (default — audio speeds up or pads to match video length) and audio-driven (video stretches to match audio). Getting FFmpeg's atempo chaining right for ratios > 2x was the trickiest bug in the project.
 
-**Audio-video sync is the hardest part.** I implemented two modes: video-driven (default — audio speeds up or pads to match video length) and audio-driven (video stretches to match audio). Getting FFmpeg's atempo chaining right for ratios > 2x was the trickiest bug.
+**The persona makes the product.** A generic "video generator" feels like a tool. A creative director with opinions and enthusiasm feels like a collaborator. The difference is entirely in the system prompt and conversation design.
 
 ## Try it yourself
 
@@ -77,10 +96,10 @@ echo "GOOGLE_API_KEY=your-key" > .env
 uvicorn backend.main:app --reload --port 8000
 ```
 
-Open http://localhost:8000, click "Start Creating", and describe your video.
+Open http://localhost:8000, click a quick-start template like "How the heart pumps blood", and watch the AI direct your video.
 
 ---
 
-[GitHub Repo](https://github.com/LakshmiSravyaVedantham/cutto) | [Live Demo](https://cutto-vu7xxy6oaa-uc.a.run.app) | MIT License
+[GitHub Repo](https://github.com/LakshmiSravyaVedantham/cutto) | MIT License
 
 Built for the Google Gemini Live Agent Challenge (Creative Storyteller category). Every existing tool makes you the editor. CutTo makes you the director.
