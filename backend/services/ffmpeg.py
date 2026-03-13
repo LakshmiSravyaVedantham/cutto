@@ -336,6 +336,60 @@ def concat_clips(
         Path(concat_list_path).unlink(missing_ok=True)
 
 
+def crossfade_concat_clips(
+    clip_paths: list[str],
+    output_path: str,
+    fade_duration: float = 0.5,
+) -> None:
+    """Concatenate clips with crossfade transitions. Falls back to simple concat on error."""
+    if len(clip_paths) < 2:
+        concat_clips(clip_paths, output_path)
+        return
+    try:
+        # Get durations for accurate xfade offsets
+        durations = [get_video_duration(p) for p in clip_paths]
+        inputs: list[str] = []
+        for clip in clip_paths:
+            inputs.extend(["-i", clip])
+
+        # Build xfade filter chain with actual offsets
+        filters = []
+        prev_v = "[0:v]"
+        cumulative_offset = durations[0] - fade_duration
+        for i in range(1, len(clip_paths)):
+            out_v = f"[v{i}]"
+            filters.append(
+                f"{prev_v}[{i}:v]xfade=transition=fade:duration={fade_duration}"
+                f":offset={cumulative_offset:.2f}{out_v}"
+            )
+            prev_v = out_v
+            if i < len(clip_paths) - 1:
+                cumulative_offset += durations[i] - fade_duration
+
+        audio_inputs = "".join(f"[{i}:a]" for i in range(len(clip_paths)))
+        filters.append(f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]")
+
+        cmd = inputs + [
+            "-filter_complex",
+            ";".join(filters),
+            "-map",
+            prev_v,
+            "-map",
+            "[aout]",
+            "-c:v",
+            "libx264",
+            "-pix_fmt",
+            "yuv420p",
+            "-c:a",
+            "aac",
+            output_path,
+        ]
+        run_ffmpeg(cmd)
+    except Exception as e:
+        logger.warning(f"Crossfade failed ({e}), falling back to simple concat")
+        concat_clips(clip_paths, output_path)
+
+
 def adjust_video_duration(
     video_path: str,
     output_path: str,

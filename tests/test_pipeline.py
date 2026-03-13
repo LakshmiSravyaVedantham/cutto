@@ -89,11 +89,16 @@ def mock_services():
         patch("backend.pipeline.ffmpeg.create_ken_burns") as mock_ken_burns,
         patch("backend.pipeline.ffmpeg.create_scene_clip") as mock_scene_clip,
         patch("backend.pipeline.ffmpeg.concat_clips") as mock_concat,
+        patch("backend.pipeline.ffmpeg.crossfade_concat_clips") as mock_crossfade,
         patch("backend.pipeline.ffmpeg.add_music") as mock_add_music,
         patch(
             "backend.pipeline.lipsync.is_available", return_value=False
         ) as mock_lipsync_avail,
         patch("backend.pipeline.lipsync.apply_lipsync") as mock_lipsync,
+        patch(
+            "backend.pipeline.enhance_visual_prompt",
+            side_effect=lambda prompt, mood="": prompt,
+        ) as mock_enhance,
     ):
         # Veo returns the output path by default
         mock_veo.side_effect = (
@@ -118,9 +123,11 @@ def mock_services():
             "ken_burns": mock_ken_burns,
             "scene_clip": mock_scene_clip,
             "concat": mock_concat,
+            "crossfade": mock_crossfade,
             "add_music": mock_add_music,
             "lipsync_avail": mock_lipsync_avail,
             "lipsync": mock_lipsync,
+            "enhance": mock_enhance,
         }
 
 
@@ -376,9 +383,9 @@ class TestAssembleFinal:
 
         result = await assemble_final(plan, clips, tmp_path)
 
-        mock_services["concat"].assert_called_once()
-        concat_args = mock_services["concat"].call_args[0]
-        assert concat_args[0] == clips
+        mock_services["crossfade"].assert_called_once()
+        crossfade_args = mock_services["crossfade"].call_args[0]
+        assert crossfade_args[0] == clips
 
     @pytest.mark.asyncio
     async def test_music_added_when_file_exists(self, mock_services, tmp_path):
@@ -490,7 +497,7 @@ class TestRunPipeline:
         assert isinstance(result, str)
         assert mock_services["scene_clip"].call_count == 4
         # Multiple clips should trigger concatenation
-        mock_services["concat"].assert_called_once()
+        mock_services["crossfade"].assert_called_once()
 
     @pytest.mark.asyncio
     async def test_progress_callback_stages(self, mock_services):

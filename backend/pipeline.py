@@ -6,6 +6,7 @@ from typing import Callable, Optional
 
 from backend.config import (
     GEMINI_IMAGE_MODEL,
+    GEMINI_MODEL,
     GOOGLE_API_KEY,
     MUSIC_DIR,
     PIPELINE_PARALLEL_BATCH_SIZE,
@@ -61,6 +62,7 @@ async def run_pipeline(
                     work_dir,
                     style_anchor=plan.visual_style_anchor,
                     audio_driven=plan.audio_driven,
+                    mood=plan.mood,
                 ),
                 timeout=SCENE_TIMEOUT,
             )
@@ -193,11 +195,47 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
     raise RuntimeError("Gemini fallback produced no image")
 
 
+def enhance_visual_prompt(prompt: str, mood: str = "") -> str:
+    """Use Gemini to expand a visual prompt into cinematography-grade description.
+
+    This is CutTo's secret sauce — the AI director doesn't just pass prompts through,
+    it ENHANCES them with professional camera, lighting, and composition details.
+    """
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=GOOGLE_API_KEY)
+        enhance_instruction = (
+            "You are a cinematographer. Expand this visual prompt into a single, "
+            "detailed paragraph (max 100 words) optimized for AI video generation. "
+            "Add: camera angle/movement, lighting, color palette, composition. "
+            "Keep the original intent. Do NOT add dialogue or narration. "
+            f"Mood: {mood or 'cinematic'}. Output ONLY the enhanced prompt, nothing else."
+        )
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=[{"role": "user", "parts": [{"text": f"Enhance: {prompt}"}]}],
+            config=types.GenerateContentConfig(
+                system_instruction=enhance_instruction,
+            ),
+        )
+        if response.candidates and response.candidates[0].content.parts:
+            enhanced = response.candidates[0].content.parts[0].text.strip()
+            if len(enhanced) > 20:
+                logger.info(f"[Enhance] {prompt[:60]}... -> {enhanced[:80]}...")
+                return enhanced
+    except Exception as e:
+        logger.warning(f"Prompt enhancement failed ({e}), using original")
+    return prompt
+
+
 async def process_scene(
     scene: Scene,
     work_dir: Path,
     style_anchor: str = "",
     audio_driven: bool = False,
+    mood: str = "",
 ) -> str:
     """Process a single scene: generate video/image, voiceover, combine.
 
@@ -211,6 +249,9 @@ async def process_scene(
     visual_prompt = scene.visual_prompt
     if style_anchor and not visual_prompt.startswith(style_anchor[:50]):
         visual_prompt = f"{style_anchor}. {visual_prompt}"
+
+    # Step 1b: AI-enhance the prompt for better cinematography
+    visual_prompt = await asyncio.to_thread(enhance_visual_prompt, visual_prompt, mood)
 
     # Strip quotation marks — Veo best practices say avoid quotes in prompts
     visual_prompt = visual_prompt.replace('"', "").replace("'", "")
@@ -315,7 +356,10 @@ async def assemble_final(
         concat_path = scene_clips[0]
     else:
         concat_path = str(work_dir / "concat.mp4")
-        await asyncio.to_thread(ffmpeg.concat_clips, scene_clips, concat_path)
+        # Use crossfade transitions for professional look
+        await asyncio.to_thread(
+            ffmpeg.crossfade_concat_clips, scene_clips, concat_path, 0.5
+        )
 
     # Add background music
     music_file = MUSIC_MAP.get(plan.mood, "calm.mp3")
