@@ -15,6 +15,7 @@ export default function useWebSocket() {
   const reconnectTimer = useRef(null)
   const isThinkingRef = useRef(false)
   const lastSentRef = useRef({ text: '', at: 0 })
+  const pendingPromptRef = useRef(null)
 
   useEffect(() => {
     isThinkingRef.current = isThinking
@@ -66,6 +67,20 @@ export default function useWebSocket() {
           // Only add agent messages — user messages are added optimistically in sendText
           if (data.role === 'agent') {
             setMessages(prev => [...prev, { role: data.role, text: data.text }])
+            // Auto-send queued prompt after welcome message
+            if (pendingPromptRef.current) {
+              const prompt = pendingPromptRef.current
+              pendingPromptRef.current = null
+              setTimeout(() => {
+                setMessages(prev => [...prev, { role: 'user', text: prompt }])
+                setIsThinking(true)
+                setError(null)
+                lastSentRef.current = { text: prompt, at: Date.now() }
+                if (wsRef.current?.readyState === WebSocket.OPEN) {
+                  wsRef.current.send(JSON.stringify({ type: 'text', text: prompt }))
+                }
+              }, 500)
+            }
           }
           break
         case 'scene_preview':
@@ -159,9 +174,14 @@ export default function useWebSocket() {
     setError(null)
   }, [])
 
+  const connectWithPrompt = useCallback((prompt, demoKey = '') => {
+    pendingPromptRef.current = prompt
+    connect(demoKey)
+  }, [connect])
+
   return useMemo(() => ({
     messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-    connected, isThinking, connect, sendText, approve, updatePlan, reset
+    connected, isThinking, connect, connectWithPrompt, sendText, approve, updatePlan, reset
   }), [messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
-       connected, isThinking, connect, sendText, approve, updatePlan, reset])
+       connected, isThinking, connect, connectWithPrompt, sendText, approve, updatePlan, reset])
 }

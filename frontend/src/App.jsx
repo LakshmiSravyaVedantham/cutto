@@ -85,6 +85,39 @@ export default function App() {
           </svg>
         </button>
 
+        <div style={{
+          ...styles.quickStart,
+          ...(isMobile ? { flexDirection: 'column' } : {}),
+        }}>
+          <p style={styles.quickStartLabel}>Or try a quick start:</p>
+          <div style={{
+            ...styles.quickStartChips,
+            ...(isMobile ? { flexDirection: 'column', alignItems: 'stretch' } : {}),
+          }}>
+            {[
+              { label: 'How the heart works', prompt: 'Create a 90-second medical explainer on how the human heart pumps blood through its four chambers. Target audience: high school biology students. Style: clean 3D medical animation with labels.' },
+              { label: 'Pixar-style story', prompt: 'Create an animated short story about a lonely robot in a junkyard who discovers a flower growing through the metal. Pixar style, warm and emotional, inspiring mood.' },
+              { label: 'Product launch video', prompt: 'Create a sleek product launch video for a new AI-powered fitness watch called "PulseAI". Modern, clean, upbeat. Show features: heart rate, sleep tracking, AI coaching.' },
+            ].map((t, i) => (
+              <button
+                key={i}
+                style={styles.quickChip}
+                onClick={() => ws.connectWithPrompt(t.prompt)}
+                onMouseOver={e => {
+                  e.currentTarget.style.borderColor = 'rgba(102,126,234,0.4)'
+                  e.currentTarget.style.background = 'rgba(102,126,234,0.1)'
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
+                  e.currentTarget.style.background = 'rgba(17,17,17,0.6)'
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={styles.techStack}>
           <span style={styles.techBadge}>Gemini 2.0</span>
           <span style={styles.techBadge}>Veo 2.0</span>
@@ -263,5 +296,37 @@ const styles = {
     letterSpacing: 1,
     textTransform: 'uppercase',
     animation: 'fadeIn 0.8s ease-out 0.8s both',
+  },
+  quickStart: {
+    marginTop: 32,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+    animation: 'fadeIn 0.8s ease-out 0.6s both',
+  },
+  quickStartLabel: {
+    fontSize: 12,
+    color: '#555',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  quickStartChips: {
+    display: 'flex',
+    gap: 8,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  quickChip: {
+    padding: '10px 18px',
+    borderRadius: 12,
+    background: 'rgba(17,17,17,0.6)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    color: '#aaa',
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    backdropFilter: 'blur(10px)',
   },
 }
