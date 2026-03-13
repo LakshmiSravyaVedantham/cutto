@@ -89,5 +89,5 @@ gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, re
 
 ## Links
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto
-- **Demo URL**: https://cutto-vu7xxy6oaa-uc.a.run.app
-- **Demo Video**: [YouTube URL — fill after recording]
+- **Demo Video**: [YouTube URL — record and fill before submission]
+- **Blog Post**: [Dev.to URL — publish BLOG_POST.md and fill before submission]
