@@ -64,7 +64,12 @@ export default function useWebSocket() {
       // Use functional setState to read current value — avoids stale closure
       // (connect has [] deps so the outer 'connected' is always false)
       setConnected(prev => {
-        if (prev) setConnectionLost(true)
+        if (prev) {
+          setConnectionLost(true)
+        } else if (retriesRef.current === 0) {
+          // First failed attempt — show error so user isn't left guessing
+          setError('Can\u2019t reach the server. Make sure the backend is running.')
+        }
         return false
       })
       const attempt = (retriesRef.current || 0)
