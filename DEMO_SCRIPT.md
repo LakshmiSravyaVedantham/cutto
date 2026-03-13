@@ -29,6 +29,7 @@ Sravya runs a kids' YouTube channel. She needs educational videos regularly but 
    - Show the scene plan with speaker badges (Narrator, Character 1)
    - Edit a scene's narration to make it more kid-friendly
    - Reorder scenes with arrow buttons
+   - Delete a scene — show the **undo toast** ("Scene deleted — Undo") then undo it
    - Show estimated duration
    - Type in revision box: "make the eruption scene more dramatic and exciting for kids"
    - Show the AI revising the plan
@@ -58,9 +59,10 @@ Sravya runs a kids' YouTube channel. She needs educational videos regularly but 
 "Six video categories work out of the box: animated stories, science explainers, documentaries, tutorials, marketing videos, and motivational pieces."
 
 ## 3:20-3:40 — Key Features Callout
-- "Voice input — kids and teachers can speak their ideas naturally"
+- "Voice input — press V anywhere or click the mic to speak naturally"
 - "Reference image upload — match a visual style from a mood board or textbook"
-- "Interactive scene editor — full control before generating"
+- "Interactive scene editor — reorder, edit, delete with undo, ask AI for revisions"
+- "Graceful error handling — retry on video playback failure, connection recovery with reconnect banner"
 - "113 automated tests covering the full pipeline"
 
 ## 3:40-3:55 — Wrap
