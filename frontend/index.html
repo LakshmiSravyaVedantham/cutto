@@ -64,6 +64,24 @@
       0%, 100% { box-shadow: 0 0 20px rgba(102,126,234,0.2); }
       50% { box-shadow: 0 0 40px rgba(102,126,234,0.4); }
     }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes borderRotate {
+      0% { --angle: 0deg; }
+      100% { --angle: 360deg; }
+    }
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.1; }
+      50% { opacity: 0.6; }
+    }
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25% { transform: translateY(-15px) translateX(5px); }
+      50% { transform: translateY(-5px) translateX(-5px); }
+      75% { transform: translateY(-20px) translateX(3px); }
+    }
     ::selection { background: rgba(102,126,234,0.3); }
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
