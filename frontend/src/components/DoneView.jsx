@@ -77,8 +77,9 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
         ...(isMobile ? { maxWidth: '100%' } : {}),
       }}>
         {videoError ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#e74c3c' }}>
-            <p style={{ fontSize: 14, marginBottom: 12 }}>Video failed to load in browser.</p>
+          <div style={{ padding: 32, textAlign: 'center' }}>
+            <p style={{ fontSize: 14, marginBottom: 4, color: '#ff8a8a' }}>Video couldn't load in this browser</p>
+            <p style={{ fontSize: 12, marginBottom: 16, color: '#5a6080' }}>Try reloading or download the file directly</p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 style={{
