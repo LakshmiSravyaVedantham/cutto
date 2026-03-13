@@ -269,6 +269,8 @@ export default function App() {
         progress={ws.progress}
         sceneStatuses={ws.sceneStatuses}
         scenePlan={ws.scenePlan}
+        error={ws.error}
+        onDismissError={ws.dismissError}
       />
     </Suspense>
   )

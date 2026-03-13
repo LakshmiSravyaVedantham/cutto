@@ -1,7 +1,7 @@
 import React from 'react'
 import useIsMobile from '../hooks/useIsMobile'
 
-export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
+export default function GeneratingView({ progress, sceneStatuses, scenePlan, error, onDismissError }) {
   const isMobile = useIsMobile()
   const totalScenes = scenePlan?.total_scenes || 0
   const currentStep = progress?.step || ''
@@ -149,6 +149,31 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
           <span style={styles.assemblyText}>
             Adding music and assembling final video...
           </span>
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '12px 16px', marginTop: 16, borderRadius: 12,
+          background: 'rgba(255,107,107,0.06)', border: '1px solid rgba(255,107,107,0.12)',
+          color: '#ff8a8a', fontSize: 13, animation: 'fadeIn 0.3s ease-out',
+        }}>
+          <span style={{ flex: 1 }}>{error}</span>
+          {onDismissError && (
+            <button
+              onClick={onDismissError}
+              style={{
+                background: 'transparent', border: 'none', color: '#ff8a8a',
+                cursor: 'pointer', padding: 4, flexShrink: 0, opacity: 0.6,
+              }}
+              aria-label="Dismiss error"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
