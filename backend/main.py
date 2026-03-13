@@ -306,5 +306,13 @@ async def run_video_pipeline(ws: WebSocket, plan):
             friendly = (
                 "Multiple scenes failed to generate. Try simpler visual descriptions."
             )
-        await ws.send_json({"type": "pipeline_progress", "video_id": "", "scene": 0, "step": "error", "status": "error"})
+        await ws.send_json(
+            {
+                "type": "pipeline_progress",
+                "video_id": "",
+                "scene": 0,
+                "step": "error",
+                "status": "error",
+            }
+        )
         await ws.send_json({"type": "error", "message": friendly})
