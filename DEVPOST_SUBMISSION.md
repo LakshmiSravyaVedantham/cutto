@@ -75,6 +75,16 @@ CutTo supports 6 video categories: animated stories, science/medical explainers,
 ## Built With
 gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, react, ffmpeg, wav2lip, python, javascript, websockets, docker
 
+## Bonus Points Claimed
+- **Blog post** (+0.6): Published on Dev.to — [link to add after publishing]
+- **Automated deployment** (+0.2): GitHub Actions workflow for Cloud Run (`.github/workflows/deploy.yml`) — manual trigger, multi-stage Docker build
+- **GDG membership** (+0.2): Member of Google Developer Groups — [link to add after joining]
+
+### How to claim GDG membership bonus
+1. Go to https://gdg.community.dev/
+2. Find and join your local GDG chapter
+3. Add your GDG profile link to this submission
+
 ## Links
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto
 - **Demo URL**: https://cutto-vu7xxy6oaa-uc.a.run.app

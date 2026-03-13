@@ -350,6 +350,12 @@ export default function ConversationView({ ws }) {
             </svg>
           </button>
         </div>
+        {!isMobile && (
+          <div style={styles.shortcutHint}>
+            <kbd style={styles.kbd}>Enter</kbd> to send
+            {hasMic && <><span style={styles.hintDot} /><kbd style={styles.kbd}>V</kbd> for voice</>}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -747,5 +753,30 @@ const styles = {
     objectFit: 'cover',
     border: '1px solid rgba(255,255,255,0.08)',
     display: 'block',
+  },
+  shortcutHint: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    padding: '6px 0 0',
+    fontSize: 11,
+    color: '#3a4060',
+  },
+  kbd: {
+    padding: '1px 6px',
+    borderRadius: 4,
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid rgba(255,255,255,0.06)',
+    fontFamily: 'inherit',
+    fontSize: 10,
+    fontWeight: 600,
+    color: '#5a6080',
+  },
+  hintDot: {
+    width: 3,
+    height: 3,
+    borderRadius: '50%',
+    background: '#3a4060',
   },
 }
