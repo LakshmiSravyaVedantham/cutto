@@ -140,22 +140,30 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
               }}>{scene.speaker === 'narrator' ? 'Narrator' : scene.speaker === 'character_1' ? 'Char 1' : 'Char 2'}</span>
               <span style={styles.duration}>{scene.target_duration}s</span>
               {plan.scenes.length > 1 && (
-                <div style={{ display: 'flex', gap: 2 }}>
+                <div style={{ display: 'flex', gap: isMobile ? 4 : 2 }}>
                   <button
-                    style={styles.moveBtn}
+                    style={{
+                      ...styles.moveBtn,
+                      ...(isMobile ? { width: 36, height: 36, borderRadius: 8 } : {}),
+                    }}
                     onClick={() => moveScene(scene.scene_number, -1)}
                     disabled={scene.scene_number === 1}
                     title="Move up"
+                    aria-label={`Move scene ${scene.scene_number} up`}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="18 15 12 9 6 15" />
                     </svg>
                   </button>
                   <button
-                    style={styles.moveBtn}
+                    style={{
+                      ...styles.moveBtn,
+                      ...(isMobile ? { width: 36, height: 36, borderRadius: 8 } : {}),
+                    }}
                     onClick={() => moveScene(scene.scene_number, 1)}
                     disabled={scene.scene_number === plan.scenes.length}
                     title="Move down"
+                    aria-label={`Move scene ${scene.scene_number} down`}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="6 9 12 15 18 9" />

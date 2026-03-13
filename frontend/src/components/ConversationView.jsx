@@ -262,11 +262,15 @@ export default function ConversationView({ ws }) {
         <div style={styles.listeningOverlay}>
           <div style={styles.listeningContent}>
             <div style={styles.micWave}>
-              <span style={styles.wave1} />
-              <span style={styles.wave2} />
-              <span style={styles.wave3} />
-              <span style={styles.wave4} />
-              <span style={styles.wave5} />
+              {[16, 28, 40, 52, 40, 52, 40, 28, 16].map((h, i) => (
+                <span key={i} style={{
+                  width: 4,
+                  height: h,
+                  borderRadius: 2,
+                  background: `linear-gradient(180deg, #667eea, #e879f9)`,
+                  animation: `waveBar 1s ease-in-out ${i * 0.08}s infinite`,
+                }} />
+              ))}
             </div>
             <p style={styles.listeningText}>Listening...</p>
             <p style={styles.listeningHint}>{input || 'Speak your idea'}</p>
@@ -621,15 +625,12 @@ const styles = {
     gap: 4,
     height: 60,
   },
-  wave1: { width: 4, height: 20, borderRadius: 2, background: '#e74c3c', animation: 'waveBar 1s ease-in-out 0.0s infinite' },
-  wave2: { width: 4, height: 36, borderRadius: 2, background: '#e74c3c', animation: 'waveBar 1s ease-in-out 0.1s infinite' },
-  wave3: { width: 4, height: 50, borderRadius: 2, background: '#e74c3c', animation: 'waveBar 1s ease-in-out 0.2s infinite' },
-  wave4: { width: 4, height: 36, borderRadius: 2, background: '#e74c3c', animation: 'waveBar 1s ease-in-out 0.3s infinite' },
-  wave5: { width: 4, height: 20, borderRadius: 2, background: '#e74c3c', animation: 'waveBar 1s ease-in-out 0.4s infinite' },
   listeningText: {
     fontSize: 24,
     fontWeight: 800,
-    color: '#e74c3c',
+    background: 'linear-gradient(135deg, #667eea, #e879f9)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
     letterSpacing: 1,
   },
   listeningHint: {
@@ -642,13 +643,13 @@ const styles = {
     marginTop: 12,
     padding: '14px 40px',
     borderRadius: 14,
-    background: 'linear-gradient(135deg, #e74c3c, #c0392b)',
+    background: 'linear-gradient(135deg, #667eea, #764ba2)',
     color: '#fff',
     border: 'none',
     cursor: 'pointer',
     fontSize: 16,
     fontWeight: 700,
-    boxShadow: '0 4px 24px rgba(231,76,60,0.4)',
+    boxShadow: '0 4px 24px rgba(102,126,234,0.4)',
   },
   inputArea: {
     paddingBottom: 20,
@@ -678,10 +679,10 @@ const styles = {
     padding: active ? 0 : '0 14px',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     background: active
-      ? 'linear-gradient(135deg, #e74c3c, #c0392b)'
+      ? 'linear-gradient(135deg, #667eea, #e879f9)'
       : 'rgba(255,255,255,0.04)',
     color: active ? '#fff' : '#6b7cc7',
-    boxShadow: active ? '0 0 24px rgba(231,76,60,0.4)' : 'none',
+    boxShadow: active ? '0 0 24px rgba(102,126,234,0.4)' : 'none',
   }),
   micLabel: {
     fontSize: 12,
