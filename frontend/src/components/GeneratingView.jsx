@@ -29,8 +29,8 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan }) {
       ...styles.container,
       ...(isMobile ? { padding: '0 16px' } : {}),
     }}>
-      <div style={styles.glowOrb1} />
-      <div style={styles.glowOrb2} />
+      <div style={styles.glowOrb1} aria-hidden="true" />
+      <div style={styles.glowOrb2} aria-hidden="true" />
 
       <div style={{
         ...styles.header,

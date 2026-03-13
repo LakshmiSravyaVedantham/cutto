@@ -50,9 +50,9 @@ export default function DoneView({ videoUrl, onReset, onEditScenes }) {
       ...(isMobile ? { padding: '0 12px' } : {}),
     }}>
       {showConfetti && <Confetti />}
-      <div style={styles.glowOrb1} />
-      <div style={styles.glowOrb2} />
-      <div style={styles.glowOrb3} />
+      <div style={styles.glowOrb1} aria-hidden="true" />
+      <div style={styles.glowOrb2} aria-hidden="true" />
+      <div style={styles.glowOrb3} aria-hidden="true" />
 
       <div style={{
         ...styles.header,

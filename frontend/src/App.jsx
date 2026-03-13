@@ -102,12 +102,18 @@ export default function App() {
             ].map((t, i) => (
               <button
                 key={i}
-                style={styles.quickChip}
+                style={{
+                  ...styles.quickChip,
+                  ...(ws.connecting ? { opacity: 0.5, pointerEvents: 'none' } : {}),
+                }}
                 onClick={() => ws.connectWithPrompt(t.prompt)}
+                disabled={ws.connecting}
                 onMouseOver={e => {
-                  e.currentTarget.style.borderColor = 'rgba(102,126,234,0.4)'
-                  e.currentTarget.style.background = 'rgba(102,126,234,0.08)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  if (!ws.connecting) {
+                    e.currentTarget.style.borderColor = 'rgba(102,126,234,0.4)'
+                    e.currentTarget.style.background = 'rgba(102,126,234,0.08)'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }
                 }}
                 onMouseOut={e => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'

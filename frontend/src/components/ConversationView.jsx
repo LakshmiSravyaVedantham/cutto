@@ -19,6 +19,19 @@ export default function ConversationView({ ws }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [ws.messages, ws.previews, ws.isThinking, ws.scenePlan])
 
+  // Global keyboard shortcut: V to toggle voice input
+  useEffect(() => {
+    const handler = (e) => {
+      // Don't trigger when typing in an input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return
+      if (e.key === 'v' || e.key === 'V') {
+        if (recognitionRef.current) toggleMic()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [isListening]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Stable ref to ws.sendText so speech handler doesn't re-create
   const sendTextRef = useRef(ws.sendText)
   sendTextRef.current = ws.sendText
