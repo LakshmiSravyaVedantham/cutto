@@ -259,6 +259,7 @@ export default function App() {
       <DoneView
         videoUrl={ws.videoUrl}
         onReset={ws.reset}
+        onEditScenes={ws.editScenes}
       />
     </Suspense>
   )

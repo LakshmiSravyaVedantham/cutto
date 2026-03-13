@@ -220,6 +220,12 @@ export default function useWebSocket() {
     setError(null)
   }, [])
 
+  const editScenes = useCallback(() => {
+    setVideoUrl(null)
+    setProgress(null)
+    setSceneStatuses({})
+  }, [])
+
   const connectWithPrompt = useCallback((prompt, demoKey = '') => {
     pendingPromptRef.current = prompt
     connect(demoKey)
@@ -228,8 +234,8 @@ export default function useWebSocket() {
   return useMemo(() => ({
     messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
     connected, connecting, connectionLost, isThinking, connect, connectWithPrompt,
-    sendText, approve, updatePlan, reset, dismissError
+    sendText, approve, updatePlan, reset, editScenes, dismissError
   }), [messages, scenePlan, previews, progress, sceneStatuses, videoUrl, error,
        connected, connecting, connectionLost, isThinking, connect, connectWithPrompt,
-       sendText, approve, updatePlan, reset, dismissError])
+       sendText, approve, updatePlan, reset, editScenes, dismissError])
 }
