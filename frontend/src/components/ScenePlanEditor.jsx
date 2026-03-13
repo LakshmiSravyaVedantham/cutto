@@ -136,7 +136,10 @@ export default function ScenePlanEditor({ plan, onApprove, onUpdate, onAskRevisi
           <div key={scene.scene_number} style={{
             ...styles.sceneCard,
             ...(isMobile ? { padding: '12px' } : {}),
-          }}>
+          }}
+            onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(102,126,234,0.12)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}
+            onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'; e.currentTarget.style.boxShadow = 'none' }}
+          >
             <div style={{
               ...styles.sceneHeader,
               ...(isMobile ? { flexWrap: 'wrap', gap: 8 } : {}),
