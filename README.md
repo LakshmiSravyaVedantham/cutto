@@ -1,14 +1,18 @@
 # CutTo
 
-**AI Video Director** -- describe any video idea in conversation, get a finished video with AI-generated visuals, multi-character voiceover, lipsync, and background music. Create animated stories, medical explainers, product demos, tutorials, documentaries, and more.
+**AI Video Director for Kids' Education** -- describe any lesson in a conversation, get a finished animated video with AI-generated visuals, multi-character voiceover, lipsync, and background music. Turn lesson ideas into videos kids love to watch.
 
-Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-api/docs/live-agent-challenge).
+Built for the [Google Gemini Live Agent Challenge](https://ai.google.dev/gemini-api/docs/live-agent-challenge) (Creative Storyteller category).
+
+**The problem:** Educational content creators and teachers need animated videos but can't afford animators, voiceover artists, or video editors. A single 90-second explainer takes 4-8 hours to produce or $200+ to outsource.
+
+**The solution:** Describe a lesson -- "explain how volcanoes erupt for 8-year-olds" -- and CutTo writes the script, generates animated visuals, adds voiceover with lipsync, and delivers a finished MP4 ready to upload.
 
 ---
 
 ## How It Works
 
-1. **Conversation** -- Tell the AI what video you want. It asks 2-3 follow-up questions about story, mood, and visual style.
+1. **Conversation** -- Describe your lesson idea via text or voice. The AI creative director shapes it into a video concept with enthusiasm: *"I'm seeing this as a journey inside the earth — layers peeling away, magma rising..."*
 2. **Scene Plan** -- Gemini generates a scene-by-scene plan with inline preview images. Each scene has narration text, a visual prompt, and a speaker assignment (narrator, character 1, or character 2).
 3. **Edit** -- Review the plan in an interactive editor. Change narration, visuals, speakers. Add or remove scenes. Ask the AI for revisions.
 4. **Generate** -- Approve the plan. The pipeline runs: Veo 2.0 generates animated clips, edge-tts produces voiceover with distinct voices per character, Wav2Lip applies lipsync to dialogue close-ups, and FFmpeg assembles everything with mood-matched background music.
@@ -127,7 +131,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Conversational scene planning** with Gemini producing interleaved text and images
 - **Voice input** via Web Speech API -- speak your video idea instead of typing
 - **Reference image upload** -- upload a photo, sketch, or mood board and Gemini analyzes the visual style, color palette, and composition to generate a matching `visual_style_anchor`
-- **Quick-start templates** -- one-click demo prompts (medical explainer, Pixar story, product launch) that auto-connect and generate
+- **Quick-start templates** -- one-click demo prompts for kids' content (heart explainer, solar system adventure, volcano science) that auto-connect and generate
 - **AI prompt enhancement** -- Gemini expands every visual prompt with cinematography details (camera motion, lighting, color palette, depth of field) before sending to Veo
 - **3 distinct voice tracks**: narrator (en-US-GuyNeural), character 1 (en-US-JennyNeural), character 2 (en-US-ChristopherNeural)
 - **Scene plan editor**: edit narration, visual prompts, and speaker assignments per scene; add, remove, or reorder scenes; ask the AI for revisions in natural language
@@ -151,7 +155,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Exponential backoff reconnection**: WebSocket auto-reconnects with 1s->30s delay
 - **Mobile responsive**: touch-friendly buttons, stacking cards, compact layout
 - **REST API for judges**: `/api/plan` for direct plan generation, `/api/agent` for ADK architecture introspection
-- **113 automated tests** covering pipeline, FFmpeg, models, agent, TTS, Veo, Imagen, and API
+- **113 automated tests** covering pipeline, FFmpeg, models, agent, TTS, Veo, Imagen, API, and ADK agents
 
 ---
 
