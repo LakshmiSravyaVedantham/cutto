@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050510"/>
+      <stop offset="50%" stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#050510"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#667eea"/>
+      <stop offset="100%" stop-color="#764ba2"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#27ae60"/>
+      <stop offset="100%" stop-color="#2ecc71"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <!-- Subtle grid -->
+  <g opacity="0.03" stroke="#667eea" stroke-width="1">
+    <line x1="0" y1="0" x2="1200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+  </g>
+  <!-- Glow orbs -->
+  <circle cx="200" cy="150" r="200" fill="#667eea" opacity="0.06"/>
+  <circle cx="1000" cy="480" r="250" fill="#764ba2" opacity="0.05"/>
+  <!-- Film icon -->
+  <g transform="translate(540, 120)" stroke="url(#accent)" stroke-width="3" fill="none">
+    <rect x="0" y="0" width="120" height="120" rx="12"/>
+    <line x1="30" y1="0" x2="30" y2="120"/>
+    <line x1="90" y1="0" x2="90" y2="120"/>
+    <line x1="0" y1="60" x2="120" y2="60"/>
+    <line x1="0" y1="35" x2="30" y2="35"/>
+    <line x1="0" y1="85" x2="30" y2="85"/>
+    <line x1="90" y1="35" x2="120" y2="35"/>
+    <line x1="90" y1="85" x2="120" y2="85"/>
+  </g>
+  <!-- Title -->
+  <text x="600" y="310" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="72" font-weight="800" fill="url(#accent)">CutTo</text>
+  <!-- Subtitle -->
+  <text x="600" y="370" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="24" font-weight="500" fill="#8b9cf7">AI Video Director for Kids' Education</text>
+  <!-- Description -->
+  <text x="600" y="420" text-anchor="middle" font-family="Inter, -apple-system, sans-serif" font-size="16" fill="#5a6080">Describe any lesson. Get a finished animated video.</text>
+  <!-- Tech badges -->
+  <g transform="translate(310, 470)">
+    <rect x="0" y="0" width="90" height="30" rx="8" fill="rgba(102,126,234,0.1)" stroke="rgba(102,126,234,0.2)" stroke-width="1"/>
+    <text x="45" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#667eea">Gemini</text>
+    <rect x="100" y="0" width="90" height="30" rx="8" fill="rgba(102,126,234,0.1)" stroke="rgba(102,126,234,0.2)" stroke-width="1"/>
+    <text x="145" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#667eea">Veo 2.0</text>
+    <rect x="200" y="0" width="100" height="30" rx="8" fill="rgba(102,126,234,0.1)" stroke="rgba(102,126,234,0.2)" stroke-width="1"/>
+    <text x="250" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#667eea">Google ADK</text>
+    <rect x="310" y="0" width="90" height="30" rx="8" fill="rgba(102,126,234,0.1)" stroke="rgba(102,126,234,0.2)" stroke-width="1"/>
+    <text x="355" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#667eea">Cloud TTS</text>
+    <rect x="410" y="0" width="90" height="30" rx="8" fill="rgba(102,126,234,0.1)" stroke="rgba(102,126,234,0.2)" stroke-width="1"/>
+    <text x="455" y="20" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#667eea">Wav2Lip</text>
+  </g>
+  <!-- Hackathon badge -->
+  <rect x="380" y="540" width="440" height="36" rx="10" fill="url(#green)" opacity="0.15" stroke="rgba(39,174,96,0.3)" stroke-width="1"/>
+  <text x="600" y="564" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#27ae60">Google Gemini Live Agent Challenge — Creative Storyteller</text>
+</svg>

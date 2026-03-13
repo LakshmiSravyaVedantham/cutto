@@ -233,11 +233,26 @@ Open `http://localhost:8000` in your browser.
 
 **API docs**: FastAPI auto-generates interactive API documentation at `http://localhost:8000/docs` — browse all REST endpoints, try them out, and inspect request/response schemas.
 
-**Judge-friendly endpoints**:
-- `GET /api/agent` — inspect the ADK multi-agent architecture graph
-- `POST /api/plan` — generate a scene plan directly (no WebSocket needed)
-- `GET /api/categories` — list all supported video types
-- `GET /api/config` — view models, features, and limits
+**Judge-friendly endpoints** (try these with curl):
+
+```bash
+# Inspect the 3-agent ADK architecture
+curl http://localhost:8000/api/agent | python3 -m json.tool
+
+# Generate a scene plan (no WebSocket needed)
+curl -X POST http://localhost:8000/api/plan \
+  -H "Content-Type: application/json" \
+  -d '{"description": "Explain how photosynthesis works for 8-year-olds"}'
+
+# List all video categories
+curl http://localhost:8000/api/categories
+
+# View models, features, and limits
+curl http://localhost:8000/api/config
+
+# Health check
+curl http://localhost:8000/health
+```
 
 ---
 
