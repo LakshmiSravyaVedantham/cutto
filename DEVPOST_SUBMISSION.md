@@ -57,7 +57,7 @@ CutTo supports 6 video categories: animated stories, science/medical explainers,
 - Reference image upload — upload a photo or mood board and the AI matches the visual style
 - Polish details judges notice: undo toast on scene deletion, video retry button, connection error recovery, keyboard shortcuts, smooth glassmorphism UI
 - Edit Scenes from the done screen — tweak and regenerate without starting over
-- 116 automated tests covering the pipeline, services, agent, API, and ADK agents
+- 119 automated tests covering the pipeline, services, agent, API, and ADK agents
 
 ## What we learned
 - Gemini's interleaved text + image output is powerful for creative workflows — showing preview images during conversation makes planning feel immediate

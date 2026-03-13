@@ -20,7 +20,7 @@ I built **CutTo** to fix this. You describe a lesson in a conversation — "expl
 
 5. **Download your video** — Multi-character voices, lipsync on close-ups, mood-matched background music. Ready to upload.
 
-CutTo supports 6 video categories: animated stories, science explainers, documentaries, tutorials, marketing videos, and motivational pieces. The project has 116 automated tests covering the pipeline, services, agent, and API.
+CutTo supports 6 video categories: animated stories, science explainers, documentaries, tutorials, marketing videos, and motivational pieces. The project has 119 automated tests covering the pipeline, services, agent, and API.
 
 ## The real use case: kids' education
 

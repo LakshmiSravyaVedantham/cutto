@@ -63,7 +63,7 @@ Sravya runs a kids' YouTube channel. She needs educational videos regularly but 
 - "Reference image upload — match a visual style from a mood board or textbook"
 - "Interactive scene editor — reorder, edit, delete with undo, ask AI for revisions"
 - "Graceful error handling — retry on video playback failure, connection recovery with reconnect banner"
-- "116 automated tests covering the full pipeline"
+- "119 automated tests covering the full pipeline"
 
 ## 3:40-3:55 — Wrap
 "Every existing tool makes you the editor. CutTo makes you the director. Describe any lesson, any story — and your video is ready to teach."
