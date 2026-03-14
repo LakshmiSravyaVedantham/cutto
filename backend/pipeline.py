@@ -110,15 +110,24 @@ async def run_pipeline(
                 )
             )
 
-    # Run in batches of PARALLEL_BATCH_SIZE
+    # Run in batches of PARALLEL_BATCH_SIZE with staggered starts
+    # to avoid overwhelming Veo's per-minute rate limit
+    VEO_STAGGER_SECONDS = 5
+
+    async def staggered_process(scene: Scene, index: int, delay: float) -> None:
+        if delay > 0:
+            await asyncio.sleep(delay)
+        await process_with_progress(scene, index)
+
     for batch_start in range(0, len(plan.scenes), PARALLEL_BATCH_SIZE):
         batch = plan.scenes[batch_start : batch_start + PARALLEL_BATCH_SIZE]
         tasks = [
-            process_with_progress(scene, batch_start + i)
+            staggered_process(scene, batch_start + i, i * VEO_STAGGER_SECONDS)
             for i, scene in enumerate(batch)
         ]
         logger.info(
-            f"Processing scenes {batch_start + 1}-{batch_start + len(batch)} in parallel"
+            f"Processing scenes {batch_start + 1}-{batch_start + len(batch)} "
+            f"(staggered {VEO_STAGGER_SECONDS}s apart)"
         )
         await asyncio.gather(*tasks)
 
