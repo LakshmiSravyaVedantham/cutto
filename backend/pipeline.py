@@ -157,16 +157,26 @@ async def generate_video_with_fallback(
 
     Returns (output_path, is_video) — is_video=True means animated clip, False means static image.
     """
-    # Try Veo for animated video
-    try:
-        logger.info("Attempting Veo video generation...")
-        result = await asyncio.to_thread(
-            veo.generate_video, prompt, output_path, duration
-        )
-        logger.info("Veo succeeded — animated video generated")
-        return result, True
-    except Exception as e:
-        logger.warning(f"Veo failed ({e}), falling back to Imagen static image")
+    # Try Veo for animated video (with rate limit retry)
+    for attempt in range(2):
+        try:
+            if attempt > 0:
+                logger.info("Veo retry after rate limit — waiting 15s...")
+                await asyncio.sleep(15)
+            logger.info("Attempting Veo video generation...")
+            result = await asyncio.to_thread(
+                veo.generate_video, prompt, output_path, duration
+            )
+            logger.info("Veo succeeded — animated video generated")
+            return result, True
+        except Exception as e:
+            err_str = str(e)
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                if attempt == 0:
+                    logger.warning("Veo rate limited, will retry after delay...")
+                    continue
+            logger.warning(f"Veo failed ({e}), falling back to Imagen static image")
+            break
 
     # Fall back to Imagen static image
     image_path = output_path.replace(".mp4", ".png")
