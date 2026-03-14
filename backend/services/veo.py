@@ -22,10 +22,9 @@ def _get_client():
 
 
 STYLE_SUFFIX = (
-    " High quality animation with fluid, natural motion and smooth transitions."
-    " Vivid saturated colors, clean sharp details."
-    " Consistent character design across shots."
-    " Professional lighting with depth."
+    " Cinematic quality, photorealistic, real-world footage style."
+    " Natural lighting, shallow depth of field, vivid colors."
+    " Smooth professional camera movement."
 )
 
 

@@ -135,22 +135,28 @@ VISUAL STYLE ANCHOR
 ═══════════════════════════════════════
 Before writing scenes, create a "visual_style_anchor" — a detailed description of the consistent visual look:
 
-FOR KIDS EDUCATIONAL / SCIENCE: use realistic 3D renders and motion graphics, NOT cartoon animation
-  Veo produces best results with realistic, cinematic, or motion-graphics style — NOT 2D cartoon or anime.
-  Example: "Realistic 3D rendered environment with vibrant colors, soft golden-hour lighting, cinematic depth of field. Motion graphics labels and callouts animate in smoothly. Clean, colorful, kid-friendly aesthetic."
-  Example: "Bright, colorful realistic 3D world with soft lighting. Objects have a playful, slightly stylized look — like a museum exhibit come to life. Smooth camera movements, depth of field."
+CRITICAL: Veo 2.0 generates REALISTIC video — like real film footage. NEVER ask for cartoon, anime, or 2D animation.
+Always use REAL HUMANS, real environments, cinematic footage style.
 
-FOR STORY / NARRATIVE: cinematic realistic style with expressive real-looking characters
-  Example: "Cinematic realistic style, warm amber and teal palette, soft golden-hour lighting. Characters look like real people in a stylized world. Expressive faces, clear emotions."
+FOR KIDS EDUCATIONAL / SCIENCE:
+  Use a real human presenter (teacher, scientist) speaking to camera, with real-world footage of the topic.
+  Example: "Cinematic footage, warm natural lighting, vibrant colors. A friendly young female teacher in a colorful classroom speaks to camera. Cut to stunning macro footage of the subject. Professional documentary quality, shallow depth of field."
 
-FOR MEDICAL/SCIENCE: rendering style, color scheme, labeling approach
-  Example: "Clean medical illustration style, soft blue and white palette, anatomically accurate 3D renders with labeled callouts, professional clinical lighting."
+FOR STORY / NARRATIVE:
+  Use real human actors in real environments, cinematic film style.
+  Example: "Cinematic film style, warm golden-hour lighting, shallow depth of field. Real human characters with expressive faces in natural environments. Professional color grading."
 
-FOR CINEMATIC/DOCUMENTARY: footage style, color grading, mood
-  Example: "Cinematic documentary footage, desaturated teal and orange color grade, shallow depth of field, natural lighting with dramatic shadows."
+FOR MEDICAL/SCIENCE:
+  Use real footage of labs, doctors, or stunning macro/microscope footage.
+  Example: "Professional medical documentary style. Real doctor in a clean white lab coat explains to camera. Cut to stunning macro footage of cells, organs, or lab equipment. Soft blue and white palette, clinical lighting."
 
-FOR CORPORATE/MARKETING: brand style, typography hints, clean look
-  Example: "Modern corporate motion graphics, gradient blue-to-purple palette, clean sans-serif text overlays, smooth transitions, white backgrounds with accent colors."
+FOR CINEMATIC/DOCUMENTARY:
+  Real-world footage, cinematic camera work, dramatic lighting.
+  Example: "Cinematic documentary footage, desaturated teal and orange color grade, shallow depth of field, natural lighting with dramatic shadows. Real locations, real people."
+
+FOR CORPORATE/MARKETING:
+  Real people in modern offices, clean professional look.
+  Example: "Modern corporate video, clean professional lighting, real people in a bright modern office. Smooth camera movements, shallow depth of field."
 
 EVERY visual_prompt MUST begin with this anchor text word-for-word for consistency.
 
@@ -177,18 +183,19 @@ FOR NARRATOR/EXPLAINER SCENES:
 
 BAD: "A heart" (STATIC, NO CONTEXT)
 BAD: "Doctor standing in a hospital" (NO ACTION)
-BAD: "2D cartoon animation of a sun" (Veo struggles with flat 2D cartoon)
-BAD: "Anime style characters walking" (Veo not designed for anime)
-GOOD: "Realistic 3D rendered heart rotating slowly, transparent walls reveal blood flow through all four chambers. Red oxygenated blood pulses through the left side, blue deoxygenated through the right. Camera tracks around the organ. Cinematic lighting, shallow depth of field."
-GOOD: "Close-up of a young teacher speaking directly to camera, front-facing, well-lit face, mouth clearly moving, gesturing with both hands. Behind her, a colorful diagram appears on a bright whiteboard. Warm classroom lighting, blurred background."
-GOOD: "Cinematic aerial shot slowly flying over a vibrant coral reef. Colorful fish swim through crystal clear water. Sunbeams pierce the surface, creating dappled light patterns. Camera slowly descends toward the reef."
+BAD: "2D cartoon animation of a sun" (Veo CANNOT do cartoon — produces garbage)
+BAD: "Anime style characters" (Veo CANNOT do anime)
+BAD: "Animated colorful characters" (NO — use real humans)
+GOOD: "Close-up of a real human heart in a medical documentary. Camera slowly orbits the beating organ. Blood pulses through the chambers, visible in rich red and blue. Cinematic macro footage, shallow depth of field, soft clinical lighting."
+GOOD: "Close-up of a friendly young female teacher speaking directly to camera. Front-facing, well-lit face, mouth clearly moving, warm smile. She gestures enthusiastically. Bright colorful classroom background, slightly blurred. Natural lighting."
+GOOD: "Cinematic aerial drone shot slowly flying over a vibrant coral reef. Real underwater footage. Colorful tropical fish swim through crystal clear turquoise water. Sunbeams pierce the surface. Camera slowly descends."
+GOOD: "A real 8-year-old child looks up at the sky in wonder, standing in a green meadow. Golden hour sunlight, lens flare. Camera slowly pushes in on their amazed expression. Shallow depth of field, cinematic color grading."
 
-IMPORTANT: Veo 2.0 produces best results with:
-- Realistic or cinematic visual styles (NOT 2D cartoon or anime)
-- Clear, specific descriptions of MOTION and CAMERA movement
-- Natural lighting descriptions
-- Scenes that look like real film or high-end 3D renders
-Avoid: flat 2D animation, anime, hand-drawn styles, abstract patterns
+CRITICAL RULE: Veo 2.0 is a REALISTIC video generator. It produces footage that looks like REAL FILM.
+- ALWAYS use real humans, real environments, real lighting
+- NEVER use cartoon, anime, 2D animation, or illustrated styles
+- Think of it as a virtual film camera, not an animation tool
+- Character scenes MUST show REAL HUMAN faces speaking to camera
 
 ═══════════════════════════════════════
 JSON OUTPUT FORMAT

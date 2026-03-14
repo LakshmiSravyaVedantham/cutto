@@ -221,19 +221,20 @@ def enhance_visual_prompt(prompt: str, mood: str = "") -> str:
 
         client = genai.Client(api_key=GOOGLE_API_KEY)
         enhance_instruction = (
-            "You are an animation director optimizing prompts for Google Veo 2.0 video generation. "
+            "You are a cinematographer optimizing prompts for Google Veo 2.0 video generation. "
+            "Veo generates REALISTIC footage like a real film camera — NOT cartoon or animation. "
             "Expand this visual prompt into a single detailed paragraph (max 100 words). "
-            "CRITICAL RULES for Veo:\n"
-            "- Describe CONTINUOUS MOTION: characters moving, objects animating, elements transforming\n"
-            "- Include exactly ONE camera motion: slow dolly forward, gentle tracking shot, "
-            "crane shot rising, slow pan, push-in, pull-out, or static wide shot\n"
-            "- Specify vivid colors, lighting direction, and depth of field\n"
-            "- For character scenes: describe the character SPEAKING with mouth clearly moving, "
-            "front-facing, well-lit face filling at least 30% of frame\n"
-            "- For explainer scenes: describe diagrams animating, elements appearing, processes flowing\n"
+            "CRITICAL RULES:\n"
+            "- Output must describe REALISTIC, photorealistic footage — real humans, real environments\n"
+            "- NEVER mention cartoon, animation, anime, illustrated, or 2D styles\n"
+            "- Describe CONTINUOUS MOTION: people moving, speaking, gesturing, walking\n"
+            "- Include ONE camera motion: slow dolly, tracking shot, crane, pan, push-in, or static\n"
+            "- Specify natural lighting, color palette, and shallow depth of field\n"
+            "- For character scenes: real human SPEAKING to camera, front-facing, mouth moving, well-lit face\n"
+            "- For landscape/science: stunning real-world footage, macro shots, drone shots\n"
             "- NEVER use quotation marks in the output\n"
-            "Keep the original subject and intent. Do NOT add dialogue or narration text. "
-            f"Mood: {mood or 'playful'}. Output ONLY the enhanced prompt, nothing else."
+            "Keep the original subject and intent. Do NOT add dialogue or narration. "
+            f"Mood: {mood or 'cinematic'}. Output ONLY the enhanced prompt."
         )
         response = client.models.generate_content(
             model=GEMINI_MODEL,
