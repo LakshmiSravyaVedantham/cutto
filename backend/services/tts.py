@@ -87,19 +87,21 @@ async def _cloud_tts_synthesize(
 
     def _sync_synthesize():
         url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
-        payload = json.dumps({
-            "input": {"text": text},
-            "voice": {
-                "languageCode": "en-US",
-                "name": voice_name,
-                "ssmlGender": ssml_gender,
-            },
-            "audioConfig": {
-                "audioEncoding": "MP3",
-                "speakingRate": 1.0,
-                "pitch": 0.0,
-            },
-        }).encode("utf-8")
+        payload = json.dumps(
+            {
+                "input": {"text": text},
+                "voice": {
+                    "languageCode": "en-US",
+                    "name": voice_name,
+                    "ssmlGender": ssml_gender,
+                },
+                "audioConfig": {
+                    "audioEncoding": "MP3",
+                    "speakingRate": 1.0,
+                    "pitch": 0.0,
+                },
+            }
+        ).encode("utf-8")
         req = urllib.request.Request(
             url,
             data=payload,

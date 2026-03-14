@@ -10,6 +10,7 @@ from backend.services.tts import synthesize_to_file
 
 
 @pytest.mark.asyncio
+@patch("backend.services.tts._cloud_tts_available", False)
 @patch("backend.services.tts.edge_tts.Communicate")
 async def test_synthesize_creates_file_with_content(mock_communicate):
     """synthesize_to_file should create a non-empty audio file."""
@@ -31,6 +32,7 @@ async def test_synthesize_creates_file_with_content(mock_communicate):
 
 
 @pytest.mark.asyncio
+@patch("backend.services.tts._cloud_tts_available", False)
 @patch("backend.services.tts.edge_tts.Communicate")
 async def test_synthesize_with_custom_voice(mock_communicate):
     """synthesize_to_file should work with a different voice."""
