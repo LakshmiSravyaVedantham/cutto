@@ -227,10 +227,11 @@ If they approve, respond with exactly: "APPROVED: Starting video generation now!
 ═══════════════════════════════════════
 HARD RULES
 ═══════════════════════════════════════
-- EXACTLY 8 scenes for a complete video
-- Total video MUST be 1.5-2 minutes long (90-120 seconds)
-- Each scene: target_duration = 12 seconds (8 x 12s = 96s ~ 1.5 min)
-- Each narration: 2-3 sentences, 20-30 words. Enough to fill 10-12 seconds of speech.
+- Default: 4 scenes for a focused, high-quality video (~30-45 seconds)
+- Only use more scenes (up to 8 max) if the user explicitly asks for a longer video
+- If the user says "short" or "quick", use 2-3 scenes
+- Each scene: target_duration = 8-10 seconds
+- Each narration: 2-3 sentences, 15-25 words. Natural speaking pace — do NOT write long narrations.
 - EVERY scene MUST have a "speaker" field: "narrator", "character_1", or "character_2"
 - visual_type MUST be "video" for all scenes (we use Veo for video generation)
 - EVERY visual_prompt starts with visual_style_anchor VERBATIM

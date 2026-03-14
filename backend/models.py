@@ -25,7 +25,7 @@ class ScenePlan(BaseModel):
     mood: str
     visual_style_anchor: str = ""
     audio_driven: bool = (
-        False  # True = audio drives duration, False = video drives duration
+        True  # True = audio drives duration (natural voice), False = video drives
     )
     scenes: list[Scene]
 

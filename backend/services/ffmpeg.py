@@ -150,7 +150,7 @@ def build_concat_cmd(
 def build_crossfade_concat_cmd(
     clip_paths: list[str],
     output_path: str,
-    fade_duration: float = 0.5,
+    fade_duration: float = 1.0,
 ) -> list[str]:
     """Concatenate clips with crossfade transitions between them.
 
@@ -339,7 +339,7 @@ def concat_clips(
 def crossfade_concat_clips(
     clip_paths: list[str],
     output_path: str,
-    fade_duration: float = 0.5,
+    fade_duration: float = 1.0,
 ) -> None:
     """Concatenate clips with crossfade transitions. Falls back to simple concat on error."""
     if len(clip_paths) < 2:
@@ -366,12 +366,21 @@ def crossfade_concat_clips(
             if i < len(clip_paths) - 1:
                 cumulative_offset += durations[i] - fade_duration
 
-        audio_inputs = "".join(f"[{i}:a]" for i in range(len(clip_paths)))
-        filters.append(f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]")
+        # Audio crossfade: add 0.5s fade-out/fade-in between each clip
+        # to prevent abrupt voice changes at scene boundaries
+        audio_filters = []
+        for i in range(len(clip_paths)):
+            fade_out_start = max(0, durations[i] - 0.5)
+            audio_filters.append(
+                f"[{i}:a]afade=t=in:st=0:d=0.3,afade=t=out:st={fade_out_start:.2f}:d=0.5[a{i}]"
+            )
+        audio_inputs = "".join(f"[a{i}]" for i in range(len(clip_paths)))
+        audio_filters.append(f"{audio_inputs}concat=n={len(clip_paths)}:v=0:a=1[aout]")
 
+        all_filters = filters + audio_filters
         cmd = inputs + [
             "-filter_complex",
-            ";".join(filters),
+            ";".join(all_filters),
             "-map",
             prev_v,
             "-map",
