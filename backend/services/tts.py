@@ -27,20 +27,12 @@ EDGE_VOICE_MAP = {
 
 DEFAULT_VOICE = "en-US-AriaNeural"
 
-# Check if Google Cloud TTS is available
-_cloud_tts_available = False
-try:
-    from google.cloud import texttospeech
-
-    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") or os.environ.get(
-        "GOOGLE_API_KEY"
-    ):
-        _cloud_tts_available = True
-        logger.info("Google Cloud TTS available — using as primary")
-    else:
-        logger.info("No GCP credentials — falling back to edge-tts")
-except ImportError:
-    logger.info("google-cloud-texttospeech not installed — using edge-tts")
+# Check if Google Cloud TTS is available (uses REST API with API key)
+_cloud_tts_available = bool(os.environ.get("GOOGLE_API_KEY"))
+if _cloud_tts_available:
+    logger.info("Google Cloud TTS available — using API key via REST")
+else:
+    logger.info("No GOOGLE_API_KEY — falling back to edge-tts")
 
 
 def get_voice_for_speaker(speaker: str) -> str:
@@ -77,17 +69,14 @@ async def _cloud_tts_synthesize(
     output_path: str,
     speaker: str = "narrator",
 ) -> str:
-    """Synthesize using Google Cloud Text-to-Speech API."""
+    """Synthesize using Google Cloud Text-to-Speech REST API with API key."""
     import asyncio
+    import base64
+    import json
+    import urllib.request
 
-    from google.cloud import texttospeech
-
+    api_key = os.environ.get("GOOGLE_API_KEY", "")
     voice_name, ssml_gender = CLOUD_VOICE_MAP.get(speaker, ("en-US-Wavenet-D", "MALE"))
-    gender_enum = (
-        texttospeech.SsmlVoiceGender.MALE
-        if ssml_gender == "MALE"
-        else texttospeech.SsmlVoiceGender.FEMALE
-    )
 
     logger.info(
         "Synthesizing TTS (Cloud): %d chars -> %s (voice=%s)",
@@ -97,25 +86,30 @@ async def _cloud_tts_synthesize(
     )
 
     def _sync_synthesize():
-        client = texttospeech.TextToSpeechClient()
-        synthesis_input = texttospeech.SynthesisInput(text=text)
-        voice_params = texttospeech.VoiceSelectionParams(
-            language_code="en-US",
-            name=voice_name,
-            ssml_gender=gender_enum,
+        url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
+        payload = json.dumps({
+            "input": {"text": text},
+            "voice": {
+                "languageCode": "en-US",
+                "name": voice_name,
+                "ssmlGender": ssml_gender,
+            },
+            "audioConfig": {
+                "audioEncoding": "MP3",
+                "speakingRate": 1.0,
+                "pitch": 0.0,
+            },
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={"Content-Type": "application/json"},
         )
-        audio_config = texttospeech.AudioConfig(
-            audio_encoding=texttospeech.AudioEncoding.MP3,
-            speaking_rate=1.0,
-            pitch=0.0,
-        )
-        response = client.synthesize_speech(
-            input=synthesis_input,
-            voice=voice_params,
-            audio_config=audio_config,
-        )
+        with urllib.request.urlopen(req) as resp:
+            result = json.loads(resp.read().decode("utf-8"))
+        audio_bytes = base64.b64decode(result["audioContent"])
         with open(output_path, "wb") as f:
-            f.write(response.audio_content)
+            f.write(audio_bytes)
         return output_path
 
     return await asyncio.to_thread(_sync_synthesize)
