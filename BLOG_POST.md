@@ -64,7 +64,7 @@ Interactive scene editor (edit, reorder, revise with AI)
     |
     v
 Pipeline: Veo -> TTS -> Wav2Lip -> FFmpeg -> Final MP4
-(parallel batches of 3, circuit breaker on failures)
+(parallel batches of 4, circuit breaker on failures)
 ```
 
 The ADK multi-agent architecture uses three specialized agents:
@@ -80,7 +80,7 @@ Each agent has its own tools and system instructions. The Creative Director has 
 
 **Visual consistency requires engineering.** I use a "visual style anchor" — a detailed description of art style, color palette, and character appearances — prepended to every scene's visual prompt. Combined with Veo's seed parameter (all scenes share a seed derived from video_id), characters and style stay consistent across scenes.
 
-**Audio-video sync is harder than it looks.** I implemented two modes: video-driven (default — audio speeds up or pads to match video length) and audio-driven (video stretches to match audio). Getting FFmpeg's atempo chaining right for ratios > 2x was the trickiest bug in the project.
+**Audio-video sync is harder than it looks.** I implemented two modes: audio-driven (default — preserves natural voice speed, video adjusts) and video-driven (audio speeds up or pads to match video length). Getting FFmpeg's atempo chaining right for ratios > 2x was the trickiest bug in the project.
 
 **The persona makes the product.** A generic "video generator" feels like a tool. A creative director with opinions and enthusiasm feels like a collaborator. The difference is entirely in the system prompt and conversation design.
 

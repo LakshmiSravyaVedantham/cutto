@@ -38,8 +38,8 @@ CutTo supports 6 video categories: animated stories, science/medical explainers,
 
 ### Key Technical Decisions
 - **Visual consistency**: All scenes share a Veo seed (derived from video_id hash) for consistent character design
-- **Parallel processing**: Scenes processed in batches of 3 to balance speed against Veo rate limits
-- **Audio/video sync**: Two modes — video-driven (default, audio adjusts to video length) and audio-driven (video adjusts to audio length)
+- **Parallel processing**: Scenes processed in batches of 4 to balance speed against Veo rate limits
+- **Audio/video sync**: Two modes — audio-driven (default, preserves natural voice) and video-driven (audio adjusts to video length)
 - **Circuit breaker**: Pipeline aborts after 3+ scene failures to fail fast
 - **Exponential backoff**: WebSocket reconnection with 1s→30s delay
 

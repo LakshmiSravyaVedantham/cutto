@@ -77,7 +77,7 @@ flowchart TB
 
     WS -->|approved plan| Pipeline
     Pipeline --> Enhance
-    Enhance -->|"parallel batches of 3"| VisualGen
+    Enhance -->|"parallel batches of 4"| VisualGen
     Pipeline --> TTS
     TTS --> Lipsync
     VisualGen --> KB
@@ -107,7 +107,7 @@ flowchart TB
 6. Visual + audio combined into scene clip, **JPEG thumbnail** extracted for real-time preview
 7. All scene clips joined with **crossfade transitions** (duration-aware xfade offsets), background music mixed at 25% volume
 
-Scenes are processed in **parallel batches of 3** to balance speed against Veo rate limits.
+Scenes are processed in **parallel batches of 4** to balance speed against Veo rate limits.
 
 ---
 
@@ -143,7 +143,7 @@ Scenes are processed in **parallel batches of 3** to balance speed against Veo r
 - **Wav2Lip lipsync** automatically applied to character dialogue scenes with visible faces
 - **Ken Burns effect** on static images to create camera movement
 - **Crossfade transitions** between scenes with duration-aware xfade offsets
-- **Parallel scene processing** in batches of 3 for faster generation
+- **Parallel scene processing** in batches of 4 for faster generation
 - **Scene preview thumbnails** -- see JPEG thumbnails of completed scenes during generation
 - **Scene narration preview** -- see what each scene says alongside its status during generation
 - **5 mood-matched background music tracks**: dramatic, upbeat, calm, inspiring, playful
