@@ -207,14 +207,23 @@ export default function ConversationView({ ws }) {
           </div>
         ))}
 
-        {/* Thinking indicator */}
+        {/* Thinking indicator with skeleton hint */}
         {ws.isThinking && !ws.scenePlan && (
           <div style={styles.msgRow('agent')}>
             <div style={styles.avatar('agent')}>AI</div>
             <div style={styles.thinkingBubble}>
-              <span style={styles.dot1} />
-              <span style={styles.dot2} />
-              <span style={styles.dot3} />
+              <div style={styles.thinkingInner}>
+                <div style={styles.thinkingDots}>
+                  <span style={styles.dot1} />
+                  <span style={styles.dot2} />
+                  <span style={styles.dot3} />
+                </div>
+                {ws.messages.length > 1 && (
+                  <span style={styles.thinkingLabel}>
+                    {ws.previews.length > 0 ? 'Building your scene plan...' : 'Thinking...'}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -536,6 +545,22 @@ const styles = {
     display: 'flex',
     gap: 6,
     alignItems: 'center',
+  },
+  thinkingInner: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  thinkingDots: {
+    display: 'flex',
+    gap: 6,
+    alignItems: 'center',
+  },
+  thinkingLabel: {
+    fontSize: 11,
+    color: '#5a6080',
+    fontWeight: 500,
+    letterSpacing: 0.3,
   },
   dot1: {
     width: 8, height: 8, borderRadius: '50%', background: '#667eea',
