@@ -21,7 +21,12 @@ def _get_client():
     return _client
 
 
-STYLE_SUFFIX = " Cinematic quality, consistent character design, smooth natural motion. Camera moves fluidly. Professional volumetric lighting with soft shadows."
+STYLE_SUFFIX = (
+    " High quality animation with fluid, natural motion and smooth transitions."
+    " Vivid saturated colors, clean sharp details."
+    " Consistent character design across shots."
+    " Professional lighting with depth."
+)
 
 
 def generate_video(

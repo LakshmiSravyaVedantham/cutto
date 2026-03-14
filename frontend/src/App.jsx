@@ -146,9 +146,9 @@ export default function App() {
             ...(isMobile ? { flexDirection: 'column', alignItems: 'stretch' } : {}),
           }}>
             {[
-              { emoji: '\u2764\uFE0F', label: 'How the heart pumps blood', prompt: 'Create a 90-second animated explainer for 8-year-olds about how the human heart pumps blood through its four chambers. Use colorful cartoon characters as red blood cells traveling through the body. Friendly narrator voice, upbeat music.', hint: '~90s video' },
-              { emoji: '\uD83D\uDE80', label: 'Solar system adventure', prompt: 'Create an animated story for kids (ages 6-10) where a curious alien named Zip visits each planet in our solar system. Educational facts about each planet, Pixar-style animation, exciting and fun mood.', hint: '~90s video' },
-              { emoji: '\uD83C\uDF0B', label: 'Why do volcanoes erupt?', prompt: 'Create a 60-second science explainer for elementary school students about why volcanoes erupt. Show the layers of the earth, magma chambers, and eruption in colorful animated diagrams. Keep it exciting but educational.', hint: '~60s video' },
+              { emoji: '\u2764\uFE0F', label: 'How the heart pumps blood', prompt: 'Create a short explainer for 8-year-olds about how the human heart pumps blood. Show a realistic 3D heart with blood flowing through chambers, cinematic close-ups, vibrant reds and blues. Friendly narrator voice, upbeat music.', hint: '~30s video' },
+              { emoji: '\uD83D\uDE80', label: 'Solar system adventure', prompt: 'Create a short educational video for kids ages 6-10 about the solar system. Cinematic fly-by of each planet with realistic 3D visuals, dramatic lighting, vibrant colors. Fun narrator, exciting music.', hint: '~30s video' },
+              { emoji: '\uD83C\uDF0B', label: 'Why do volcanoes erupt?', prompt: 'Create a short science explainer for kids about why volcanoes erupt. Show realistic 3D cross-sections of the earth, glowing magma chambers, and a cinematic eruption with lava and ash. Exciting but educational.', hint: '~30s video' },
             ].map((t) => (
               <button
                 key={t.label}

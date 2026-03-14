@@ -135,8 +135,13 @@ VISUAL STYLE ANCHOR
 ═══════════════════════════════════════
 Before writing scenes, create a "visual_style_anchor" — a detailed description of the consistent visual look:
 
-FOR ANIMATION: art style, color palette, lighting, character appearances
-  Example: "3D Pixar-style animation, warm amber and teal palette, soft golden-hour lighting. Mei: small red panda with brown eyes, blue backpack. Kit: tall fox with green scarf."
+FOR KIDS EDUCATIONAL / SCIENCE: use realistic 3D renders and motion graphics, NOT cartoon animation
+  Veo produces best results with realistic, cinematic, or motion-graphics style — NOT 2D cartoon or anime.
+  Example: "Realistic 3D rendered environment with vibrant colors, soft golden-hour lighting, cinematic depth of field. Motion graphics labels and callouts animate in smoothly. Clean, colorful, kid-friendly aesthetic."
+  Example: "Bright, colorful realistic 3D world with soft lighting. Objects have a playful, slightly stylized look — like a museum exhibit come to life. Smooth camera movements, depth of field."
+
+FOR STORY / NARRATIVE: cinematic realistic style with expressive real-looking characters
+  Example: "Cinematic realistic style, warm amber and teal palette, soft golden-hour lighting. Characters look like real people in a stylized world. Expressive faces, clear emotions."
 
 FOR MEDICAL/SCIENCE: rendering style, color scheme, labeling approach
   Example: "Clean medical illustration style, soft blue and white palette, anatomically accurate 3D renders with labeled callouts, professional clinical lighting."
@@ -157,10 +162,14 @@ This generates VIDEO, not static images. Every visual_prompt MUST include:
 - Camera movement (pan, zoom, dolly, tilt, tracking shot)
 - Environmental or diagrammatic motion (blood flowing, gears turning, data appearing, text animating)
 
-FOR SPEAKER SCENES (character_1 / character_2):
-- Close-up or medium shot of the person SPEAKING
-- Mouth moving, facial expressions, gestures
-- Example: "Medium shot of a female doctor in a white coat speaking to camera, gesturing at a holographic heart diagram. Mouth moving clearly. Clean clinical background."
+FOR SPEAKER SCENES (character_1 / character_2) — LIPSYNC REQUIREMENTS:
+- MUST be a CLOSE-UP or MEDIUM CLOSE-UP of a REAL HUMAN face (not cartoon/anime)
+- Face MUST be FRONT-FACING, well-lit, filling at least 30% of the frame
+- Person MUST be visibly SPEAKING with mouth moving clearly throughout
+- Use simple, uncluttered backgrounds so the face stands out
+- NO profile shots, NO back-of-head, NO faces obscured by objects
+- Example: "Close-up of a friendly female teacher speaking directly to camera. Front-facing, well-lit face, mouth moving clearly. She gestures with one hand. Warm, simple classroom background slightly blurred."
+- Example: "Medium close-up of a young male scientist in a lab coat speaking to camera. Front-facing, clear face, enthusiastic expression, mouth moving. Clean white lab background."
 
 FOR NARRATOR/EXPLAINER SCENES:
 - Wide shots, diagrams, process animations, visual metaphors
@@ -168,8 +177,18 @@ FOR NARRATOR/EXPLAINER SCENES:
 
 BAD: "A heart" (STATIC, NO CONTEXT)
 BAD: "Doctor standing in a hospital" (NO ACTION)
-GOOD: "Animated 3D heart rotating slowly, transparent walls reveal blood flow through all four chambers. Red oxygenated blood pulses through the left side, blue deoxygenated through the right. Camera tracks around the organ. Labels fade in."
-GOOD: "Close-up of a young teacher speaking enthusiastically to camera, gesturing with both hands. Behind her, an animated whiteboard fills with a neural network diagram. Warm classroom lighting."
+BAD: "2D cartoon animation of a sun" (Veo struggles with flat 2D cartoon)
+BAD: "Anime style characters walking" (Veo not designed for anime)
+GOOD: "Realistic 3D rendered heart rotating slowly, transparent walls reveal blood flow through all four chambers. Red oxygenated blood pulses through the left side, blue deoxygenated through the right. Camera tracks around the organ. Cinematic lighting, shallow depth of field."
+GOOD: "Close-up of a young teacher speaking directly to camera, front-facing, well-lit face, mouth clearly moving, gesturing with both hands. Behind her, a colorful diagram appears on a bright whiteboard. Warm classroom lighting, blurred background."
+GOOD: "Cinematic aerial shot slowly flying over a vibrant coral reef. Colorful fish swim through crystal clear water. Sunbeams pierce the surface, creating dappled light patterns. Camera slowly descends toward the reef."
+
+IMPORTANT: Veo 2.0 produces best results with:
+- Realistic or cinematic visual styles (NOT 2D cartoon or anime)
+- Clear, specific descriptions of MOTION and CAMERA movement
+- Natural lighting descriptions
+- Scenes that look like real film or high-end 3D renders
+Avoid: flat 2D animation, anime, hand-drawn styles, abstract patterns
 
 ═══════════════════════════════════════
 JSON OUTPUT FORMAT

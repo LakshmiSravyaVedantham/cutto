@@ -221,13 +221,19 @@ def enhance_visual_prompt(prompt: str, mood: str = "") -> str:
 
         client = genai.Client(api_key=GOOGLE_API_KEY)
         enhance_instruction = (
-            "You are a cinematographer optimizing prompts for Google Veo video generation. "
+            "You are an animation director optimizing prompts for Google Veo 2.0 video generation. "
             "Expand this visual prompt into a single detailed paragraph (max 100 words). "
-            "MUST include one camera motion from: slow dolly forward, tracking shot, "
-            "crane shot rising, slow pan left/right, push-in, pull-out, static wide shot. "
-            "Add: lighting setup, color palette, depth of field, composition. "
-            "Keep the original subject and intent. Do NOT add dialogue or narration. "
-            f"Mood: {mood or 'cinematic'}. Output ONLY the enhanced prompt, nothing else."
+            "CRITICAL RULES for Veo:\n"
+            "- Describe CONTINUOUS MOTION: characters moving, objects animating, elements transforming\n"
+            "- Include exactly ONE camera motion: slow dolly forward, gentle tracking shot, "
+            "crane shot rising, slow pan, push-in, pull-out, or static wide shot\n"
+            "- Specify vivid colors, lighting direction, and depth of field\n"
+            "- For character scenes: describe the character SPEAKING with mouth clearly moving, "
+            "front-facing, well-lit face filling at least 30% of frame\n"
+            "- For explainer scenes: describe diagrams animating, elements appearing, processes flowing\n"
+            "- NEVER use quotation marks in the output\n"
+            "Keep the original subject and intent. Do NOT add dialogue or narration text. "
+            f"Mood: {mood or 'playful'}. Output ONLY the enhanced prompt, nothing else."
         )
         response = client.models.generate_content(
             model=GEMINI_MODEL,
@@ -331,9 +337,17 @@ async def process_scene(
                 f"[Lipsync] Applying for {scene.speaker} (scene {scene.scene_number})"
             )
             synced_path = str(scene_dir / "visual_synced.mp4")
-            visual_path = await asyncio.to_thread(
+            synced = await asyncio.to_thread(
                 lipsync.apply_lipsync, visual_path, audio_path, synced_path
             )
+            if synced != visual_path:
+                visual_path = synced
+                logger.info(f"[Lipsync] Success — synced video at {synced}")
+            else:
+                logger.warning(
+                    f"[Lipsync] Failed or no face detected (scene {scene.scene_number}), "
+                    "using original video — character may not have clear front-facing face"
+                )
         elif not is_video:
             logger.info(
                 f"[Lipsync] Skipped — static image, no face (scene {scene.scene_number})"
