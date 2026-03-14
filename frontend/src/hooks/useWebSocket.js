@@ -134,7 +134,7 @@ export default function useWebSocket() {
           if (data.scene > 0) {
             setSceneStatuses(prev => ({
               ...prev,
-              [data.scene]: { step: data.step, status: data.status, thumbnail: data.thumbnail || prev[data.scene]?.thumbnail }
+              [data.scene]: { step: data.step, status: data.status, message: data.message || '', thumbnail: data.thumbnail || prev[data.scene]?.thumbnail }
             }))
           }
           break

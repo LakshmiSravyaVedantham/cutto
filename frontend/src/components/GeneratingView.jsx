@@ -148,7 +148,9 @@ export default function GeneratingView({ progress, sceneStatuses, scenePlan, err
                   ...(isError ? { color: '#e74c3c' } : {}),
                 }}>
                   {isError
-                    ? 'failed — skipping'
+                    ? (s?.message?.includes('429') || s?.message?.includes('quota')
+                      ? 'rate limited — using fallback image'
+                      : 'failed — skipping')
                     : isActive && s?.step
                     ? stepLabels[s.step] || s.step
                     : isDone

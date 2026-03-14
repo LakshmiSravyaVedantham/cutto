@@ -11,10 +11,18 @@ export default function ConversationView({ ws }) {
   const [isListening, setIsListening] = useState(false)
   const [hasMic, setHasMic] = useState(false)
   const [attachedImage, setAttachedImage] = useState(null) // { dataUrl, base64 }
+  const [toast, setToast] = useState(null) // { text, type: 'error' | 'info' }
+  const toastTimerRef = useRef(null)
   const bottomRef = useRef(null)
   const recognitionRef = useRef(null)
   const fileInputRef = useRef(null)
   const inputRef = useRef(null)
+
+  const showToast = (text, type = 'error', duration = 4000) => {
+    clearTimeout(toastTimerRef.current)
+    setToast({ text, type })
+    toastTimerRef.current = setTimeout(() => setToast(null), duration)
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -70,7 +78,11 @@ export default function ConversationView({ ws }) {
 
     recognition.onerror = (e) => {
       // "no-speech" and "aborted" are not real errors — just silence
-      if (e.error !== 'no-speech' && e.error !== 'aborted') {
+      if (e.error === 'not-allowed') {
+        showToast('Microphone access denied. Check browser permissions.', 'error', 6000)
+      } else if (e.error === 'network') {
+        showToast('Speech recognition unavailable offline.', 'error', 5000)
+      } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
         console.warn('Speech recognition error:', e.error)
       }
       setIsListening(false)
@@ -122,10 +134,12 @@ export default function ConversationView({ ws }) {
     e.target.value = ''
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
-      return // silently ignore unsupported types
+      showToast('Unsupported image type. Use JPEG, PNG, or WebP.')
+      return
     }
     if (file.size > MAX_IMAGE_SIZE) {
-      return // too large
+      showToast('Image too large (max 5 MB). Try a smaller file.')
+      return
     }
 
     const reader = new FileReader()
@@ -279,6 +293,16 @@ export default function ConversationView({ ws }) {
               Stop Recording
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={styles.toast(toast.type)} role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>{toast.text}</span>
         </div>
       )}
 
@@ -804,4 +828,18 @@ const styles = {
     borderRadius: '50%',
     background: '#3a4060',
   },
+  toast: (type) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    padding: '10px 16px',
+    marginBottom: 8,
+    borderRadius: 12,
+    fontSize: 13,
+    fontWeight: 500,
+    animation: 'fadeIn 0.3s ease-out',
+    background: type === 'error' ? 'rgba(255,107,107,0.06)' : 'rgba(102,126,234,0.06)',
+    border: `1px solid ${type === 'error' ? 'rgba(255,107,107,0.15)' : 'rgba(102,126,234,0.15)'}`,
+    color: type === 'error' ? '#ff8a8a' : '#8b9cf7',
+  }),
 }
