@@ -87,7 +87,21 @@ gemini, veo, imagen, google-cloud-tts, google-cloud-run, google-adk, fastapi, re
 2. Find and join your local GDG chapter
 3. Add your GDG profile link to this submission
 
+## Architecture Diagram
+Upload `docs/architecture.svg` to the Devpost image carousel. The Mermaid source is also in README.md.
+
+## Google Cloud Services Used (with code links)
+- **Gemini 2.5 Flash** (interleaved text + image): [`backend/agent.py` line 280](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/agent.py#L280) — `response_modalities=["TEXT", "IMAGE"]`
+- **Gemini 2.0 Flash** (text-only fallback): [`backend/agent.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/agent.py) — conversation session
+- **Google ADK** (multi-agent): [`backend/adk_agent.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/adk_agent.py) — 3 agents with 4 function tools
+- **Veo 2.0** (video generation): [`backend/services/veo.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/veo.py)
+- **Imagen 4.0** (image fallback): [`backend/services/imagen.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/imagen.py)
+- **Google Cloud TTS** (WaveNet voices): [`backend/services/tts.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/tts.py)
+- **Google Cloud Storage** (video persistence): [`backend/services/storage.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/storage.py)
+- **Google Cloud Run** (deployment): [`Dockerfile`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/Dockerfile) + [`deploy.sh`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/deploy.sh)
+
 ## Links
 - **GitHub**: https://github.com/LakshmiSravyaVedantham/cutto
+- **Architecture**: `docs/architecture.svg` (upload to Devpost image carousel)
 - **Demo Video**: [YouTube URL — record and fill before submission]
 - **Blog Post**: [Dev.to URL — publish BLOG_POST.md and fill before submission]
