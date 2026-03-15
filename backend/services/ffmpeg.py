@@ -336,6 +336,22 @@ def concat_clips(
         Path(concat_list_path).unlink(missing_ok=True)
 
 
+def normalize_clip_fps(clip_path: str, output_path: str, fps: int = 24) -> str:
+    """Re-encode a clip to a consistent frame rate for crossfade compatibility."""
+    cmd = [
+        "-i", clip_path,
+        "-vf", f"fps={fps},format=yuv420p",
+        "-c:v", "libx264",
+        "-preset", "fast",
+        "-c:a", "aac",
+        "-ar", "44100",
+        "-ac", "1",
+        output_path,
+    ]
+    run_ffmpeg(cmd)
+    return output_path
+
+
 def crossfade_concat_clips(
     clip_paths: list[str],
     output_path: str,
@@ -346,6 +362,14 @@ def crossfade_concat_clips(
         concat_clips(clip_paths, output_path)
         return
     try:
+        # Normalize all clips to same fps/format for crossfade compatibility
+        normalized = []
+        for i, clip in enumerate(clip_paths):
+            norm_path = str(Path(clip).parent.parent / f"norm_{i}.mp4")
+            normalize_clip_fps(clip, norm_path)
+            normalized.append(norm_path)
+        clip_paths = normalized
+
         # Get durations for accurate xfade offsets
         durations = [get_video_duration(p) for p in clip_paths]
         inputs: list[str] = []

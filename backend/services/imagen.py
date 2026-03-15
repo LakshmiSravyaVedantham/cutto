@@ -1,30 +1,26 @@
 import logging
 from pathlib import Path
 
-from backend.config import GOOGLE_API_KEY, IMAGEN_MODEL
+from backend.client import get_client
+from backend.config import IMAGEN_MODEL
 
 logger = logging.getLogger(__name__)
 
-_client = None
 
-
-def _get_client():
-    global _client
-    if _client is None:
-        from google import genai
-
-        _client = genai.Client(api_key=GOOGLE_API_KEY)
-    return _client
-
-
-CONSISTENCY_SUFFIX = " Maintain exact same art style, color palette, character design, and lighting across all frames. Consistent character appearance is critical."
+CONSISTENCY_SUFFIX = (
+    " Shot on ARRI Alexa, cinematic shallow depth of field f/1.4."
+    " Professional film lighting, rich color grading, fine organic grain."
+    " Photorealistic, production-quality frame from a feature film."
+    " Maintain exact same visual style, color palette, character design,"
+    " and lighting setup across all frames for visual consistency."
+)
 
 
 def generate_image(prompt: str, output_path: str) -> str:
     """Generate an image from a text prompt using Imagen API."""
     full_prompt = prompt + CONSISTENCY_SUFFIX
     logger.info(f"Generating image: {full_prompt[:100]}...")
-    response = _get_client().models.generate_images(
+    response = get_client().models.generate_images(
         model=IMAGEN_MODEL, prompt=full_prompt, config={"number_of_images": 1}
     )
     if not response.generated_images:

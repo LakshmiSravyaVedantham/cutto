@@ -706,10 +706,7 @@ class TestEnhanceVisualPrompt:
             )
         )
 
-        with patch.dict(
-            "sys.modules",
-            {"google": mock_google, "google.genai": mock_genai},
-        ):
+        with patch("backend.pipeline.get_client", return_value=mock_client):
             enhance_visual_prompt("A cat walking", mood="calm")
 
         call_args = mock_client.models.generate_content.call_args
@@ -717,12 +714,13 @@ class TestEnhanceVisualPrompt:
         instruction = config.system_instruction
         camera_keywords = [
             "dolly",
-            "tracking shot",
-            "crane shot",
+            "tracking",
+            "crane",
             "pan",
             "push-in",
-            "pull-out",
-            "static wide shot",
+            "steadicam",
+            "gimbal",
+            "handheld",
         ]
         assert any(
             kw in instruction.lower() for kw in camera_keywords
@@ -736,12 +734,11 @@ class TestEnhanceVisualPrompt:
             "Slow dolly forward through a sunlit meadow, "
             "a golden retriever bounds through wildflowers with warm backlight"
         )
-        mock_google, mock_genai, _ = self._make_genai_mocks(response_text=enhanced_text)
+        mock_google, mock_genai, mock_client = self._make_genai_mocks(
+            response_text=enhanced_text
+        )
 
-        with patch.dict(
-            "sys.modules",
-            {"google": mock_google, "google.genai": mock_genai},
-        ):
+        with patch("backend.pipeline.get_client", return_value=mock_client):
             result = enhance_visual_prompt("A dog in a field", mood="upbeat")
 
         assert result == enhanced_text
@@ -750,13 +747,9 @@ class TestEnhanceVisualPrompt:
         """Should return original prompt when Gemini fails."""
         from backend.pipeline import enhance_visual_prompt
 
-        mock_google, mock_genai, _ = self._make_genai_mocks(
-            client_error=RuntimeError("No API key")
-        )
-
-        with patch.dict(
-            "sys.modules",
-            {"google": mock_google, "google.genai": mock_genai},
+        with patch(
+            "backend.pipeline.get_client",
+            side_effect=RuntimeError("No API key"),
         ):
             result = enhance_visual_prompt("A cat walking", mood="calm")
 

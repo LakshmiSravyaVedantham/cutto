@@ -9,7 +9,7 @@ import pytest
 from backend.config import VEO_MODEL
 
 
-@patch("backend.services.veo._get_client")
+@patch("backend.services.veo.get_client")
 def test_generate_video_writes_bytes(mock_get_client):
     """generate_video should poll operation and write video bytes to output_path."""
     fake_bytes = b"\x00\x00\x00\x1cftypisom\x00fake-video-data"
@@ -54,7 +54,7 @@ def test_generate_video_writes_bytes(mock_get_client):
     assert "seed" not in call_args.kwargs["config"]
 
 
-@patch("backend.services.veo._get_client")
+@patch("backend.services.veo.get_client")
 def test_generate_video_ignores_seed_in_request(mock_get_client):
     """generate_video should not pass seed until the Veo API supports it again."""
     fake_bytes = b"\x00\x00\x00\x1cftypisom\x00fake-video-data"
@@ -88,7 +88,7 @@ def test_generate_video_ignores_seed_in_request(mock_get_client):
     assert "seed" not in call_args.kwargs["config"]
 
 
-@patch("backend.services.veo._get_client")
+@patch("backend.services.veo.get_client")
 def test_generate_video_raises_on_timeout(mock_get_client):
     """generate_video should raise RuntimeError if operation never completes."""
     mock_operation = MagicMock()
@@ -109,7 +109,7 @@ def test_generate_video_raises_on_timeout(mock_get_client):
                 generate_video("a failing prompt", "/tmp/nope.mp4", duration_seconds=5)
 
 
-@patch("backend.services.veo._get_client")
+@patch("backend.services.veo.get_client")
 def test_generate_video_raises_on_empty_result(mock_get_client):
     """generate_video should raise RuntimeError when Veo returns no videos."""
     mock_result = MagicMock()

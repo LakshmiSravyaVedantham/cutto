@@ -9,7 +9,7 @@ import pytest
 from backend.config import IMAGEN_MODEL
 
 
-@patch("backend.services.imagen._get_client")
+@patch("backend.services.imagen.get_client")
 def test_generate_image_writes_bytes(mock_get_client):
     """generate_image should write returned image bytes to output_path."""
     fake_bytes = b"\x89PNG\r\n\x1a\nfake-image-data"
@@ -39,7 +39,7 @@ def test_generate_image_writes_bytes(mock_get_client):
     assert call_args.kwargs["config"] == {"number_of_images": 1}
 
 
-@patch("backend.services.imagen._get_client")
+@patch("backend.services.imagen.get_client")
 def test_generate_image_raises_on_empty_response(mock_get_client):
     """generate_image should raise RuntimeError when Imagen returns no images."""
     mock_response = MagicMock()
@@ -54,7 +54,7 @@ def test_generate_image_raises_on_empty_response(mock_get_client):
         generate_image("a prompt that fails", "/tmp/nope.png")
 
 
-@patch("backend.services.imagen._get_client")
+@patch("backend.services.imagen.get_client")
 def test_generate_image_raises_on_none_response(mock_get_client):
     """generate_image should raise RuntimeError when generated_images is None."""
     mock_response = MagicMock()

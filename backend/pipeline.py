@@ -5,10 +5,10 @@ import tempfile
 from pathlib import Path
 from typing import Callable, Optional
 
+from backend.client import get_client
 from backend.config import (
     GEMINI_IMAGE_MODEL,
     GEMINI_MODEL,
-    GOOGLE_API_KEY,
     MUSIC_DIR,
     PIPELINE_PARALLEL_BATCH_SIZE,
     SCENE_TIMEOUT_SECONDS,
@@ -112,7 +112,7 @@ async def run_pipeline(
 
     # Run in batches of PARALLEL_BATCH_SIZE with staggered starts
     # to avoid overwhelming Veo's per-minute rate limit
-    VEO_STAGGER_SECONDS = 5
+    VEO_STAGGER_SECONDS = 10
 
     async def staggered_process(scene: Scene, index: int, delay: float) -> None:
         if delay > 0:
@@ -210,10 +210,9 @@ async def generate_video_with_fallback(
 
 def gemini_fallback_image(prompt: str, output_path: str) -> str:
     """Generate image using Gemini's native interleaved output as fallback."""
-    from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=GOOGLE_API_KEY)
+    client = get_client()
     response = client.models.generate_content(
         model=GEMINI_IMAGE_MODEL,
         contents=f"Generate an image: {prompt}",
@@ -229,35 +228,67 @@ def gemini_fallback_image(prompt: str, output_path: str) -> str:
 
 
 def enhance_visual_prompt(prompt: str, mood: str = "") -> str:
-    """Use Gemini to expand a visual prompt into cinematography-grade description.
+    """Use Gemini to decompose and rebuild a visual prompt into cinema-grade shot description.
 
-    This is CutTo's secret sauce — the AI director doesn't just pass prompts through,
-    it ENHANCES them with professional camera, lighting, and composition details.
+    Uses a structured decomposition technique (inspired by nano-banana/flow-style prompt engineering):
+    1. Extract the SUBJECT (who/what is in frame)
+    2. Define the ACTION (what is moving, how)
+    3. Set the CAMERA (rig, lens, movement)
+    4. Design the LIGHTING (setup, color temp, quality)
+    5. Choose the PALETTE (color grade, mood)
+    6. Add TEXTURE (grain, haze, bokeh, atmosphere)
+    Then merge all elements into one cohesive shot description.
     """
     try:
-        from google import genai
         from google.genai import types
 
-        client = genai.Client(api_key=GOOGLE_API_KEY)
+        client = get_client()
         enhance_instruction = (
-            "You are a cinematographer optimizing prompts for Google Veo 2.0 video generation. "
-            "Veo generates REALISTIC footage like a real film camera — NOT cartoon or animation. "
-            "Expand this visual prompt into a single detailed paragraph (max 100 words). "
-            "CRITICAL RULES:\n"
-            "- Output must describe REALISTIC, photorealistic footage — real humans, real environments\n"
-            "- NEVER mention cartoon, animation, anime, illustrated, or 2D styles\n"
-            "- Describe CONTINUOUS MOTION: people moving, speaking, gesturing, walking\n"
-            "- Include ONE camera motion: slow dolly, tracking shot, crane, pan, push-in, or static\n"
-            "- Specify natural lighting, color palette, and shallow depth of field\n"
-            "- For character scenes: real human SPEAKING to camera, front-facing, mouth moving, well-lit face\n"
-            "- For landscape/science: stunning real-world footage, macro shots, drone shots\n"
-            "- NEVER use quotation marks in the output\n"
-            "Keep the original subject and intent. Do NOT add dialogue or narration. "
-            f"Mood: {mood or 'cinematic'}. Output ONLY the enhanced prompt."
+            "You are a world-class Director of Photography and prompt engineer. "
+            "You use the FLOW decomposition method to craft perfect video generation prompts.\n\n"
+            "STEP 1 — DECOMPOSE the input into these 6 elements (think silently, don't output this):\n"
+            "  SUBJECT: Who/what is the main focus? (person, object, landscape)\n"
+            "  ACTION: What continuous motion is happening? (speaking, walking, flowing, rotating)\n"
+            "  CAMERA: What rig, lens, and movement? (Steadicam 85mm f/1.4, slow push-in)\n"
+            "  LIGHTING: What setup and color temp? (Rembrandt side-light 3200K, golden hour backlight)\n"
+            "  PALETTE: What color grade? (teal-amber, desaturated earth, warm golden)\n"
+            "  TEXTURE: What atmosphere? (film grain, bokeh, haze, dust particles, lens flare)\n\n"
+            "STEP 2 — RECONSTRUCT into a single vivid paragraph (80-120 words) merging all 6 elements "
+            "into one cohesive shot description. Write it as a professional shot brief.\n\n"
+            "FLOW EXAMPLES:\n\n"
+            "Input: A teacher explaining photosynthesis\n"
+            "Decompose: SUBJECT=young female teacher | ACTION=speaking to camera, gesturing with hands | "
+            "CAMERA=Steadicam MCU, 85mm f/1.4, slow push-in | LIGHTING=soft three-point, 4000K key | "
+            "PALETTE=warm amber and green | TEXTURE=creamy bokeh, subtle film grain\n"
+            "Output: Steadicam medium close-up on 85mm lens at f/1.4, slowly pushing in. A warm, "
+            "enthusiastic young female teacher speaks directly to camera, her mouth moving clearly with "
+            "each word, hands gesturing expressively as she explains. Soft three-point lighting at 4000K "
+            "wraps her face with a natural glow. Behind her, a sunlit classroom dissolves into creamy "
+            "circular bokeh — green plants and amber wood tones blurred beautifully. Fine organic film "
+            "grain adds texture. Warm amber and leaf-green color palette throughout.\n\n"
+            "Input: The inside of a volcano\n"
+            "Decompose: SUBJECT=magma chamber interior | ACTION=lava bubbling, rocks cracking, heat shimmer | "
+            "CAMERA=drone descending, 24mm wide, slow crane down | LIGHTING=molten orange glow from below, "
+            "rim light on rock edges | PALETTE=deep crimson, molten orange, volcanic black | "
+            "TEXTURE=heat distortion, embers floating, smoke wisps\n"
+            "Output: Drone shot on 24mm wide lens descending into a massive volcanic chamber. Molten "
+            "lava bubbles and churns below, casting a fierce orange glow upward that rim-lights jagged "
+            "obsidian rock formations. Heat shimmer distorts the air as glowing embers drift upward like "
+            "fireflies. Cracks spider across cooling rock surfaces, revealing veins of molten magma beneath. "
+            "Thick smoke wisps curl through shafts of amber light. Deep crimson and molten orange color "
+            "palette against volcanic black. BBC Earth documentary quality, macro detail on lava textures.\n\n"
+            "HARD RULES:\n"
+            "- ONLY photorealistic real-world footage — NEVER cartoon, anime, illustration, CGI\n"
+            "- SPEAKER scenes MUST show real human face front-facing, mouth clearly moving, eyes engaged\n"
+            "- Every prompt MUST have continuous physical motion — NEVER a still photograph\n"
+            "- NEVER use quotation marks in output\n"
+            "- Do NOT add dialogue, narration, or sound descriptions\n"
+            f"- Mood: {mood or 'cinematic'}\n"
+            "Output ONLY the final reconstructed prompt paragraph, nothing else."
         )
         response = client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=[{"role": "user", "parts": [{"text": f"Enhance: {prompt}"}]}],
+            contents=[{"role": "user", "parts": [{"text": f"FLOW decompose and reconstruct: {prompt}"}]}],
             config=types.GenerateContentConfig(
                 system_instruction=enhance_instruction,
             ),
@@ -411,25 +442,8 @@ async def assemble_final(
             ffmpeg.crossfade_concat_clips, scene_clips, concat_path, 0.5
         )
 
-    # Add background music
-    music_file = MUSIC_MAP.get(plan.mood, "calm.mp3")
-    music_path = str(Path(MUSIC_DIR) / music_file)
-    final_path = str(work_dir / "final.mp4")
-
-    logger.info(f"[Music] mood={plan.mood}, file={music_file}, path={music_path}")
-    logger.info(f"[Music] exists={Path(music_path).exists()}, MUSIC_DIR={MUSIC_DIR}")
-
-    if Path(music_path).exists():
-        try:
-            await asyncio.to_thread(
-                ffmpeg.add_music, concat_path, music_path, final_path, 0.25
-            )
-            logger.info(f"[Music] Added successfully to {final_path}")
-        except Exception as e:
-            logger.error(f"[Music] Failed to add music: {e}")
-            final_path = concat_path
-    else:
-        logger.warning(f"[Music] File not found: {music_path}, skipping music")
-        final_path = concat_path
+    # Skip music — clean video with voiceover only
+    final_path = concat_path
+    logger.info("[Music] Skipped — clean voiceover mode")
 
     return final_path

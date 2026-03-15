@@ -5,26 +5,18 @@ import time
 import urllib.request
 from pathlib import Path
 
-from backend.config import GOOGLE_API_KEY, VEO_MODEL
+from backend.client import get_client
+from backend.config import VEO_MODEL
 
 logger = logging.getLogger(__name__)
 
-_client = None
-
-
-def _get_client():
-    global _client
-    if _client is None:
-        from google import genai
-
-        _client = genai.Client(api_key=GOOGLE_API_KEY)
-    return _client
-
 
 STYLE_SUFFIX = (
-    " Cinematic quality, photorealistic, real-world footage style."
-    " Natural lighting, shallow depth of field, vivid colors."
-    " Smooth professional camera movement."
+    " Shot on ARRI Alexa Mini, anamorphic lens, 2.39:1 aspect ratio."
+    " Photorealistic cinematic footage, shallow depth of field f/1.4."
+    " Natural film grain, professional color grading."
+    " Smooth Steadicam or gimbal movement, 24fps filmic motion blur."
+    " Rich contrast, volumetric lighting, production-quality framing."
 )
 
 
@@ -37,7 +29,7 @@ def generate_video(
     Returns the output_path on success.
     """
     full_prompt = prompt + STYLE_SUFFIX
-    capped_duration = min(duration_seconds, 8)
+    capped_duration = max(4, min(duration_seconds, 8))  # Veo requires 4-8s
     logger.info(
         f"[Veo] Starting video generation (duration={capped_duration}s, model={VEO_MODEL})"
     )
@@ -55,7 +47,7 @@ def generate_video(
         )
 
     t0 = time.time()
-    client = _get_client()
+    client = get_client()
     operation = client.models.generate_videos(
         model=VEO_MODEL,
         prompt=full_prompt,
@@ -74,7 +66,7 @@ def generate_video(
         time.sleep(poll_interval)
         elapsed += poll_interval
         try:
-            operation = _get_client().operations.get(operation)
+            operation = get_client().operations.get(operation)
             logger.debug(f"[Veo] Poll at {elapsed}s — done={operation.done}")
         except Exception as e:
             logger.warning(f"[Veo] Poll error at {elapsed}s: {e}")
@@ -109,12 +101,11 @@ def generate_video(
     elif hasattr(video_obj, "uri") and video_obj.uri:
         uri = video_obj.uri
         logger.info(f"[Veo] Downloading video from URI: {uri[:100]}...")
-        # Use header-based auth to avoid key in logs/URLs
-        if "?" in uri:
-            download_url = f"{uri}&key={GOOGLE_API_KEY}"
-        else:
-            download_url = f"{uri}?key={GOOGLE_API_KEY}"
-        req = urllib.request.Request(download_url)
+        # Use header-based auth to avoid exposing key in URLs
+        from backend.config import GOOGLE_API_KEY
+
+        req = urllib.request.Request(uri)
+        req.add_header("x-goog-api-key", GOOGLE_API_KEY)
         with urllib.request.urlopen(req, timeout=120) as resp:
             video_bytes = resp.read()
         if not video_bytes:

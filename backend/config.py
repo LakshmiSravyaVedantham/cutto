@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
+
+# Vertex AI config — uses GCP credits instead of API key
+USE_VERTEX_AI = os.environ.get("USE_VERTEX_AI", "").lower() in ("1", "true", "yes")
+GCP_PROJECT = os.environ.get("GCP_PROJECT", "gen-lang-client-0513383582")
+GCP_LOCATION = os.environ.get("GCP_LOCATION", "us-central1")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 GEMINI_IMAGE_MODEL = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 IMAGEN_MODEL = os.environ.get("IMAGEN_MODEL", "imagen-4.0-generate-001")

@@ -7,13 +7,16 @@ import edge_tts
 
 logger = logging.getLogger(__name__)
 
-# Google Cloud TTS voice mapping (WaveNet voices for high quality)
+# Google Cloud TTS voice mapping (Journey/Studio voices for ultra-realistic quality)
+# Journey voices are the most natural-sounding, trained on real conversations
+# Studio voices are studio-grade quality for professional narration
+# Fallback to WaveNet if Journey/Studio not available
 CLOUD_VOICE_MAP = {
-    "narrator": ("en-US-Wavenet-D", "MALE"),  # Deep, authoritative narrator
-    "character_1": ("en-US-Wavenet-F", "FEMALE"),  # Female character
-    "character_2": ("en-US-Wavenet-B", "MALE"),  # Male character
-    "character_3": ("en-US-Wavenet-E", "FEMALE"),  # Young female
-    "character_4": ("en-US-Wavenet-A", "MALE"),  # Older male
+    "narrator": ("en-US-Journey-D", "MALE"),  # Deep, warm narrator — most natural
+    "character_1": ("en-US-Journey-F", "FEMALE"),  # Natural female speaker
+    "character_2": ("en-US-Journey-D", "MALE"),  # Natural male speaker
+    "character_3": ("en-US-Studio-O", "FEMALE"),  # Studio-grade young female
+    "character_4": ("en-US-Studio-Q", "MALE"),  # Studio-grade older male
 }
 
 # edge-tts voice mapping (fallback)
@@ -97,8 +100,10 @@ async def _cloud_tts_synthesize(
                 },
                 "audioConfig": {
                     "audioEncoding": "MP3",
-                    "speakingRate": 1.0,
-                    "pitch": 0.0,
+                    "speakingRate": 0.92,  # Slightly slower for natural delivery
+                    "pitch": -1.0,  # Slightly deeper for cinematic feel
+                    "volumeGainDb": 1.0,  # Slight boost for clarity
+                    "effectsProfileId": ["large-home-entertainment-class-device"],
                 },
             }
         ).encode("utf-8")

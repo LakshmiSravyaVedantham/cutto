@@ -1,10 +1,10 @@
 import json
 import logging
 
-from google import genai
 from google.genai import types
 
-from backend.config import GEMINI_IMAGE_MODEL, GEMINI_MODEL, GOOGLE_API_KEY
+from backend.client import get_client
+from backend.config import GEMINI_IMAGE_MODEL, GEMINI_MODEL
 from backend.models import ScenePlan
 
 logger = logging.getLogger(__name__)
@@ -135,30 +135,28 @@ VISUAL STYLE ANCHOR
 ═══════════════════════════════════════
 Before writing scenes, create a "visual_style_anchor" — a detailed description of the consistent visual look:
 
-CRITICAL: Veo 2.0 generates REALISTIC video — like real film footage. NEVER ask for cartoon, anime, or 2D animation.
-Always use REAL HUMANS, real environments, cinematic footage style.
+CRITICAL: Veo 2.0 generates REALISTIC video — like footage shot on an ARRI Alexa or RED camera.
+NEVER ask for cartoon, anime, or 2D animation. Always use REAL HUMANS, real environments, real physics.
+
+Write the visual_style_anchor as if you are a Director of Photography describing the look of a film.
+Include: camera system, lens choice, lighting philosophy, color palette, texture/grain, and atmosphere.
 
 FOR KIDS EDUCATIONAL / SCIENCE:
-  Use a real human presenter (teacher, scientist) speaking to camera, with real-world footage of the topic.
-  Example: "Cinematic footage, warm natural lighting, vibrant colors. A friendly young female teacher in a colorful classroom speaks to camera. Cut to stunning macro footage of the subject. Professional documentary quality, shallow depth of field."
+  Example: "Shot on ARRI Alexa Mini with Cooke S4 lenses. Warm, inviting three-point lighting with soft key light at 4000K. A friendly young female teacher in a vibrant, sunlit classroom. Shallow depth of field f/2.0, creamy bokeh backgrounds. Warm amber and teal color palette, subtle film grain. Cut to stunning BBC Earth-quality macro footage of the subject. Professional documentary production value throughout."
 
 FOR STORY / NARRATIVE:
-  Use real human actors in real environments, cinematic film style.
-  Example: "Cinematic film style, warm golden-hour lighting, shallow depth of field. Real human characters with expressive faces in natural environments. Professional color grading."
+  Example: "Shot on RED Komodo, anamorphic Kowa lenses. Golden-hour backlight with practical motivated sources. Real human actors with expressive faces in natural environments. Shallow depth of field f/1.4, oval anamorphic bokeh. Warm desaturated color grade inspired by Roger Deakins. Fine organic film grain, atmospheric haze in exterior shots. Steadicam and gimbal movement, 24fps filmic motion blur."
 
 FOR MEDICAL/SCIENCE:
-  Use real footage of labs, doctors, or stunning macro/microscope footage.
-  Example: "Professional medical documentary style. Real doctor in a clean white lab coat explains to camera. Cut to stunning macro footage of cells, organs, or lab equipment. Soft blue and white palette, clinical lighting."
+  Example: "Shot on Sony Venice, Zeiss Supreme Prime lenses. Clean three-point clinical lighting, cool 5600K color temperature with warm skin tone preservation. Real doctors in crisp lab coats, modern research environments. Stunning macro footage of biological processes shot on Laowa probe lens. Cool teal and clinical white palette with selective warm accents. Shallow depth of field, subtle volumetric light through windows."
 
 FOR CINEMATIC/DOCUMENTARY:
-  Real-world footage, cinematic camera work, dramatic lighting.
-  Example: "Cinematic documentary footage, desaturated teal and orange color grade, shallow depth of field, natural lighting with dramatic shadows. Real locations, real people."
+  Example: "Shot on ARRI Alexa 65, Panavision anamorphic lenses. Natural available light with dramatic chiaroscuro shadows. Desaturated teal and orange color grade, high dynamic range. Real locations, real people, unstaged documentary authenticity. Atmospheric haze and dust particles in shafts of light. Drone and Steadicam movement. Fine grain, 2.39:1 aspect ratio feel."
 
 FOR CORPORATE/MARKETING:
-  Real people in modern offices, clean professional look.
-  Example: "Modern corporate video, clean professional lighting, real people in a bright modern office. Smooth camera movements, shallow depth of field."
+  Example: "Shot on Canon C70, RF 50mm f/1.2. Modern, clean three-point lighting with soft diffusion. Real people in contemporary glass-and-steel offices. Bright, optimistic color palette with punchy contrast. Shallow depth of field, smooth gimbal tracking shots. Clean and polished with subtle lens flare on highlights."
 
-EVERY visual_prompt MUST begin with this anchor text word-for-word for consistency.
+EVERY visual_prompt MUST begin with this anchor text word-for-word for visual consistency across all scenes.
 
 ═══════════════════════════════════════
 VISUAL PROMPTS — MUST DESCRIBE MOTION
@@ -181,21 +179,33 @@ FOR NARRATOR/EXPLAINER SCENES:
 - Wide shots, diagrams, process animations, visual metaphors
 - Example: "Animated cross-section of the human heart. Blood flows through chambers in smooth animation. Labels appear: 'Left Atrium', 'Right Ventricle'. Camera slowly zooms into the aortic valve."
 
-BAD: "A heart" (STATIC, NO CONTEXT)
-BAD: "Doctor standing in a hospital" (NO ACTION)
+BAD: "A heart" (STATIC, NO CONTEXT, NO CAMERA, NO MOTION)
+BAD: "Doctor standing in a hospital" (NO ACTION, NO CAMERA MOVE, NO LIGHTING)
 BAD: "2D cartoon animation of a sun" (Veo CANNOT do cartoon — produces garbage)
 BAD: "Anime style characters" (Veo CANNOT do anime)
 BAD: "Animated colorful characters" (NO — use real humans)
-GOOD: "Close-up of a real human heart in a medical documentary. Camera slowly orbits the beating organ. Blood pulses through the chambers, visible in rich red and blue. Cinematic macro footage, shallow depth of field, soft clinical lighting."
-GOOD: "Close-up of a friendly young female teacher speaking directly to camera. Front-facing, well-lit face, mouth clearly moving, warm smile. She gestures enthusiastically. Bright colorful classroom background, slightly blurred. Natural lighting."
-GOOD: "Cinematic aerial drone shot slowly flying over a vibrant coral reef. Real underwater footage. Colorful tropical fish swim through crystal clear turquoise water. Sunbeams pierce the surface. Camera slowly descends."
-GOOD: "A real 8-year-old child looks up at the sky in wonder, standing in a green meadow. Golden hour sunlight, lens flare. Camera slowly pushes in on their amazed expression. Shallow depth of field, cinematic color grading."
+BAD: "A beautiful sunset over the ocean" (TOO GENERIC — no camera, no motion detail)
 
-CRITICAL RULE: Veo 2.0 is a REALISTIC video generator. It produces footage that looks like REAL FILM.
-- ALWAYS use real humans, real environments, real lighting
+GOOD EXAMPLES — study these carefully, they produce STUNNING results:
+
+GOOD (SPEAKER): "Steadicam medium close-up, 85mm lens f/1.4. A warm, confident female teacher in her 30s speaks directly to camera, her mouth moving clearly with each word, eyes engaged and expressive. Soft Rembrandt side-lighting from a window, warm 3200K color temperature. Her hands gesture naturally as she explains. Background is a sunlit classroom, beautifully blurred into creamy bokeh. Fine film grain, shallow depth of field. Warm golden color palette."
+
+GOOD (SCIENCE): "Macro lens 100mm on a dolly track, ultra-slow push-in. A real human heart beats rhythmically in stunning medical documentary footage. Blood pulses through translucent chambers, each valve opening and closing with visible fluid dynamics. Clinical blue-white lighting from above, volumetric light rays through atmospheric haze. Shallow depth of field isolates the organ. Cool desaturated teal and crimson color grade. Fine film grain, BBC Earth production quality."
+
+GOOD (LANDSCAPE): "DJI Inspire drone, 24mm wide lens, slow descending crane shot from 200ft. A vibrant coral reef teems with life — schools of tropical fish dart through crystal-clear turquoise water, sea fans sway in the current. Sunbeams pierce the surface creating dancing caustic light patterns on the reef. Natural underwater color palette, rich teals and warm coral oranges. Subtle lens flare as the camera crosses a sunbeam. National Geographic quality footage."
+
+GOOD (CHILD/EMOTION): "Gimbal tracking shot, 50mm lens f/1.2. A real 8-year-old child walks through a golden meadow, looking up at the sky in pure wonder, mouth slightly open in awe. Golden hour backlight creates a warm halo around their hair, lens flare blooms softly. Tall grass sways around them. Camera slowly orbits from profile to three-quarter view. Shallow depth of field, warm amber and green color palette. Dust particles float in the backlit air. Filmic grain, Terrence Malick style."
+
+GOOD (TALKING HEAD): "Locked-off static shot, 35mm lens. A young male scientist in a crisp white lab coat speaks passionately to camera in a modern research lab. Front-facing, well-lit face with soft three-point lighting, mouth clearly moving. Behind him, slightly out of focus, lab equipment with blinking LED indicators. Cool blue and white color palette with warm skin tones. Shallow depth of field f/2.0. Clean, clinical atmosphere with subtle atmospheric haze."
+
+CRITICAL RULE: Veo 2.0 is a REALISTIC video generator. It produces footage that looks like REAL FILM shot on real cameras.
+- ALWAYS specify camera type, lens focal length, and f-stop
+- ALWAYS include a specific lighting setup (not just "good lighting")
+- ALWAYS describe continuous physical motion in the scene
+- ALWAYS include at least one atmospheric texture (grain, haze, dust, bokeh)
+- ALWAYS use real humans, real environments, real physics
 - NEVER use cartoon, anime, 2D animation, or illustrated styles
-- Think of it as a virtual film camera, not an animation tool
-- Character scenes MUST show REAL HUMAN faces speaking to camera
+- Think of every prompt as a shot brief for a real film crew
 
 ═══════════════════════════════════════
 JSON OUTPUT FORMAT
@@ -276,7 +286,7 @@ class ConversationSession:
 
     def __init__(self):
         self.history: list[dict] = []
-        self.client = genai.Client(api_key=GOOGLE_API_KEY)
+        self.client = get_client()
         self.scene_plan: ScenePlan | None = None
 
     def _request_history(self) -> list[dict]:
