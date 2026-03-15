@@ -195,10 +195,10 @@
     <text x="640" y="125" text-anchor="middle" fill="white" font-size="10" font-weight="500">gemini-2.5-flash</text>
     <text x="640" y="135" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="8">text + image interleaved</text>
 
-    <!-- gemini-2.0-flash -->
+    <!-- FLOW Prompt Engine -->
     <rect x="553" y="146" width="175" height="30" rx="7" fill="rgba(67,233,123,0.12)" stroke="rgba(67,233,123,0.3)" stroke-width="0.75"/>
-    <text x="640" y="163" text-anchor="middle" fill="white" font-size="10" font-weight="500">gemini-2.0-flash</text>
-    <text x="640" y="173" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="8">text-only fallback</text>
+    <text x="640" y="163" text-anchor="middle" fill="white" font-size="10" font-weight="500">FLOW Prompt Engine</text>
+    <text x="640" y="173" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="8">6-element decomposition</text>
   </g>
 
   <!-- ============================================================ -->
@@ -213,9 +213,9 @@
     <text x="640" y="235" text-anchor="middle" fill="#f093fb" font-size="13" font-weight="700" letter-spacing="0.5">VISUAL GENERATION</text>
     <text x="640" y="249" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="9">fallback chain</text>
 
-    <!-- Veo 2.0 -->
+    <!-- Veo 3.0 -->
     <rect x="555" y="260" width="170" height="28" rx="7" fill="rgba(240,147,251,0.12)" stroke="rgba(240,147,251,0.3)" stroke-width="0.75"/>
-    <text x="640" y="278" text-anchor="middle" fill="white" font-size="10" font-weight="600">Veo 2.0</text>
+    <text x="640" y="278" text-anchor="middle" fill="white" font-size="10" font-weight="600">Veo 3.0</text>
     <text x="720" y="278" text-anchor="end" fill="rgba(255,255,255,0.35)" font-size="8">video</text>
 
     <!-- Fallback arrow 1 -->
@@ -248,8 +248,8 @@
 
     <!-- edge-tts -->
     <rect x="555" y="428" width="170" height="28" rx="7" fill="rgba(79,172,254,0.12)" stroke="rgba(79,172,254,0.3)" stroke-width="0.75"/>
-    <text x="640" y="446" text-anchor="middle" fill="white" font-size="10" font-weight="500">edge-tts</text>
-    <text x="720" y="446" text-anchor="end" fill="rgba(255,255,255,0.35)" font-size="8">multi-voice</text>
+    <text x="640" y="446" text-anchor="middle" fill="white" font-size="10" font-weight="500">Cloud TTS Journey</text>
+    <text x="720" y="446" text-anchor="end" fill="rgba(255,255,255,0.35)" font-size="8">natural voice</text>
 
     <!-- Arrow down -->
     <text x="640" y="464" text-anchor="middle" fill="rgba(79,172,254,0.4)" font-size="10">&#8595;</text>
@@ -326,7 +326,7 @@
 
   <!-- Parallel batches note -->
   <rect x="800" y="164" width="140" height="28" rx="6" fill="rgba(247,151,30,0.08)" stroke="rgba(247,151,30,0.2)" stroke-width="0.75"/>
-  <text x="870" y="182" text-anchor="middle" fill="rgba(247,151,30,0.7)" font-size="9" font-weight="500">parallel batches of 3</text>
+  <text x="870" y="182" text-anchor="middle" fill="rgba(247,151,30,0.7)" font-size="9" font-weight="500">staggered parallel batches</text>
 
   <!-- ============================================================ -->
   <!-- BOTTOM TECH BADGE ROW -->
@@ -356,13 +356,13 @@
     <text x="524" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Google ADK</text>
 
     <rect x="568" y="701" width="56" height="22" rx="5" fill="rgba(240,147,251,0.12)" stroke="rgba(240,147,251,0.25)" stroke-width="0.5"/>
-    <text x="596" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Veo 2.0</text>
+    <text x="596" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Veo 3.0</text>
 
     <rect x="632" y="701" width="72" height="22" rx="5" fill="rgba(240,147,251,0.12)" stroke="rgba(240,147,251,0.25)" stroke-width="0.5"/>
     <text x="668" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Imagen 4.0</text>
 
     <rect x="712" y="701" width="62" height="22" rx="5" fill="rgba(79,172,254,0.12)" stroke="rgba(79,172,254,0.25)" stroke-width="0.5"/>
-    <text x="743" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">edge-tts</text>
+    <text x="743" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Cloud TTS</text>
 
     <rect x="782" y="701" width="62" height="22" rx="5" fill="rgba(79,172,254,0.12)" stroke="rgba(79,172,254,0.25)" stroke-width="0.5"/>
     <text x="813" y="716" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="9">Wav2Lip</text>
@@ -403,16 +403,16 @@
 
     <!-- Fallback chain note -->
     <text x="220" y="20" fill="rgba(255,255,255,0.3)" font-size="9" font-weight="600" letter-spacing="0.5">FALLBACK CHAIN</text>
-    <text x="220" y="38" fill="rgba(240,147,251,0.6)" font-size="9">Veo 2.0</text>
+    <text x="220" y="38" fill="rgba(240,147,251,0.6)" font-size="9">Veo 3.0</text>
     <text x="275" y="38" fill="rgba(255,255,255,0.25)" font-size="9">-></text>
     <text x="293" y="38" fill="rgba(240,147,251,0.6)" font-size="9">Imagen 4.0</text>
     <text x="360" y="38" fill="rgba(255,255,255,0.25)" font-size="9">-></text>
     <text x="378" y="38" fill="rgba(240,147,251,0.6)" font-size="9">Gemini</text>
 
     <text x="220" y="58" fill="rgba(255,255,255,0.3)" font-size="9" font-weight="600" letter-spacing="0.5">AUDIO CHAIN</text>
-    <text x="220" y="76" fill="rgba(79,172,254,0.6)" font-size="9">edge-tts</text>
-    <text x="275" y="76" fill="rgba(255,255,255,0.25)" font-size="9">-></text>
-    <text x="293" y="76" fill="rgba(79,172,254,0.6)" font-size="9">Wav2Lip lipsync</text>
+    <text x="220" y="76" fill="rgba(79,172,254,0.6)" font-size="9">Cloud TTS</text>
+    <text x="280" y="76" fill="rgba(255,255,255,0.25)" font-size="9">-></text>
+    <text x="298" y="76" fill="rgba(79,172,254,0.6)" font-size="9">edge-tts fallback</text>
   </g>
 
   <!-- ============================================================ -->
