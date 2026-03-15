@@ -41,9 +41,9 @@ With CutTo, I describe the lesson, review the scene plan, and click generate. Th
 | Component | Technology |
 |---|---|
 | Conversation + Planning | Gemini 2.5 Flash (interleaved text + image) |
-| Video Generation | Veo 2.0 (animated clips) |
+| Video Generation | Veo 3.0 (cinematic clips) with FLOW prompt decomposition |
 | Image Fallback | Imagen 4.0 + Gemini native image |
-| Voice Synthesis | Google Cloud TTS (WaveNet) + edge-tts |
+| Voice Synthesis | Google Cloud TTS (Journey/Chirp3 HD) + edge-tts |
 | Lipsync | Wav2Lip |
 | Assembly | FFmpeg (Ken Burns, concat, music mixing) |
 | Agent Framework | Google ADK (3 specialized agents) |
@@ -63,8 +63,11 @@ Gemini generates scene plan with inline preview images
 Interactive scene editor (edit, reorder, revise with AI)
     |
     v
-Pipeline: Veo -> TTS -> Wav2Lip -> FFmpeg -> Final MP4
-(parallel batches of 4, circuit breaker on failures)
+FLOW Prompt Decomposition (subject/action/camera/lighting/palette/texture)
+    |
+    v
+Pipeline: Veo 3.0 -> TTS -> FFmpeg crossfade -> Final MP4
+(staggered parallel batches, circuit breaker on failures)
 ```
 
 The ADK multi-agent architecture uses three specialized agents:

@@ -20,7 +20,7 @@ CutTo is an AI Video Director that turns a lesson idea into a finished animated 
 1. **Shapes the vision** — A creative AI director with a strong persona collaborates on the concept: "I'm seeing this as a journey inside the earth — layers peeling away, magma chambers glowing..."
 2. **Plans the video** — Gemini generates a scene-by-scene plan with inline preview images (interleaved text + image output) so you see the visual direction before committing
 3. **Lets you edit** — An interactive scene editor lets you modify narration, visuals, speakers, reorder scenes, and ask the AI for revisions in natural language
-4. **Generates the video** — Veo 2.0 creates animated clips, Cloud TTS produces multi-character voiceover, Wav2Lip applies lipsync, and FFmpeg assembles everything with mood-matched music
+4. **Generates the video** — Veo 3.0 creates cinematic video clips with FLOW-decomposed prompts, Cloud TTS produces natural voiceover, and FFmpeg assembles everything with crossfade transitions
 5. **Delivers the result** — Watch, download, and upload the finished MP4 directly to your channel
 
 CutTo supports 6 video categories: animated stories, science/medical explainers, documentaries, tutorials, marketing videos, and motivational pieces. Built specifically for educational content creators who need professional-quality videos without professional-level budgets.
@@ -30,15 +30,16 @@ CutTo supports 6 video categories: animated stories, science/medical explainers,
 - **Backend**: Python 3.11 + FastAPI, WebSocket server, pipeline orchestrator
 - **AI Conversation**: Gemini 2.5 Flash (interleaved text + image) via google-genai SDK
 - **ADK Integration**: Multi-agent architecture with 3 specialized agents (Creative Director, Storyboard Artist, Orchestrator) using Google ADK with 4 function tools
-- **Video Generation**: Veo 2.0 for animated clips, with fallback chain to Imagen 4.0 and Gemini native image generation
-- **Voice Synthesis**: Google Cloud TTS (WaveNet voices) with edge-tts fallback, 3 distinct character voices
+- **Video Generation**: Veo 3.0 for cinematic video clips, with FLOW-decomposition prompt engineering and fallback chain to Imagen 4.0 and Gemini native image generation
+- **Voice Synthesis**: Google Cloud TTS (Journey/Chirp3 HD voices) with edge-tts fallback, multi-character voices
 - **Lipsync**: Wav2Lip for automatic mouth sync on character dialogue scenes
 - **Video Processing**: FFmpeg for Ken Burns effect, clip assembly, audio adjustment, and background music mixing
 - **Deployment**: Multi-stage Docker build (Node 18 + Python 3.11-slim), Google Cloud Run with deploy script
 
 ### Key Technical Decisions
-- **Visual consistency**: All scenes share a Veo seed (derived from video_id hash) for consistent character design
-- **Parallel processing**: Scenes processed in batches of 4 to balance speed against Veo rate limits
+- **FLOW prompt engineering**: Every visual prompt is decomposed into 6 elements (subject, action, camera, lighting, palette, texture) then reconstructed by Gemini into a cinema-grade shot brief — producing dramatically more realistic Veo output
+- **Visual consistency**: Style anchor with specific camera/lens/lighting descriptions prepended to every scene
+- **Parallel processing**: Scenes processed in staggered batches to balance speed against Veo rate limits
 - **Audio/video sync**: Two modes — audio-driven (default, preserves natural voice) and video-driven (audio adjusts to video length)
 - **Circuit breaker**: Pipeline aborts after 3+ scene failures to fail fast
 - **Exponential backoff**: WebSocket reconnection with 1s→30s delay
@@ -94,9 +95,9 @@ Upload `docs/architecture.svg` to the Devpost image carousel. The Mermaid source
 - **Gemini 2.5 Flash** (interleaved text + image): [`backend/agent.py` line 280](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/agent.py#L280) — `response_modalities=["TEXT", "IMAGE"]`
 - **Gemini 2.0 Flash** (text-only fallback): [`backend/agent.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/agent.py) — conversation session
 - **Google ADK** (multi-agent): [`backend/adk_agent.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/adk_agent.py) — 3 agents with 4 function tools
-- **Veo 2.0** (video generation): [`backend/services/veo.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/veo.py)
+- **Veo 3.0** (video generation): [`backend/services/veo.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/veo.py)
 - **Imagen 4.0** (image fallback): [`backend/services/imagen.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/imagen.py)
-- **Google Cloud TTS** (WaveNet voices): [`backend/services/tts.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/tts.py)
+- **Google Cloud TTS** (Journey/Chirp3 HD voices): [`backend/services/tts.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/tts.py)
 - **Google Cloud Storage** (video persistence): [`backend/services/storage.py`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/backend/services/storage.py)
 - **Google Cloud Run** (deployment): [`Dockerfile`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/Dockerfile) + [`deploy.sh`](https://github.com/LakshmiSravyaVedantham/cutto/blob/main/deploy.sh)
 
