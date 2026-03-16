@@ -203,7 +203,7 @@ export default function App() {
                   <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
                 </svg>
               ),
-              label: 'AI Visuals by Veo 2.0',
+              label: 'AI Visuals by Veo 3.0',
               desc: 'Animated scenes with consistent style, Imagen & Gemini fallback chain'
             },
             {
@@ -279,7 +279,7 @@ export default function App() {
 
         {/* Tech stack */}
         <div style={styles.techStack}>
-          {['Gemini 2.5', 'Google ADK', 'Veo 2.0', 'Imagen 4.0', 'Cloud TTS', 'Wav2Lip', 'FFmpeg'].map((t, i) => (
+          {['Gemini 2.5', 'Google ADK', 'Veo 3.0', 'Imagen 4.0', 'Cloud TTS', 'Wav2Lip', 'FFmpeg'].map((t, i) => (
             <span key={t} style={{
               ...styles.techBadge,
               animationDelay: `${0.8 + i * 0.05}s`,
